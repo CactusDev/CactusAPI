@@ -1,13 +1,9 @@
 from flask import Flask, jsonify
-from sqlalchemy.ext.declarative import declarative_base
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 
 app = Flask(__name__)
 app.config.from_pyfile("config.py", True)
-db = SQLAlchemy(app)
-Base = declarative_base()
 
 from views import *
 

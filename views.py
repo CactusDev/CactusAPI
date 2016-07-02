@@ -1,10 +1,20 @@
-from flask import jsonify, request
+from flask import jsonify, request, g
 from datetime import datetime
-from run import db, app
+from run import app
 from models import *
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_
-from sqlalchemy.ext.declarative import declarative_base
+import rethinkdb as rethink
+import remodel.connection
+
+remodel.connection.pool.configure(db=app.config["RDB_DB"])
+
+
+def retrieve_user(username):
+    user = rethink.table("users").filter(
+        lambda user:
+            user["userName"].match("(?i){}".format(str(username)))
+    ).limit(1).run(g.rdb_conn)
+
+    return list(user)
 
 
 def generate_packet(type, id, attributes, path, user, meta=None):
@@ -17,17 +27,25 @@ def generate_packet(type, id, attributes, path, user, meta=None):
         meta:   Dict of meta information, not required
     """
 
+    print("type:\t", type)
+    print("id:\t", id)
+    print("attr:\t", attributes)
+    print("path:\t", path)
+    print("user:\t", user)
+
     if str(type).lower() == "user":
         relationships = {
             "commands": {
                 "links": {
-                    "self": "/api/v1/user/{}/relationships/commands".format(str(user)),
+                    "self": "/api/v1/user/{}/relationships/commands".format(
+                        str(user)),
                     "related": "/api/v1/user/{}/commands".format(str(user))
                 }
             },
             "quotes": {
                 "links": {
-                    "self": "/api/v1/user/{}/relationships/quotes".format(str(user)),
+                    "self": "/api/v1/user/{}/relationships/quotes".format(
+                        str(user)),
                     "related": "/api/v1/user/{}/quotes".format(str(user))
                 }
             }
@@ -43,7 +61,8 @@ def generate_packet(type, id, attributes, path, user, meta=None):
             },
             "quotes": {
                 "links": {
-                    "self": "/api/v1/user/{}/relationships/quotes".format(str(user)),
+                    "self": "/api/v1/user/{}/relationships/quotes".format(
+                        str(user)),
                     "related": "/api/v1/user/{}/quotes".format(str(user))
                 }
             }
@@ -59,7 +78,8 @@ def generate_packet(type, id, attributes, path, user, meta=None):
             },
             "commands": {
                 "links": {
-                    "self": "/api/v1/user/{}/relationships/commands".format(str(user)),
+                    "self": "/api/v1/user/{}/relationships/commands".format(
+                        str(user)),
                     "related": "/api/v1/user/{}/commands".format(str(user))
                 }
             }
@@ -86,130 +106,163 @@ def generate_packet(type, id, attributes, path, user, meta=None):
     return to_return
 
 
-@app.route("/api/v1/user/<user>", methods=["GET"])
-def beam_user(user):
+@app.before_request
+def before_request():
+    """Set the Flask session object's user to Flask-Login's current_user"""
+    g.rdb_conn = rethink.connect(host=app.config["RDB_HOST"],
+                                 port=app.config["RDB_PORT"],
+                                 db=app.config["RDB_DB"])
+
+
+@app.route("/api/v1/user/<username>", methods=["GET"])
+def beam_user(username):
 
     to_return = []
 
-    results = Users.query.filter(Users.userName.ilike(str(user))).all()
+    results = retrieve_user(username)
 
-    to_return = [ generate_packet("user",
-                                  result.id,
-                                  {
-                                      "userName": str(result.userName),
-                                      "enabled": result.enabled,
-                                      "botUsername": str(result.botUsername)
-                                  },
-                                  request.path,
-                                  result.userName) for result in results]
+    to_return = [generate_packet("user",
+                                 result["id"],
+                                 {
+                                     "userName": str(result["userName"]),
+                                     "enabled": result["active"],
+                                     "botUsername": str(result.get(
+                                         "botUsername", None))
+                                 },
+                                 request.path,
+                                 result["userName"]) for result in results]
 
     return jsonify(to_return)
 
 
-@app.route("/api/v1/user/<user>/command", methods=["GET"])
-def user_commands(user):
-    user = Users.query.filter(Users.userName.ilike(str(user))).one()
-    results = Commands.query.filter_by(userId=user.id).all()
+@app.route("/api/v1/user/<username>/command", methods=["GET"])
+def user_commands(username):
+    user = retrieve_user(username)[0]
 
-    to_return = [ generate_packet(
-                    "command",
-                    result.id,
-                    {
-                        "name": str(result.name),
-                        "response": str(result.response),
-                        "enabled": result.enabled,
-                        "channelId": result.channelId,
-                        "createdAt": str(result.createdAt),
-                        "syntax": str(result.syntax),
-                        "help": str(result.help),
-                        "builtIn": result.builtIn
-                    },
-                    request.path,
-                    user.userName)
+    results = list(rethink.table("commands").filter(
+        {"userId": user["id"]}).run(g.rdb_conn))
+
+    to_return = [generate_packet(
+                   "command",
+                   result["id"],
+                   {
+                       "name": str(result["name"]),
+                       "response": str(result["response"]),
+                       "enabled": result["enabled"],
+                       "channelId": result["channelId"],
+                       "createdAt": str(result["createdAt"]),
+                       "syntax": str(result["syntax"]),
+                       "help": str(result["help"]),
+                       "builtIn": result["builtIn"]
+                   },
+                   request.path,
+                   user["userName"])
                  for result in results]
 
     return jsonify(to_return)
 
 
-@app.route("/api/v1/user/<user>/command/<cmd>", methods=["GET", "PATCH"])
-def user_command(user, cmd):
-    user = Users.query.filter(Users.userName.ilike(str(user))).one()
+@app.route("/api/v1/user/<username>/command/<cmd>", methods=["GET", "PATCH"])
+def user_command(username, cmd):
+    # Get the first user object that matches the username
+    user = retrieve_user(username)[0]
 
     if request.method == "GET":
-        results = Commands.query.filter(and_(Commands.userId == user.id, Commands.name == str(cmd))).all()
+        results = list(rethink.table("commands").filter(
+            {"userId": user["id"],
+             "name": str(cmd)}
+        ).run(g.rdb_conn))
 
-        to_return = [ generate_packet(
+        to_return = [generate_packet(
                         "command",
-                        result.id,
+                        result["id"],
                         {
-                            "name": str(result.name),
-                            "response": str(result.response),
-                            "enabled": result.enabled,
-                            "channelId": result.channelId,
-                            "createdAt": str(result.createdAt),
-                            "syntax": str(result.syntax),
-                            "help": str(result.help),
-                            "builtIn": result.builtIn
+                            "name": str(result["name"]),
+                            "response": str(result["response"]),
+                            "enabled": result["enabled"],
+                            "channelId": result["channelId"],
+                            "createdAt": str(result["createdAt"]),
+                            "syntax": str(result["syntax"]),
+                            "help": str(result["help"]),
+                            "builtIn": result["builtIn"]
                         },
                         request.path,
-                        user.userName)
+                        user["userName"])
                      for result in results]
 
     elif request.method == "PATCH":
 
-        results = Commands.query.filter(and_(Commands.userId == user.id, Commands.name == str(cmd))).all()
+        results = list(rethink.table("commands").filter(
+            {"userId": user["id"],
+             "name": str(cmd)}
+        ).run(g.rdb_conn))
+
+        print(results)
 
         # It's [] (empty), so we need to make a NEW command
         if results == []:
-            command = Commands(name=str(cmd), response=request.args.get("response", ""), channelId="2Cubed", userLevel=0, createdAt=datetime.utcnow(), userId=user.id, syntax="foo bar123", help="lolnope")
+            result = Commands(name=str(cmd),
+                              response=request.args.get("response", ""),
+                              channelId="2Cubed",
+                              userLevel=0,
+                              createdAt=rethink.now(),
+                              userId=user["id"],
+                              syntax="foo bar123",
+                              help="lolnope",
+                              enabled=True,
+                              deleted=False,
+                              builtIn=False)
 
-            db.session.add(command)
-            db.session.commit()
+            result.save()
 
-            to_return = [ generate_packet(
+            to_return = generate_packet(
                             "command",
-                            result.id,
+                            result["id"],
                             {
-                                "name": str(result.name),
-                                "response": str(result.response),
-                                "enabled": result.enabled,
-                                "channelId": result.channelId,
-                                "createdAt": str(result.createdAt),
-                                "syntax": str(result.syntax),
-                                "help": str(result.help),
-                                "builtIn": result.builtIn
+                                "name": str(result["name"]),
+                                "response": str(result["response"]),
+                                "enabled": result["enabled"],
+                                "channelId": result["channelId"],
+                                "createdAt": str(result["createdAt"]),
+                                "syntax": str(result["syntax"]),
+                                "help": str(result["help"]),
+                                "builtIn": result["builtIn"]
                             },
                             request.path,
-                            user.userName,
+                            user["userName"],
                             meta={
                                 "created": True,
                                 "updated": False
                             })
-                         for result in results]
 
         # it's not [], so it already exists
         else:
             result = results[0]
 
-            result.response = request.values.get("response", "")
-            db.session.add(result)
-            db.session.commit()
+            new_response = request.values.get("response", "")
 
-            to_return = [ generate_packet(
+            if new_response != "" and new_response is not None:
+                result["response"] = new_response
+                # Save the edited command
+                Commands(
+                    **result
+                ).save()
+
+            to_return = [generate_packet(
                             "command",
-                            result.id,
+                            result["id"],
                             {
-                                "name": str(result.name),
-                                "response": str(result.response),
-                                "enabled": result.enabled,
-                                "channelId": result.channelId,
-                                "createdAt": str(result.createdAt),
-                                "syntax": str(result.syntax),
-                                "help": str(result.help),
-                                "builtIn": result.builtIn
+                                "name": str(result["name"]),
+                                "response": str(result["response"]),
+                                "enabled": result["enabled"],
+                                "channelId": result["channelId"],
+                                "createdAt": str(result["createdAt"]),
+                                "syntax": str(result["syntax"]),
+                                "help": str(result["help"]),
+                                "builtIn": result["builtIn"]
                             },
                             request.path,
-                            user.userName,
+                            user["userName"],
                             meta={
                                 "created": False,
                                 "updated": True

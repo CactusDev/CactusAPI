@@ -1,90 +1,110 @@
-from run import db
+"""
+RethinkDB models for remodel
+"""
+
+from remodel.models import Model
 
 
-class Users(db.Model):
-    __tablename__ = "users"
+class User(Model):
+    """
+    A remodel table model
+    """
+    has_many = ("Tickets", "TicketResponse")
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    userName = db.Column(db.String)
-    userLevel = db.Column(db.Integer)
-    enabled = db.Column(db.Boolean, default=True)
-    botUsername = db.Column(db.String)
-    botPassword = db.Column(db.String)
+    def get_id(self):
+        """
+        Returns a string of the User object's ID
+        """
+        return str(self["id"])
 
+    @property
+    def is_active(self):
+        """
+        Returns a string of the User object's ID
+        """
+        return True
 
-class Roles(db.Model):
-    __tablename__ = "roles"
+    @property
+    def is_active(self):
+        return True
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    channelId = db.Column(db.String)
-    userId = db.Column(db.String)
-    userLevel = db.Column(db.Integer)
-    createdAt = db.Column(db.DateTime)
+    @property
+    def is_anonymous(self):
+        return True
 
-
-class Channels(db.Model):
-    __tablename__ = "channels"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    userId = db.Column(db.String)
-    enabled = db.Column(db.Boolean, default=True)
-    createdAt = db.Column(db.DateTime)
-    service = db.Column(db.String)
-
-
-class Configuration(db.Model):
-    __tablename__ = "configuration"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    channelId = db.Column(db.String)
-    key = db.Column(db.String)
-    value = db.Column(db.String)
-    lastUpdated = db.Column(db.DateTime)
+    @property
+    def is_authenticated(self):
+        return True
 
 
-class Commands(db.Model):
-    __tablename__ = "commands"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String)
-    response = db.Column(db.String)
-    enabled = db.Column(db.Boolean, default=True)
-    deleted = db.Column(db.Boolean, default=False)
-    channelId = db.Column(db.String)
-    userLevel = db.Column(db.Integer)
-    createdAt = db.Column(db.DateTime)
-    userId = db.Column(db.String)
-    syntax = db.Column(db.String)
-    help = db.Column(db.String)
-    builtIn = db.Column(db.Boolean, default=False)
+class Roles(Model):
+    """
+    A remodel table model
+    """
+    pass
 
 
-class Messages(db.Model):
-    __tablename__ = "messages"
+class Channels(Model):
+    """
+    A remodel table model
+    """
+    pass
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    message = db.Column(db.String)
-    channelId = db.Column(db.String)
-    userId = db.Column(db.String)
-    createdAt = db.Column(db.DateTime)
-
-
-class Executions(db.Model):
-    __tablename__ = "executions"
-
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    commandId = db.Column(db.String)
-    messageId = db.Column(db.String)
+    def __repr__(self):
+        return '<User {}>'.format(self.username)
 
 
-class Quotes(db.Model):
-    __tablename__ = "quotes"
+class Configuration(Model):
+    """
+    A remodel table model
+    """
+    pass
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    quoteId = db.Column(db.Integer)
-    messageId = db.Column(db.String)
-    channelId = db.Column(db.String)
-    userId = db.Column(db.String)
-    createdAt = db.Column(db.DateTime)
-    enabled = db.Column(db.Boolean, default=True)
-    deleted = db.Column(db.Boolean, default=False)
+
+class Commands(Model):
+    """
+    A remodel table model
+    """
+    pass
+
+
+class Messages(Model):
+    """
+    A remodel table model
+    """
+    pass
+
+
+class Executions(Model):
+    """
+    A remodel table model
+    """
+    pass
+
+
+class Quotes(Model):
+    """
+    A remodel table model
+    """
+    pass
+
+
+class UserRole(Model):
+    """
+    A remodel table model
+    """
+    pass
+
+
+class Tickets(Model):
+    """
+    A remodel table model
+    """
+    belongs_to = ('User',)
+
+
+class TicketResponse(Model):
+    """
+    A remodel table model
+    """
+    belongs_to = ('User',)
