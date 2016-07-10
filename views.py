@@ -114,10 +114,39 @@ def before_request():
                                  db=app.config["RDB_DB"])
 
 
-@app.route("/api/v1/user/<username>", methods=["GET"])
+@app.route("/api/v1/user/<username>", methods=["GET", "PATCH"])
 def beam_user(username):
 
     to_return = []
+
+    results = retrieve_user(username)
+
+    # User doesn't exist, let's create it
+    if results == []:
+        result = User(
+            active=True,
+            confirmed_at=rethink.now(),
+            email=request.values.get("email", ""),
+            provider_id="{}${}".format(request.values.get("provider", ""),
+                                       request.values.get("pid", "")),
+            roles=[
+                "user"
+            ],
+            userName=username
+        )
+
+        meta = {
+            "created": True,
+            "updated": False
+        }
+
+        result.save()
+    else:
+        # User exists, so set the meta correctly
+        meta = {
+            "created": False,
+            "updated": True
+        }
 
     results = retrieve_user(username)
 
@@ -130,7 +159,8 @@ def beam_user(username):
                                          "botUsername", None))
                                  },
                                  request.path,
-                                 result["userName"]) for result in results]
+                                 result["userName"],
+                                 meta=meta) for result in results]
 
     return jsonify(to_return)
 
@@ -202,7 +232,7 @@ def user_command(username, cmd):
         # It's [] (empty), so we need to make a NEW command
         if results == []:
             result = Commands(name=str(cmd),
-                              response=request.args.get("response", ""),
+                              response=request.values.get("response", ""),
                               channelId="2Cubed",
                               userLevel=0,
                               createdAt=rethink.now(),
