@@ -117,6 +117,20 @@ def before_request():
 @app.route("/api/v1/user/<username>", methods=["GET", "PATCH"])
 def beam_user(username):
 
+    """
+    If you GET this endpoint, simply go to /api/v1/user/<username> with
+    <username> replaced for the user you want
+
+    If you PATCH this endpoint:
+        Go to /api/v1/user/<username> with <username> replaced for the user
+            wanted
+        Parameters needed:
+            - email:    User's email address
+            - provider: OAuth provider
+            - pid:      User ID from OAuth provider
+            - userName: <username> from request path
+    """
+
     to_return = []
 
     results = retrieve_user(username)
@@ -167,6 +181,12 @@ def beam_user(username):
 
 @app.route("/api/v1/user/<username>/command", methods=["GET"])
 def user_commands(username):
+
+    """
+    If you GET this endpoint, simply go to /api/v1/user/<username>/command with
+    <username> replaced for the user you want to get commands for
+    """
+
     user = retrieve_user(username)[0]
 
     results = list(rethink.table("commands").filter(
@@ -194,6 +214,20 @@ def user_commands(username):
 
 @app.route("/api/v1/user/<username>/command/<cmd>", methods=["GET", "PATCH"])
 def user_command(username, cmd):
+
+    """
+    If you GET this endpoint, go to /api/v1/user/<username>/command/<cmd> with
+    <username> replaced for the user you want & <cmd> replaced with the command
+    you wish to look up
+
+    If you PATCH this endpoint:
+        Go to /api/v1/user/<username>/command/<cmd> with <username> replaced
+            for the user wanted & <cmd> replaced for the command you want to
+            look up
+        Parameters needed:
+            - response: The new response for the command
+    """
+
     # Get the first user object that matches the username
     user = retrieve_user(username)[0]
 
