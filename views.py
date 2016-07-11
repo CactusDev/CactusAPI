@@ -211,7 +211,7 @@ def user_commands(username):
                    },
                    request.path,
                    user["userName"])
-                 for result in results][0]
+                 for result in results]
 
     return jsonify(to_return)
 
@@ -262,6 +262,9 @@ def user_command(username, cmd):
                         request.path,
                         user["userName"])
                      for result in results]
+
+        if len(to_return) > 0:
+            to_return = to_return[0]
 
     elif request.method == "PATCH":
 
