@@ -186,8 +186,12 @@ def user_commands(username):
     If you GET this endpoint, simply go to /api/v1/user/<username>/command with
     <username> replaced for the user you want to get commands for
     """
+    users = retrieve_user(username)
 
-    user = retrieve_user(username)[0]
+    if len(users) is not >= 1:
+        return "", 204
+    else:
+        user = users[0]
 
     results = list(rethink.table("commands").filter(
         {"userId": user["id"]}).run(g.rdb_conn))
@@ -207,7 +211,7 @@ def user_commands(username):
                    },
                    request.path,
                    user["userName"])
-                 for result in results]
+                 for result in results][0]
 
     return jsonify(to_return)
 
@@ -229,7 +233,12 @@ def user_command(username, cmd):
     """
 
     # Get the first user object that matches the username
-    user = retrieve_user(username)[0]
+    users = retrieve_user(username)
+
+    if len(users) is not >= 1:
+        return "", 204
+    else:
+        user = users[0]
 
     if request.method == "GET":
         results = list(rethink.table("commands").filter(
