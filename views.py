@@ -188,7 +188,7 @@ def user_commands(username):
     """
     users = retrieve_user(username)
 
-    if len(users) is not >= 1:
+    if len(users) < 1:
         return "", 204
     else:
         user = users[0]
@@ -235,7 +235,7 @@ def user_command(username, cmd):
     # Get the first user object that matches the username
     users = retrieve_user(username)
 
-    if len(users) is not >= 1:
+    if len(users) < 1:
         return "", 204
     else:
         user = users[0]
