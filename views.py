@@ -1,23 +1,29 @@
-from flask import jsonify, request, g
-from datetime import datetime
-from run import app
-from models import *
+"""Views for the API"""
+
 import rethinkdb as rethink
 import remodel.connection
+from models import User, Commands
+from flask import jsonify, request, g
+
+from run import app
 
 remodel.connection.pool.configure(db=app.config["RDB_DB"])
 
 
 def retrieve_user(username):
+    """Get, and return a user."""
+
     user = rethink.table("users").filter(
         lambda user:
-            user["userName"].match("(?i){}".format(str(username)))
+        user["userName"].match("(?i){}".format(str(username)))
     ).limit(1).run(g.rdb_conn)
 
     return list(user)
 
 
-def generate_packet(type, id, attributes, path, user, meta=None):
+def generate_packet(packet_type, uid, attributes, path, user, meta=None):
+    """Create and return a packet."""
+
     """Parameters:
         type:   String of the data type being returned (user, command, etc.)
         id:     ID of whatever is being returned
@@ -27,13 +33,13 @@ def generate_packet(type, id, attributes, path, user, meta=None):
         meta:   Dict of meta information, not required
     """
 
-    print("type:\t", type)
-    print("id:\t", id)
+    print("type:\t", packet_type)
+    print("id:\t", uid)
     print("attr:\t", attributes)
     print("path:\t", path)
     print("user:\t", user)
 
-    if str(type).lower() == "user":
+    if str(packet_type).lower() == "user":
         relationships = {
             "commands": {
                 "links": {
@@ -51,7 +57,7 @@ def generate_packet(type, id, attributes, path, user, meta=None):
             }
         }
 
-    elif str(type).lower() == "command":
+    elif str(packet_type).lower() == "command":
         relationships = {
             "user": {
                 "links": {
@@ -68,7 +74,7 @@ def generate_packet(type, id, attributes, path, user, meta=None):
             }
         }
 
-    elif str(type).lower() == "quote":
+    elif str(packet_type).lower() == "quote":
         relationships = {
             "user": {
                 "links": {
@@ -197,20 +203,20 @@ def user_commands(username):
         {"userId": user["id"]}).run(g.rdb_conn))
 
     to_return = [generate_packet(
-                   "command",
-                   result["id"],
-                   {
-                       "name": str(result["name"]),
-                       "response": str(result["response"]),
-                       "enabled": result["enabled"],
-                       "channelId": result["channelId"],
-                       "createdAt": str(result["createdAt"]),
-                       "syntax": str(result["syntax"]),
-                       "help": str(result["help"]),
-                       "builtIn": result["builtIn"]
-                   },
-                   request.path,
-                   user["userName"])
+        "command",
+        result["id"],
+        {
+            "name": str(result["name"]),
+            "response": str(result["response"]),
+            "enabled": result["enabled"],
+            "channelId": result["channelId"],
+            "createdAt": str(result["createdAt"]),
+            "syntax": str(result["syntax"]),
+            "help": str(result["help"]),
+            "builtIn": result["builtIn"]
+        },
+        request.path,
+        user["userName"])
                  for result in results]
 
     return jsonify(to_return)
@@ -247,20 +253,20 @@ def user_command(username, cmd):
         ).run(g.rdb_conn))
 
         to_return = [generate_packet(
-                        "command",
-                        result["id"],
-                        {
-                            "name": str(result["name"]),
-                            "response": str(result["response"]),
-                            "enabled": result["enabled"],
-                            "channelId": result["channelId"],
-                            "createdAt": str(result["createdAt"]),
-                            "syntax": str(result["syntax"]),
-                            "help": str(result["help"]),
-                            "builtIn": result["builtIn"]
-                        },
-                        request.path,
-                        user["userName"])
+            "command",
+            result["id"],
+            {
+                "name": str(result["name"]),
+                "response": str(result["response"]),
+                "enabled": result["enabled"],
+                "channelId": result["channelId"],
+                "createdAt": str(result["createdAt"]),
+                "syntax": str(result["syntax"]),
+                "help": str(result["help"]),
+                "builtIn": result["builtIn"]
+            },
+            request.path,
+            user["userName"])
                      for result in results]
 
         if len(to_return) > 0:
@@ -292,24 +298,24 @@ def user_command(username, cmd):
             result.save()
 
             to_return = generate_packet(
-                            "command",
-                            result["id"],
-                            {
-                                "name": str(result["name"]),
-                                "response": str(result["response"]),
-                                "enabled": result["enabled"],
-                                "channelId": result["channelId"],
-                                "createdAt": str(result["createdAt"]),
-                                "syntax": str(result["syntax"]),
-                                "help": str(result["help"]),
-                                "builtIn": result["builtIn"]
-                            },
-                            request.path,
-                            user["userName"],
-                            meta={
-                                "created": True,
-                                "updated": False
-                            })
+                "command",
+                result["id"],
+                {
+                    "name": str(result["name"]),
+                    "response": str(result["response"]),
+                    "enabled": result["enabled"],
+                    "channelId": result["channelId"],
+                    "createdAt": str(result["createdAt"]),
+                    "syntax": str(result["syntax"]),
+                    "help": str(result["help"]),
+                    "builtIn": result["builtIn"]
+                },
+                request.path,
+                user["userName"],
+                meta={
+                    "created": True,
+                    "updated": False
+                })
 
         # it's not [], so it already exists
         else:
@@ -325,24 +331,24 @@ def user_command(username, cmd):
                 ).save()
 
             to_return = [generate_packet(
-                            "command",
-                            result["id"],
-                            {
-                                "name": str(result["name"]),
-                                "response": str(result["response"]),
-                                "enabled": result["enabled"],
-                                "channelId": result["channelId"],
-                                "createdAt": str(result["createdAt"]),
-                                "syntax": str(result["syntax"]),
-                                "help": str(result["help"]),
-                                "builtIn": result["builtIn"]
-                            },
-                            request.path,
-                            user["userName"],
-                            meta={
-                                "created": False,
-                                "updated": True
-                            })
+                "command",
+                result["id"],
+                {
+                    "name": str(result["name"]),
+                    "response": str(result["response"]),
+                    "enabled": result["enabled"],
+                    "channelId": result["channelId"],
+                    "createdAt": str(result["createdAt"]),
+                    "syntax": str(result["syntax"]),
+                    "help": str(result["help"]),
+                    "builtIn": result["builtIn"]
+                },
+                request.path,
+                user["userName"],
+                meta={
+                    "created": False,
+                    "updated": True
+                })
                          for result in results]
 
     return jsonify(to_return)

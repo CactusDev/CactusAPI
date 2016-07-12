@@ -25,15 +25,13 @@ class User(Model):
         return True
 
     @property
-    def is_active(self):
-        return True
-
-    @property
     def is_anonymous(self):
+        """Check if the user is anonymous."""
         return True
 
     @property
     def is_authenticated(self):
+        """Check if the user is authenticated."""
         return True
 
 
@@ -48,7 +46,6 @@ class Channels(Model):
     """
     A remodel table model
     """
-    pass
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
