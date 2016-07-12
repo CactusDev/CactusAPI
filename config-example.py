@@ -1,5 +1,5 @@
 """Config."""
 
-
-RETHINK_HOST = "localhost"
-RETHINK_PORT = 28015
+RDB_DB = "api"
+RDB_HOST = "localhost"
+RDB_PORT = 28015
