@@ -122,6 +122,7 @@ def before_request():
 
 @APP.route("/api/v1/user/<username>", methods=["GET", "PATCH"])
 def beam_user(username):
+    # TODO: Auth checking
 
     """
     If you GET this endpoint, simply go to /api/v1/user/<username> with
@@ -141,48 +142,49 @@ def beam_user(username):
 
     results = retrieve_user(username)
 
-    # User doesn't exist, let's create it
-    if results == []:
-        result = User(
-            active=True,
-            confirmed_at=rethink.now(),
-            email=request.values.get("email", ""),
-            provider_id="{}${}".format(request.values.get("provider", ""),
-                                       request.values.get("pid", "")),
-            roles=[
-                "user"
-            ],
-            userName=username
-        )
+    if request.method == "PATCH":
+        # User doesn't exist, let's create it
+        if results == []:
+            result = User(
+                active=True,
+                confirmed_at=rethink.now(),
+                email=request.values.get("email", ""),
+                provider_id="{}${}".format(request.values.get("provider", ""),
+                                           request.values.get("pid", "")),
+                roles=[
+                    "user"
+                ],
+                userName=username
+            )
 
-        meta = {
-            "created": True,
-            "updated": False
-        }
+            meta = {
+                "created": True,
+                "updated": False
+            }
 
-        result.save()
+            result.save()
+        else:
+            # User exists, so set the meta correctly
+            meta = {
+                "created": False,
+                "updated": True
+            }
     else:
-        # User exists, so set the meta correctly
-        meta = {
-            "created": False,
-            "updated": True
-        }
+        results = retrieve_user(username)
 
-    results = retrieve_user(username)
+        to_return = [generate_packet("user",
+                                     result["id"],
+                                     {
+                                         "userName": str(result["userName"]),
+                                         "enabled": result["active"],
+                                         "botUsername": str(result.get(
+                                             "botUsername", None))
+                                     },
+                                     request.path,
+                                     result["userName"],
+                                     meta=meta) for result in results]
 
-    to_return = [generate_packet("user",
-                                 result["id"],
-                                 {
-                                     "userName": str(result["userName"]),
-                                     "enabled": result["active"],
-                                     "botUsername": str(result.get(
-                                         "botUsername", None))
-                                 },
-                                 request.path,
-                                 result["userName"],
-                                 meta=meta) for result in results]
-
-    return jsonify(to_return)
+        return jsonify(to_return)
 
 
 @APP.route("/api/v1/user/<username>/command", methods=["GET"])
@@ -224,6 +226,7 @@ def user_commands(username):
 
 @APP.route("/api/v1/user/<username>/command/<cmd>", methods=["GET", "PATCH"])
 def user_command(username, cmd):
+    # TODO: Auth checking
 
     """
     If you GET this endpoint, go to /api/v1/user/<username>/command/<cmd> with
