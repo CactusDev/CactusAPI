@@ -5,9 +5,9 @@ import remodel.connection
 from models import User, Commands
 from flask import jsonify, request, g
 
-from run import app
+from run import APP
 
-remodel.connection.pool.configure(db=app.config["RDB_DB"])
+remodel.connection.pool.configure(db=APP.config["RDB_DB"])
 
 
 def retrieve_user(username):
@@ -112,15 +112,15 @@ def generate_packet(packet_type, uid, attributes, path, user, meta=None):
     return to_return
 
 
-@app.before_request
+@APP.before_request
 def before_request():
     """Set the Flask session object's user to Flask-Login's current_user"""
-    g.rdb_conn = rethink.connect(host=app.config["RDB_HOST"],
-                                 port=app.config["RDB_PORT"],
-                                 db=app.config["RDB_DB"])
+    g.rdb_conn = rethink.connect(host=APP.config["RDB_HOST"],
+                                 port=APP.config["RDB_PORT"],
+                                 db=APP.config["RDB_DB"])
 
 
-@app.route("/api/v1/user/<username>", methods=["GET", "PATCH"])
+@APP.route("/api/v1/user/<username>", methods=["GET", "PATCH"])
 def beam_user(username):
 
     """
@@ -185,7 +185,7 @@ def beam_user(username):
     return jsonify(to_return)
 
 
-@app.route("/api/v1/user/<username>/command", methods=["GET"])
+@APP.route("/api/v1/user/<username>/command", methods=["GET"])
 def user_commands(username):
 
     """
@@ -222,7 +222,7 @@ def user_commands(username):
     return jsonify(to_return)
 
 
-@app.route("/api/v1/user/<username>/command/<cmd>", methods=["GET", "PATCH"])
+@APP.route("/api/v1/user/<username>/command/<cmd>", methods=["GET", "PATCH"])
 def user_command(username, cmd):
 
     """
