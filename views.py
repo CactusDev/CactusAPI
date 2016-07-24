@@ -1,18 +1,19 @@
 """Views for the API"""
 
-import rethinkdb as rethink
-import remodel.connection
 import time
+from datetime import datetime, timedelta
+import remodel.connection
 import requests
 import pytz
-from datetime import datetime, timedelta
+import redis
+import rethinkdb as rethink
 from flask import jsonify, request, g, make_response
 from models import User, Commands, Quotes, Messages, Friend
 
-from run import APP, make_request
+from run import APP
 
 remodel.connection.pool.configure(db=APP.config["RDB_DB"])
-
+REDIS_CONN = redis.Redis()
 
 META_CREATED = {
     "created": True,
@@ -132,8 +133,9 @@ def chan_friends(channel):
             "userId": result["userId"],
             "active": result["active"],
             "expiresAt": result["expires"]
-        }
-    )]
+        },
+        request.path
+    ) for result in results]
 
     return jsonify(to_return)
 
@@ -162,15 +164,28 @@ def chan_friend(channel, friend):
 
     # Pre-create the query
     friend_query = rethink.table("friends").filter(
-            {
-                "channelId": channel,
-                "userId": friend
-            }
-        )
+        {
+            "channelId": channel,
+            "userId": friend
+        }
+    )
 
     if request.method == "GET":
 
-        results = list(friend_query.limit(1).run(g.rdb_conn))
+        result = list(friend_query.limit(1).run(g.rdb_conn))[0]
+
+        to_return = generate_packet(
+            "friend",
+            result["id"],
+            {
+                "channelId": result["channelId"],
+                "userName": result["userName"],
+                "userId": result["userId"],
+                "active": result["active"],
+                "expiresAt": result["expires"]
+            },
+            request.path
+        )
 
     elif request.method == "PATCH":
 
@@ -191,8 +206,8 @@ def chan_friend(channel, friend):
                 userId=user["id"],
                 active=True,
                 expires=rethink.epoch_time(
-                            int(time.time()) + length
-                        ) if length != 0 else rethink.epoch_time(0)
+                    int(time.time()) + length
+                ) if length != 0 else rethink.epoch_time(0)
             )
 
             # and save it
@@ -206,7 +221,8 @@ def chan_friend(channel, friend):
             # Get the first result, only want to edit one
             result = results[0]
             # Get length seperately so it's easier to reference
-            length = float(request.values.get("length", 0))
+            # + .0 is required to convert it to a float
+            length = request.values.get("length", 0) + .0
 
             if length != 0:
                 # Take the current UTC datetime and then add the # of seconds
@@ -230,11 +246,10 @@ def chan_friend(channel, friend):
             # The friend record was edited, so set that meta
             meta = META_EDITED
 
-        if result["expires"] != rethink.epoch_time(0) and \
-                result["expires"] > rethink.epoch_time(time.time()):
-            active = True
-        else:
-            active = False
+        is_active = result["expires"] != rethink.epoch_time(0) and \
+            result["expires"] > rethink.epoch_time(time.time())
+
+        active = True if is_active else False
 
         if result["expires"] != rethink.epoch_time(0):
             expires = result["expires"]
@@ -249,7 +264,7 @@ def chan_friend(channel, friend):
                 "userName": result["userName"],
                 "userId": result["userId"],
                 "active": active,
-                "expiresAt": result["expires"]
+                "expiresAt": expires
             },
             request.path,
             meta) for result in results]
@@ -264,7 +279,7 @@ def chan_friend(channel, friend):
                 rethink.table("friends").get(
                     results[0]["id"]).delete().run(g.rdb_conn)
 
-                return make_response(jsonify([]), 204)
+                return make_response(jsonify(None), 204)
 
             except Exception as error:
                 print("Exception caught! views:225")
@@ -298,8 +313,9 @@ def chan_messages(channel):
             "channelId": channel,
             "userId": result["userId"],
             "createdAt": result["createdAt"]
-        }
-    )]
+        },
+        request.path
+    ) for result in results]
 
     return jsonify(to_return)
 
@@ -404,7 +420,7 @@ def user_quotes(username):
     # Were any returned?
     if len(users) < 1:
         # No, return 204 since it's not an error, the user just doesn't exist
-        return "", 204
+        return jsonify(None), 204
     else:
         # Yes, user the first user
         user = users[0]
@@ -456,7 +472,7 @@ def user_quote(username, quote):
     # Were any returned?
     if len(users) < 1:
         # No, return 204 since it's not an error, the user just doesn't exist
-        return "", 204
+        return jsonify(None), 204
     else:
         # Yes, user the first user
         user = users[0]
