@@ -35,6 +35,13 @@ class User(Model):
         return True
 
 
+class Friend(Model):
+    """
+    A remodel table model
+    """
+    pass
+
+
 class Roles(Model):
     """
     A remodel table model
@@ -46,6 +53,8 @@ class Channels(Model):
     """
     A remodel table model
     """
+
+    has_many = ("Messages", "Friend")
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

@@ -9,13 +9,13 @@ APP.config.from_pyfile("config.py", True)
 from views import *
 
 
-def make_request(endpoint, params, request_type):
+def make_request(endpoint, request_type, params):
     """Make a request."""
 
-    if request_type == "get":
-        return requests.get(api_base + endpoint, params=params)
-    elif request_type == "post":
-        return requests.post(api_base + endpoint, data=params)
+    if request_type.lower() == "get":
+        return requests.get(endpoint, params=params).json()
+    elif request_type.lower() == "post":
+        return requests.post(endpoint, data=params).json()
 
 
 if __name__ == "__main__":
