@@ -701,12 +701,12 @@ def user_command(username, cmd):
         user = users[0]
 
     if request.method == "GET":
-        results = list(rethink.table("commands").filter(
+        result = rethink.table("commands").filter(
             {"userId": user["id"],
-             "name": str(cmd)}
-        ).run(g.rdb_conn))
+             "name": cmd}
+        ).limit(1)run(g.rdb_conn)
 
-        to_return = [generate_packet(
+        to_return = generate_packet(
             "command",
             result["id"],
             {
@@ -721,7 +721,6 @@ def user_command(username, cmd):
                 "userName": user["userName"]
             },
             request.path)
-                     for result in results]
 
         if len(to_return) > 0:
             to_return = to_return[0]
