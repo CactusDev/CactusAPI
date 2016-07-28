@@ -172,7 +172,7 @@ def chan_friend(channel, friend):
 
     if request.method == "GET":
 
-        result = list(friend_query.limit(1).run(g.rdb_conn))[0]
+        result = friend_query.limit(1).run(g.rdb_conn)
 
         to_return = generate_packet(
             "friend",
