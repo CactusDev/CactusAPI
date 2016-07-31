@@ -151,11 +151,7 @@ def chan_friend(channel, friend):
     If you POST this endpoint:
         Go to /api/v1/channel/<channel>/friend/<friend> with <channel>
         for the channel wanted & <friend> replaced for the user ID of the
-        friend you want to edit or create
-
-        Parameters:
-            - length:       The number of seconds the friend is going to last
-                                Do not include if the friend is permanent
+        friend you want to edit or create.
     """
     # Initialize length to 0 now to prevent a NameError from happening later
     length = 0
@@ -407,15 +403,15 @@ def chan_message(channel, message):
     return jsonify(to_return)
 
 
-@APP.route("/api/v1/user/<string:username>/quote", methods=["GET"])
-def user_quotes(username):
+@APP.route("/api/v1/channel/<string:channel>/quote", methods=["GET"])
+def user_quotes(channel):
     """
-    If you GET this endpoint, go to /api/v1/user/<username>/quote
-    with <username> replaced for the user you want to get quotes for
+    If you GET this endpoint, go to /api/v1/channel/<channel>/quote
+    with <channel> replaced for the channel you want to get quotes for
     """
 
-    # Get all users that match the username
-    users = retrieve_user(username)
+    # Get all users that match the channel
+    users = retrieve_user(channel)
 
     # Were any returned?
     if len(users) < 1:
@@ -450,24 +446,30 @@ def user_quotes(username):
     return jsonify(to_return)
 
 
-@APP.route("/api/v1/user/<string:username>/quote/<string:quote>",
-           methods=["GET", "PATCH"])
-def user_quote(username, quote):
+@APP.route("/api/v1/channel/<string:channel>/quote/<string:quote>",
+           methods=["GET", "PATCH", "DELETE"])
+def chan_quote(channel, quote):
     """
-    If you GET this endpoint, go to /api/v1/user/<username>/quote/<quote> with
-    <username> replaced for the user you want & <quote> replaced with the quote
-    ID you wish to look up
+    If you GET this endpoint:
+        Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
+        for the channel you want and <quote> replaced with the quote ID you
+        wish to look up
 
     If you PATCH this endpoint:
-        Go to /api/v1/user/<username>/quote/<quote> with <username> replaced
-        for the user wanted & <quote> replaced for the ID of the quote you
+        Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
+        for the channel wanted & <quote> replaced for the ID of the quote you
         want to look up
         Parameters needed:
             - quote: The new contents of the quote
+
+    If you DELETE this endpoint:
+        Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
+        for the channel you want and <quote> replaced with the quote ID you
+        want to remove
     """
 
-    # Get all users that match the username
-    users = retrieve_user(username)
+    # Get all users that match the channel
+    users = retrieve_user(channel)
 
     # Were any returned?
     if len(users) < 1:
@@ -567,6 +569,24 @@ def user_quote(username, quote):
                 request.path,
                 META_EDITED)
                          for result in results]
+
+    elif request.method == "DELETE":
+
+        results = list(rethink.table("quotes").limit(1).run(g.rdb_conn))
+
+        # If the user DOES exist in the DB in the quote table
+        if results != []:
+            try:
+                rethink.table("quotes").get(
+                    results[0]["id"]).delete().run(g.rdb_conn)
+
+                return make_response(jsonify(None), 204)
+
+            except Exception as error:
+                print("Exception caught! views:225")
+                print(error)
+
+                return make_response(jsonify([{"error": error}]), 500)
 
     return jsonify(to_return)
 
@@ -675,7 +695,7 @@ def user_commands(username):
 
 
 @APP.route("/api/v1/user/<string:username>/command/<string:cmd>",
-           methods=["GET", "PATCH"])
+           methods=["GET", "PATCH", "DELETE"])
 def user_command(username, cmd):
     # TODO: Auth checking
 
@@ -690,6 +710,12 @@ def user_command(username, cmd):
             look up
         Parameters needed:
             - response: The new response for the command
+            - level:    An integer for the user level required to run the
+                        command.
+                            0 - Accessible by ALL users
+                            1 - Channel Moderator Only
+                            2 - Channel Owner Only
+                            3 - Channel Subscriber Only
     """
 
     # Get the first user object that matches the username
@@ -704,7 +730,7 @@ def user_command(username, cmd):
         result = rethink.table("commands").filter(
             {"userId": user["id"],
              "name": cmd}
-        ).limit(1)run(g.rdb_conn)
+        ).limit(1).run(g.rdb_conn)
 
         to_return = generate_packet(
             "command",
@@ -718,7 +744,8 @@ def user_command(username, cmd):
                 "syntax": str(result["syntax"]),
                 "help": str(result["help"]),
                 "builtIn": result["builtIn"],
-                "userName": user["userName"]
+                "userName": user["userName"],
+                "level": result["level"]
             },
             request.path)
 
@@ -744,7 +771,8 @@ def user_command(username, cmd):
                               help="lolnope",
                               enabled=True,
                               deleted=False,
-                              builtIn=False)
+                              builtIn=False,
+                              level=request.values.get("level", 0))
 
             result.save()
 
@@ -760,7 +788,8 @@ def user_command(username, cmd):
                     "syntax": str(result["syntax"]),
                     "help": str(result["help"]),
                     "builtIn": result["builtIn"],
-                    "user": user["userName"]
+                    "user": user["userName"],
+                    "level": result["level"]
                 },
                 request.path,
                 META_CREATED)
@@ -796,5 +825,23 @@ def user_command(username, cmd):
                 request.path,
                 META_EDITED)
                          for result in results]
+
+    elif request.method == "DELETE":
+
+        results = list(rethink.table("commands").limit(1).run(g.rdb_conn))
+
+        # If the user DOES exist in the DB in the friend table
+        if results != []:
+            try:
+                rethink.table("commands").get(
+                    results[0]["id"]).delete().run(g.rdb_conn)
+
+                return make_response(jsonify(None), 204)
+
+            except Exception as error:
+                print("Exception caught! views:225")
+                print(error)
+
+                return make_response(jsonify([{"error": error}]), 500)
 
     return jsonify(to_return)
