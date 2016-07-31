@@ -594,6 +594,7 @@ def chan_quote(channel, quote):
 @APP.route("/api/v1/user/<string:username>", methods=["GET", "PATCH"])
 def beam_user(username):
     # TODO: Auth checking
+    # TODO: Finish this endpoint
 
     """
     If you GET this endpoint, simply go to /api/v1/user/<username> with
@@ -629,28 +630,31 @@ def beam_user(username):
                 userName=username
             )
 
-            meta = META_EDITED
+            meta = META_CREATED
 
             result.save()
         else:
             # User exists, so set the meta correctly
-            meta = META_CREATED
-    else:
+            # TODO: Implement user editing
+            meta = META_EDITED
+
         results = retrieve_user(username)
 
-        to_return = [generate_packet("user",
-                                     result["id"],
-                                     {
-                                         "userName": str(result["userName"]),
-                                         "enabled": result["active"],
-                                         "botUsername": str(result.get(
-                                             "botUsername", None))
-                                     },
-                                     request.path,
-                                     meta)
-                     for result in results]
+    to_return = [generate_packet("user",
+                                 result["id"],
+                                 {
+                                     "userName": str(result["userName"]),
+                                     "enabled": result["active"],
+                                     "botUsername": str(result.get(
+                                         "botUsername", None))
+                                 },
+                                 request.path,
+                                 meta)
+                 for result in results]
 
-        return jsonify(to_return)
+    print(to_return)
+
+    return jsonify(to_return)
 
 
 @APP.route("/api/v1/user/<string:username>/command", methods=["GET"])
