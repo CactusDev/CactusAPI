@@ -502,7 +502,7 @@ def chan_quote(channel, quote):
     elif request.method == "PATCH":
 
         results = list(
-            rethink.table("commands").filter(
+            rethink.table("quotes").filter(
                 {
                     "userId": user["id"],
                     "id": str(quote)
@@ -547,7 +547,7 @@ def chan_quote(channel, quote):
 
             if new_text != "" and new_text is not None:
                 result["quote"] = new_text
-                # Save the edited command
+                # Save the edited quote
                 Quotes(
                     **result
                 ).save()
@@ -731,10 +731,10 @@ def user_command(username, cmd):
         user = users[0]
 
     if request.method == "GET":
-        result = rethink.table("commands").filter(
+        result = list(rethink.table("commands").filter(
             {"userId": user["id"],
              "name": cmd}
-        ).limit(1).run(g.rdb_conn)
+        ).limit(1).run(g.rdb_conn))[0]
 
         to_return = generate_packet(
             "command",
@@ -754,7 +754,7 @@ def user_command(username, cmd):
             request.path)
 
         if len(to_return) > 0:
-            to_return = to_return[0]
+            to_return = to_return
 
     elif request.method == "PATCH":
 
