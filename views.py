@@ -780,7 +780,7 @@ def user_command(username, cmd):
 
             result.save()
 
-            to_return = generate_packet(
+            to_return = [generate_packet(
                 "command",
                 result["id"],
                 {
@@ -796,7 +796,7 @@ def user_command(username, cmd):
                     "level": result["level"]
                 },
                 request.path,
-                META_CREATED)
+                META_CREATED)]
 
         # it's not [], so it already exists
         else:
