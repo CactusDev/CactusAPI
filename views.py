@@ -168,7 +168,7 @@ def chan_friend(channel, friend):
 
     if request.method == "GET":
 
-        result = friend_query.limit(1).run(g.rdb_conn)
+        result = friend_query.limit(1).run(g.rdb_conn).items[0]
 
         to_return = generate_packet(
             "friend",
@@ -177,8 +177,7 @@ def chan_friend(channel, friend):
                 "channelId": result["channelId"],
                 "userName": result["userName"],
                 "userId": result["userId"],
-                "active": result["active"],
-                "expiresAt": result["expires"]
+                "active": result["active"]
             },
             request.path
         )
@@ -186,12 +185,14 @@ def chan_friend(channel, friend):
     elif request.method == "PATCH":
 
         results = list(friend_query.run(g.rdb_conn))
+        print(results)
 
         # It's [] (empty), so we need to make a NEW friend object
         if results == []:
 
             user = requests.get(
                 "https://beam.pro/api/v1/users/{}".format(friend)).json()
+            print(user)
 
             length = int(request.values.get("length", 0))
 
