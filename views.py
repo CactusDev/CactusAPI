@@ -181,7 +181,7 @@ def before_request():
                                  db=APP.config["RDB_DB"])
 
 
-@APP.route("/api/v1/channel/<string:channel>/friend", methods=["GET"])
+@APP.route("/api/v1/channel/<int:channel>/friend", methods=["GET"])
 def chan_friends(channel):
     """
     If you GET this endpoint, go to /api/v1/channel/<channel>/friend
@@ -254,14 +254,12 @@ def chan_friend(channel, friend):
     elif request.method == "PATCH":
 
         results = list(friend_query.run(g.rdb_conn))
-        print(results)
 
         # It's [] (empty), so we need to make a NEW friend object
         if results == []:
 
             user = requests.get(
                 "https://beam.pro/api/v1/users/{}".format(friend)).json()
-            print(user)
 
             length = int(request.values.get("length", 0))
 
@@ -350,7 +348,7 @@ def chan_friend(channel, friend):
                     results[0]["id"]).delete().run(g.rdb_conn)
 
                 # We deleted something so nothing has to be returned
-                to_return = {"deleted": results[0]["id"], success: True}
+                to_return = {"deleted": results[0]["id"], "success": True}
                 code = 200
 
             except Exception as error:
