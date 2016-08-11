@@ -1,5 +1,8 @@
 """Views for the API"""
 
+# TODO: Fix DELETE endpoints everywhere
+# TODO: Implement proper error packet creation/return
+
 import time
 from datetime import datetime, timedelta
 import remodel.connection
@@ -7,6 +10,7 @@ import requests
 import pytz
 import redis
 import rethinkdb as rethink
+from uuid import uuid4
 from flask import jsonify, request, g, make_response
 from models import User, Commands, Quotes, Messages, Friend
 
@@ -48,6 +52,71 @@ def retrieve_single(item, table):
     ).limit(1).run(g.rdb_conn)
 
     return list(obj)
+
+
+def generate_error(meta=None, **kwargs):
+    """Create and return a JSON-API compliant error packet
+
+    All parameters are optional
+
+    Parameters:
+        uid:            Unique ID for this individual error
+        links:          An object containing an about key that is a link that
+                            leads to further details about this particular
+                            occurrence of the problem.
+        status:         the HTTP status code applicable to this problem,
+                            expressed as a string value.
+        code:           an application-specific error code, a string value.
+        title:          Short, human-readable summary of the problem.
+                            SHOULD NOT CHANGE between occurences of problem
+        detail:         Human-readable explanation specific to this problem
+        source:         An object containing references to the source of the
+                            error
+        meta:           Dict of meta information, NOT required
+    """
+
+    packet = {}
+    errors = {}
+
+    correct_types = {
+        "uid": None,
+        "links": dict,
+        "status": str,
+        "code": str,
+        "title": str,
+        "detail": str,
+        "source": dict,
+        "meta": dict
+    }
+
+    # Remove any non-standard arguments
+    packet = {key: kwargs[key] for key in kwargs if key in correct_types}
+
+    print(type(packet["source"]))
+    print(isinstance(packet["source"], correct_types["source"]))
+
+    # Check all of the included arguments are of the proper type
+    for arg in packet:
+        if correct_types[arg] is not None and \
+                not isinstance(packet[arg], correct_types[arg]):
+            errors[arg] = "incorrect type {}, should be type {}".format(
+                arg.__class__.__name__, correct_types[arg].__name__
+                )
+
+    if "links" in packet:
+        if "about" in packet["links"]:
+            if not isinstance(packet["links"]["about"], str):
+                errors["links:about"] = "link 'about' key is not a string"
+        else:
+            errors["links"] = "link key does not contain required 'about' key"
+
+    if "source" in packet and not isinstance(packet["source"], dict):
+        errors["source"] = "'source' key is not a dict"
+
+    if meta is not None and isinstance(meta, dict):
+        to_return["meta"] = meta
+
+    return (packet, None) if len(errors) == 0 else (None, errors)
 
 
 def generate_packet(packet_type, uid, attributes, path, meta=None):
@@ -213,6 +282,8 @@ def chan_friend(channel, friend):
             results = friend_query.limit(1).run(g.rdb_conn)
             # A new friend record was created, so set that meta
             meta = META_CREATED
+            # Newly created, so it needs to be 201
+            code = 201
 
         else:
             # Get the first result, only want to edit one
@@ -242,6 +313,8 @@ def chan_friend(channel, friend):
 
             # The friend record was edited, so set that meta
             meta = META_EDITED
+            # Success - 200
+            code = 200
 
         is_active = result["expires"] != rethink.epoch_time(0) and \
             result["expires"] > rethink.epoch_time(time.time())
@@ -276,15 +349,31 @@ def chan_friend(channel, friend):
                 rethink.table("friends").get(
                     results[0]["id"]).delete().run(g.rdb_conn)
 
-                return make_response(jsonify(None), 204)
+                # We deleted something so nothing has to be returned
+                to_return = {"deleted": results[0]["id"], success: True}
+                code = 200
 
             except Exception as error:
                 print("Exception caught! views:225")
                 print(error)
 
-                return make_response(jsonify([{"error": error}]), 500)
+                # Ruh roh, errors happened.
+                to_return = {
+                    "deleted": None,
+                    "success": False,
+                    "error": error
+                }
+                code = 500
 
-    return jsonify(to_return)
+        # If we're here there's no need to else
+        # This far means that there were NO results
+        to_return = {
+            "deleted": None,
+            "success": False,
+            "error": "Friend {} does not exist".format()}
+        code = 404
+
+    return make_response(jsonify(to_return), code)
 
 
 @APP.route("/api/v1/channel/<string:channel>/message", methods=["GET"])
@@ -592,10 +681,10 @@ def chan_quote(channel, quote):
     return jsonify(to_return)
 
 
-@APP.route("/api/v1/user/<string:username>", methods=["GET", "PATCH"])
+@APP.route("/api/v1/user/<string:username>",
+           methods=["GET", "PATCH", "DELETE"])
 def beam_user(username):
     # TODO: Auth checking
-    # TODO: Finish this endpoint
 
     """
     If you GET this endpoint, simply go to /api/v1/user/<username> with
@@ -608,7 +697,6 @@ def beam_user(username):
             - email:    User's email address
             - provider: OAuth provider
             - pid:      User ID from OAuth provider
-            - userName: <username> from request path
     """
 
     to_return = []
@@ -616,7 +704,27 @@ def beam_user(username):
 
     results = retrieve_user(username)
 
-    if request.method == "PATCH":
+    if request.method == "GET":
+        if results == []:
+            # Nothing exists for that user
+            to_return, errors = generate_error(
+                uid=str(uuid4()),
+                status="404",
+                title="Requested 'user' Resource Does Not Exist",
+                detail="The requested user '{}' does not exist".format(
+                    username),
+                source={"pointer": request.path}
+            )
+
+            if errors is not None:
+                print("ERRARS!")
+                print(errors)
+
+            code = 404
+        else:
+            code = 200
+
+    elif request.method == "PATCH":
         # User doesn't exist, let's create it
         if results == []:
             result = User(
@@ -632,30 +740,71 @@ def beam_user(username):
             )
 
             meta = META_CREATED
+            code = 200
 
             result.save()
         else:
-            # User exists, so set the meta correctly
-            # TODO: Implement user editing
+            # Take the first one
+            result = results[0]
+
+            for key in request.values:
+                if key in result and request.values.get(key) != "" and \
+                        request.values.get(key) is not None:
+                    result[key] = request.values.get(key)
+
+            # Set the values of that object and save changes
+            User(
+                **result
+            ).save()
+
+            # User exists, and we edited it, so set the meta correctly
             meta = META_EDITED
+            code = 200
 
         results = retrieve_user(username)
 
-    to_return = [generate_packet("user",
-                                 result["id"],
-                                 {
-                                     "userName": str(result["userName"]),
-                                     "enabled": result["active"],
-                                     "botUsername": str(result.get(
-                                         "botUsername", None))
-                                 },
-                                 request.path,
-                                 meta)
-                 for result in results]
+    elif request.method == "DELETE":
+        results = retrieve_user(username)
+
+        # If the user DOES exist in the DB in the users table
+        if results != []:
+            try:
+                rethink.table("users").get(
+                    results[0]["id"]).delete().run(g.rdb_conn)
+
+                return make_response(jsonify(None), 204)
+
+            except Exception as error:
+                print("Exception caught! views:774")
+                print(error)
+
+                return make_response(jsonify([{"error": error}]), 500)
+
+    # If to_return still has it's initialization value of None, then there
+    # were no errors, and go ahead with creating the success packet
+    if to_return == []:
+        to_return = [generate_packet("user",
+                                     result["id"],
+                                     {
+                                         "userName": result["userName"],
+                                         "enabled": result["active"],
+                                         "botUsername": str(result.get(
+                                             "botUsername", None))
+                                     },
+                                     request.path,
+                                     meta)
+                     for result in results]
+    else:
+        to_return = {
+            "jsonapi": {
+                "version": "1.0"
+            },
+            "errors": [to_return]
+        }
 
     print(to_return)
 
-    return jsonify(to_return)
+    return make_response(jsonify(to_return), code)
 
 
 @APP.route("/api/v1/user/<string:username>/command", methods=["GET"])
