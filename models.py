@@ -3,6 +3,7 @@ RethinkDB models for remodel
 """
 
 from remodel.models import Model
+from rethinkdb import now
 
 
 class User(Model):
@@ -11,6 +12,12 @@ class User(Model):
     """
     has_many = ("Ticket", "TicketResponse")
     has_one = ("Channel", )
+    fields = {"active": bool,
+              "confirmed_at": type(now),
+              "email": str,
+              "provider_id": str,
+              "roles": list,
+              "userName": str}
 
     def get_id(self):
         """
@@ -43,13 +50,14 @@ class Friend(Model):
     belongs_to = ('Channel', )
     has_one = ("User", )
     ignore = ["owner", "userId"]
+    fields = {}
 
 
 class Role(Model):
     """
     A remodel table model
     """
-    pass
+    fields = {}
 
 
 class Channel(Model):
@@ -59,6 +67,7 @@ class Channel(Model):
 
     has_many = ("Message", "Friend", "Message")
     has_one = ("User", )
+    fields = {}
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -68,14 +77,14 @@ class Configuration(Model):
     """
     A remodel table model
     """
-    pass
+    fields = {}
 
 
 class Command(Model):
     """
     A remodel table model
     """
-    pass
+    fields = {}
 
 
 class Message(Model):
@@ -83,27 +92,28 @@ class Message(Model):
     A remodel table model
     """
     belongs_to = ("Channel", )
+    fields = {}
 
 
 class Execution(Model):
     """
     A remodel table model
     """
-    pass
+    fields = {}
 
 
 class Quote(Model):
     """
     A remodel table model
     """
-    pass
+    fields = {}
 
 
 class UserRole(Model):
     """
     A remodel table model
     """
-    pass
+    fields = {}
 
 
 class Ticket(Model):
@@ -111,6 +121,7 @@ class Ticket(Model):
     A remodel table model
     """
     belongs_to = ('User',)
+    fields = {}
 
 
 class TicketResponse(Model):
@@ -118,3 +129,4 @@ class TicketResponse(Model):
     A remodel table model
     """
     belongs_to = ('User',)
+    fields = {}

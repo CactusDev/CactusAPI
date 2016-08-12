@@ -31,149 +31,6 @@ META_EDITED = {
 }
 
 
-def retrieve_user(username):
-    """Get and return a user."""
-    user = rethink.table("users").filter(
-        lambda user:
-        user["userName"].match("(?i){}".format(str(username)))
-    ).limit(1).run(g.rdb_conn)
-
-    return list(user)
-
-
-def retrieve_single(item, table):
-    """ Get and return a single object from the given table via the UUID
-
-    Parameters:
-        item:   String of the object's UUID
-        table:  String of the table the object is in
-    """
-    obj = rethink.table(str(table)).filter(
-        id=item
-    ).limit(1).run(g.rdb_conn)
-
-    return list(obj)
-
-
-def generate_error(meta=None, **kwargs):
-    """Create and return a JSON-API compliant error packet
-
-    All parameters are optional
-
-    Parameters:
-        uid:            Unique ID for this individual error
-        links:          An object containing an about key that is a link that
-                            leads to further details about this particular
-                            occurrence of the problem.
-        status:         the HTTP status code applicable to this problem,
-                            expressed as a string value.
-        code:           an application-specific error code, a string value.
-        title:          Short, human-readable summary of the problem.
-                            SHOULD NOT CHANGE between occurences of problem
-        detail:         Human-readable explanation specific to this problem
-        source:         An object containing references to the source of the
-                            error
-        meta:           Dict of meta information, NOT required
-    """
-
-    packet = {}
-    errors = {}
-
-    correct_types = {
-        "uid": None,
-        "links": dict,
-        "status": str,
-        "code": str,
-        "title": str,
-        "detail": str,
-        "source": dict,
-        "meta": dict
-    }
-
-    # Remove any non-standard arguments
-    packet = {key: kwargs[key] for key in kwargs if key in correct_types}
-
-    print(type(packet["source"]))
-    print(isinstance(packet["source"], correct_types["source"]))
-
-    # Check all of the included arguments are of the proper type
-    for arg in packet:
-        if correct_types[arg] is not None and \
-                not isinstance(packet[arg], correct_types[arg]):
-            errors[arg] = "incorrect type {}, should be type {}".format(
-                arg.__class__.__name__, correct_types[arg].__name__
-                )
-
-    if "links" in packet:
-        if "about" in packet["links"]:
-            if not isinstance(packet["links"]["about"], str):
-                errors["links:about"] = "link 'about' key is not a string"
-        else:
-            errors["links"] = "link key does not contain required 'about' key"
-
-    if "source" in packet and not isinstance(packet["source"], dict):
-        errors["source"] = "'source' key is not a dict"
-
-    if meta is not None and isinstance(meta, dict):
-        to_return["meta"] = meta
-
-    return (packet, None) if len(errors) == 0 else (None, errors)
-
-
-def generate_packet(packet_type, uid, attributes, path, meta=None):
-    """Create and return a packet.
-
-    Parameters:
-        packet_type:    String of object type being returned
-        uid:            ID of whatever is being returned
-        attributes:     Dict of data attributes to return
-                            MUST include a "user" key
-        path:           String of endpoint being accessed for link generation
-        meta:           Dict of meta information, not required
-    """
-
-    user = attributes.pop("userName") if "userName" in attributes else None
-
-    print("id:\t", uid)
-    print("\ttype:\t", packet_type)
-    print("\tattr:\t", attributes)
-    print("\tpath:\t", path)
-    print("\tuser:\t", user)
-
-    relationships = ["command", "quote", "user", "message", "friend"]
-
-    link_base = "/api/v1/user/{}".format(user)
-
-    # TODO: Add code that creates relationships for messages/channel-level
-
-    relationship_return = {key: {
-        "links": {
-            "self": "{}/relationships/{}".format(link_base, str(key)),
-            "related": "{}/{}".format(link_base, str(key))
-        }
-    } for key in relationships if key != str(packet_type) and user is not None}
-
-    to_return = {
-        "data": {
-            "type": str(packet_type),
-            "id": str(uid),
-            "attributes": attributes,
-            "relationships": relationship_return,
-            "jsonapi": {
-                "version": "1.0"
-            },
-            "links": {
-                "self": str(path)
-            }
-        }
-    }
-
-    if meta is not None and isinstance(meta, dict):
-        to_return["meta"] = meta
-
-    return to_return
-
-
 @APP.before_request
 def before_request():
     """Set the Flask session object's user to Flask-Login's current_user"""
@@ -192,40 +49,29 @@ def chan_friends(channel):
     that matches the owner's username
     """
 
+    model = request.path.split("/")[-1]
+
     try:
         chan_id = int(channel)
-        results = get_all("friends", channelId=chan_id)
+        results = get_all(model + "s", channelId=chan_id)
     except ValueError:
-        results = get_all("friends", owner=channel.lower())
+        results = get_all(model + "s", owner=channel.lower())
 
-    if results == []:
-        error_packet, errors = generate_error(
-            uid=uuid4(),
-            status="404",
-            code="405",
-            title="Table does not have any entries",
-            detail="Friends table does not have any entries",
-            source={"pointer": request.path})
+    packet, code = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=results
+    )
 
-        if errors is not None:
-            print("Errors happened when making the error packet!")
-            print(errors)
-        else:
-            return make_response(jsonify({"errors": error_packet}), 404)
+    return make_response(jsonify(packet), code)
 
-    to_return = [generate_packet(
-        "friend",
-        result["id"],
-        {
-            "userName": result["userName"],
-            "userId": result["userId"],
-            "active": result["active"],
-            "channelId": result["channelId"]
-        },
-        request.path
-    ) for result in results]
+    # There was an error!
+    # if not str(code).startswith("2"):
+    #    return make_response(jsonify(packet), code)
+    # NOTE: Not needed currently, but this is how you would check
 
-    return jsonify(to_return)
 
 # TODO: Fix this endpoint to remove timing elements (friends are forever)
 # TODO: Use Object.update(**changes) instead of Object(**updated_object).save()
@@ -242,10 +88,12 @@ def chan_friend(channel, friend):
         for the channel wanted & <friend> replaced for the user ID of the
         friend you want to edit or create.
     """
-    # Initialize length to 0 now to prevent a NameError from happening later
-    length = 0
     # Initialize meta as None now so we don't have to do it multiple time later
     meta = None
+
+    # TODO: Make model detection better
+    # On certain endpoints it may be the second to last path element
+    model = request.path.split("/")[-2]
 
     # Pre-create the query
     friend_query = rethink.table("friends").filter(
@@ -253,6 +101,16 @@ def chan_friend(channel, friend):
             "channelId": channel,
             "userId": friend
         }
+    )
+
+    results = None
+
+    packet, code = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=results
     )
 
     if request.method == "GET":
@@ -281,8 +139,6 @@ def chan_friend(channel, friend):
             user = requests.get(
                 "https://beam.pro/api/v1/users/{}".format(friend)).json()
 
-            length = int(request.values.get("length", 0))
-
             # Create the new friend record
             result = Friend(
                 channelId=channel,
@@ -304,21 +160,6 @@ def chan_friend(channel, friend):
         else:
             # Get the first result, only want to edit one
             result = results[0]
-            # Get length seperately so it's easier to reference
-            # + .0 is required to convert it to a float
-            length = request.values.get("length", 0) + .0
-
-            if length != 0:
-                # Take the current UTC datetime and then add the # of seconds
-                #   .replace is required to make the datetime timezone aware
-                #   which is required for RethinkDB
-                result["expires"] = (
-                    datetime.utcnow() + timedelta(0, length)).replace(
-                        tzinfo=pytz.UTC
-                    )
-            else:
-                # Set it to start of all time to signify permanent friend
-                result["expires"] = rethink.epoch_time(0)
 
             # Save the changes
             Friend(
@@ -331,16 +172,6 @@ def chan_friend(channel, friend):
             meta = META_EDITED
             # Success - 200
             code = 200
-
-        is_active = result["expires"] != rethink.epoch_time(0) and \
-            result["expires"] > rethink.epoch_time(time.time())
-
-        active = True if is_active else False
-
-        if result["expires"] != rethink.epoch_time(0):
-            expires = result["expires"]
-        else:
-            expires = None
 
         to_return = [generate_packet(
             "friend",

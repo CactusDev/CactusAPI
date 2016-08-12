@@ -4,9 +4,13 @@ Provides various helper functions for accessing RethinkDB
 Beginnings of a super simple ORM of sorts
 """
 
-from uuid import UUID
+# TODO: Implement exceptions instead of error return
+
+import inspect
+from uuid import UUID, uuid4
 import rethinkdb as rethink
 from flask import g
+import models
 
 
 def retrieve_user(username):
@@ -213,3 +217,135 @@ def generate_packet(packet_type, uid, attributes, path, relationships,
         to_return["meta"] = meta
 
     return to_return
+
+
+def create_resource(model, path, params, data=None):
+
+    print("generate_response:\t", locals().items())
+
+    not_allowed = {}
+    fields = {}
+
+    # It's specifically a creation request
+    for name, obj in inspect.getmembers(models):
+        # Does the current object's name match the resource we're on?
+        if name.lower() == model:
+            # Yes it does, let's make the new resource
+            # Sort the parameters included by obj.fields
+            for param in params:
+                if param not in obj.fields:
+                    not_allowed[param] = {
+                        "error": "{} not declared field".format(param),
+                        "object": params[param]
+                    }
+                elif param in obj.fields and \
+                        not isinstance(param, obj.fields[param]):
+                    # It's the wrong type
+                    not_allowed[param] = {
+                        "error": "Wrong type {} for field {}".format(
+                            type(param),
+                            param
+                        ),
+                        "object": params[param]
+                    }
+
+                elif param in obj.fields and \
+                        isinstance(param, obj.fields[param]):
+                    fields[param] = params[param]
+
+            if fields.keys() == obj.fields.keys():
+                # The fields for the new object match the schema
+                # Create the new object
+                created = obj(
+                    fields
+                )
+                created.save()
+
+                data = get_single(model, uid=created["id"])
+
+                print("HELPERS:260:\t", data)
+
+                return data
+
+
+def generate_response(model, path, method, params, data=None):
+    """
+    Generates and returns the required response packet(s)
+
+    Arguments:
+        model:      The database model that is being accessed
+        path:       The endpoint's path
+        method:     The HTTP request's method, decides if editing or just
+                        retrieving results
+        params:     The HTTP request parameters in dict form
+        data:       Optional, the data retrieved from the database. If not
+                        included everything will be retrieved for the model
+    """
+
+    # Make sure we have the data we need
+    if data is None and method.lower() == "get":
+        # Retrieve everything in the table
+        data = list(rethink.table(model + "s").run(g.rdb_conn))
+
+    if method.lower() in ["patch", "post"]:
+        print("edit/create!")
+        # Create/edit a new object
+        if "id" in params:
+            # Retrieve a specific row
+            data = get_single(model, uid=params["id"])
+
+        if method.lower() == "post":
+            # Specifically create a new resource
+            new_resource = create_resource(model, path, params, data)
+
+        # if errors is not None:
+        #     print("Errors occured while generating the error packet!")
+        #     return {"errors": [error_packet]}, 500
+        # else:
+        #     return {"errors": [error_packet]}, 400
+
+    if data == []:
+        print("ERRORS AND DOOM!")
+        error_packet, errors = generate_error(
+            uid=uuid4(),
+            status="404",
+            code="405",
+            title="Table does not have any entries",
+            detail="Friends table does not have any entries",
+            source={"pointer": path}
+        )
+
+        if errors is not None:
+            print("Errors occured while generating the error packet!")
+            return {"errors": [error_packet]}, 500
+        else:
+            return {"errors": [error_packet]}, 404
+
+    # List to hold all data after ignored fields are removed
+    post_ignore = []
+
+    for name, obj in inspect.getmembers(models):
+        # Does the current object's name match the resource we're on?
+        if name.lower() == model:
+            # Yes, continue on with the code
+            for row in data:
+                post_ignore.append(
+                    {key: row[key] for key in row if key not in obj.ignore}
+                )
+            relationships = [
+                relationship.lower() for relationship in obj.belongs_to]
+            relationships.extend([relate.lower() for relate in obj.has_one])
+            relationships.extend([relate.lower() for relate in obj.has_many])
+            relationships.extend([
+                relate.lower() for relate in obj.has_and_belongs_to_many])
+
+    to_return = [generate_packet(
+        model,
+        uuid4(),
+        data,
+        path,
+        relationships,
+    ) for data in post_ignore]
+
+    # Return the response in JSON form, with proper success code
+    return to_return, 200
