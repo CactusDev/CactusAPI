@@ -12,7 +12,7 @@ import redis
 import rethinkdb as rethink
 from uuid import uuid4
 from flask import jsonify, request, g, make_response
-from models import User, Commands, Quotes, Messages, Friend
+from models import User, Command, Quote, Message, Friend
 from helpers import *
 
 from run import APP
@@ -227,7 +227,8 @@ def chan_friends(channel):
 
     return jsonify(to_return)
 
-
+# TODO: Fix this endpoint to remove timing elements (friends are forever)
+# TODO: Use Object.update(**changes) instead of Object(**updated_object).save()
 @APP.route("/api/v1/channel/<int:channel>/friend/<int:friend>",
            methods=["GET", "POST", "DELETE"])
 def chan_friend(channel, friend):

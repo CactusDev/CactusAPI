@@ -9,7 +9,8 @@ class User(Model):
     """
     A remodel table model
     """
-    has_many = ("Tickets", "TicketResponse")
+    has_many = ("Ticket", "TicketResponse")
+    has_one = ("Channel", )
 
     def get_id(self):
         """
@@ -39,22 +40,25 @@ class Friend(Model):
     """
     A remodel table model
     """
+    belongs_to = ('Channel', )
+    has_one = ("User", )
     ignore = ["owner", "userId"]
 
 
-class Roles(Model):
+class Role(Model):
     """
     A remodel table model
     """
     pass
 
 
-class Channels(Model):
+class Channel(Model):
     """
     A remodel table model
     """
 
-    has_many = ("Messages", "Friend")
+    has_many = ("Message", "Friend", "Message")
+    has_one = ("User", )
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -67,28 +71,28 @@ class Configuration(Model):
     pass
 
 
-class Commands(Model):
+class Command(Model):
     """
     A remodel table model
     """
     pass
 
 
-class Messages(Model):
+class Message(Model):
+    """
+    A remodel table model
+    """
+    belongs_to = ("Channel", )
+
+
+class Execution(Model):
     """
     A remodel table model
     """
     pass
 
 
-class Executions(Model):
-    """
-    A remodel table model
-    """
-    pass
-
-
-class Quotes(Model):
+class Quote(Model):
     """
     A remodel table model
     """
@@ -102,7 +106,7 @@ class UserRole(Model):
     pass
 
 
-class Tickets(Model):
+class Ticket(Model):
     """
     A remodel table model
     """

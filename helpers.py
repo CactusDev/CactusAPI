@@ -8,6 +8,7 @@ from uuid import UUID
 import rethinkdb as rethink
 from flask import g
 
+
 def retrieve_user(username):
     """
     Get and return a user
@@ -160,7 +161,8 @@ def generate_error(meta=None, **kwargs):
     return (packet, None) if len(errors) == 0 else (None, errors)
 
 
-def generate_packet(packet_type, uid, attributes, path, meta=None):
+def generate_packet(packet_type, uid, attributes, path, relationships,
+                    meta=None):
     """Create and return a packet.
 
     Parameters:
@@ -169,20 +171,19 @@ def generate_packet(packet_type, uid, attributes, path, meta=None):
         attributes:     Dict of data attributes to return
                             MUST include a "user" key
         path:           String of endpoint being accessed for link generation
+        relationships:  A list of all endpoints that the resource is related to
         meta:           Dict of meta information, not required
     """
 
     user = attributes["userName"] if "userName" in attributes else None
 
-    print("id:\t", uid)
+    print("id:    ", uid)
     print("\ttype:\t", packet_type)
     print("\tattr:\t", attributes)
     print("\tpath:\t", path)
     print("\tuser:\t", user)
 
-    relationships = ["command", "quote", "user", "message", "friend"]
-
-    link_base = "/api/v1/user/{}".format(user)
+    link_base = "/api/v1/user/{}".format(user.lower())
 
     # TODO: Add code that creates relationships for messages/channel-level
 
@@ -192,8 +193,6 @@ def generate_packet(packet_type, uid, attributes, path, meta=None):
             "related": "{}/{}".format(link_base, str(key))
         }
     } for key in relationships if key != str(packet_type) and user is not None}
-
-    print(attributes)
 
     to_return = {
         "data": {

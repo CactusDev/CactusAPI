@@ -1,26 +1,67 @@
-from helpers import *
-import rethinkdb as rethink
-import models
+"""
+Foo bar
+"""
+
 import inspect
+from uuid import uuid4
+from pprint import pprint
+import models
+import rethinkdb as rethink
+from helpers import generate_packet, generate_error
 
-endpoints = ["friend", "user", "message"]
+ENDPOINTS = ["friend", "user", "message"]
 
-path = "/api/v1/channel/paradigmshift3d/friend"
+PATH = "/api/v1/channel/paradigmshift3d/friend"
 
-model = "friend"
+MODEL = "friend"
 
-method = "GET"
-user = "paradigmshift3d"
+METHOD = "GET"
+USER = "paradigmshift3d"
 
-rdb_conn = rethink.connect(host="localhost",
-                             db="cactus")
+RDB_CONN = rethink.connect(host="localhost",
+                           db="cactus")
 
-data = list(rethink.table(model + "s").run(rdb_conn))
+DATA = list(rethink.table(MODEL + "s").run(RDB_CONN))
 
-print(data)
+if DATA == []:
+    print("ERRORS AND DOOM!")
+    error_packet, errors = generate_error(
+        uid=uuid4(),
+        status="404",
+        code="405",
+        title="Table does not have any entries",
+        detail="Friends table does not have any entries",
+        source={"pointer": PATH})
+
+    if errors is not None:
+        print("Errors happened when making the error packet!")
+        print(errors)
+    else:
+        print({"errors": [error_packet]})
+
+POST_IGNORE = []
 
 # Remove the ignored keys
 for name, obj in inspect.getmembers(models):
-    if name.lower() == model:
-        for foo in data:
-            print({key: foo[key] for key in foo if key not in obj.ignore})
+    if name.lower() == MODEL:
+        for foo in DATA:
+            POST_IGNORE.append(
+                {key: foo[key] for key in foo if key not in obj.ignore})
+
+        relationships = [
+            relationship.lower() for relationship in obj.belongs_to]
+        relationships.extend([relate.lower() for relate in obj.has_one])
+        relationships.extend([relate.lower() for relate in obj.has_many])
+        relationships.extend([
+            relate.lower() for relate in obj.has_and_belongs_to_many])
+
+# Generate the final packet
+PACKET = [generate_packet(
+    MODEL,
+    uuid4(),
+    data,
+    PATH,
+    relationships
+) for data in POST_IGNORE]
+
+pprint(PACKET)
