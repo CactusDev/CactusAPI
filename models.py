@@ -39,7 +39,7 @@ class Friend(Model):
     """
     A remodel table model
     """
-    pass
+    ignore = ["owner", "userId"]
 
 
 class Roles(Model):
