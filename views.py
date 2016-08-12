@@ -238,6 +238,7 @@ def chan_friend(channel, friend):
     if request.method == "GET":
 
         result = friend_query.limit(1).run(g.rdb_conn).items[0]
+        code = 0
 
         to_return = generate_packet(
             "friend",
@@ -339,10 +340,11 @@ def chan_friend(channel, friend):
 
     elif request.method == "DELETE":
 
-        results = list(friend_query.limit(1).run(g.rdb_conn))
+        results = list(friend_query.limit(1).run(g.rdb_conn).items)
+        code = 0
 
         # If the user DOES exist in the DB in the friend table
-        if results != []:
+        if results is not []:
             try:
                 rethink.table("friends").get(
                     results[0]["id"]).delete().run(g.rdb_conn)
@@ -362,14 +364,15 @@ def chan_friend(channel, friend):
                     "error": error
                 }
                 code = 500
-
-        # If we're here there's no need to else
-        # This far means that there were NO results
-        to_return = {
-            "deleted": None,
-            "success": False,
-            "error": "Friend {} does not exist".format()}
-        code = 404
+            else:
+                # If we're here there's no need to else
+                # This far means that there were NO results
+                to_return = {
+                    "deleted": None,
+                    "success": False,
+                    "error": "Friend does not exist"
+                }
+                code = 404
 
     return make_response(jsonify(to_return), code)
 
