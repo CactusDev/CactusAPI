@@ -49,7 +49,8 @@ def chan_friends(channel):
     that matches the owner's username
     """
 
-    model = request.path.split("/")[-1]
+    # model = request.path.split("/")[-1]
+    model = "friend"
 
     try:
         chan_id = int(channel)
@@ -75,7 +76,7 @@ def chan_friends(channel):
 
 # TODO: Fix this endpoint to remove timing elements (friends are forever)
 # TODO: Use Object.update(**changes) instead of Object(**updated_object).save()
-@APP.route("/api/v1/channel/<int:channel>/friend/<int:friend>",
+@APP.route("/api/v1/channel/<channel>/friend/<friend>",
            methods=["GET", "POST", "DELETE"])
 def chan_friend(channel, friend):
     """
@@ -88,30 +89,76 @@ def chan_friend(channel, friend):
         for the channel wanted & <friend> replaced for the user ID of the
         friend you want to edit or create.
     """
-    # Initialize meta as None now so we don't have to do it multiple time later
-    meta = None
 
-    # TODO: Make model detection better
-    # On certain endpoints it may be the second to last path element
-    model = request.path.split("/")[-2]
+    model = "friend"
 
-    # Pre-create the query
-    friend_query = rethink.table("friends").filter(
-        {
+    local = rethink.table("cactus")
+
+    # Get channel
+    # Does it exist locally yet?
+    # No - get data from Beam API
+    #      create channel
+
+    # Get user
+    # Does it exist locally yet?
+    # No - get data from Beam API
+
+    # Create friend
+
+    # Check if the channel is an int or a string
+    if channel.isdigit() and friend.isdigit():
+        # Both are integers
+        args = {
             "channelId": channel,
             "userId": friend
         }
+        chan_id = channel
+        user_id = friend
+
+    elif not channel.isdigit() and friend.isdigit():
+        # Channel is not a digit, but friend is
+        args = {
+            "channelName": channel,
+            "userId": friend
+        }
+
+
+    elif channel.isdigit() and not friend.isdigit():
+        # Channel is an integer, but friend is not
+        args = {
+            "channelId": channel,
+            "userName": friend
+        }
+    else:
+        # Both are not integers
+        args = {
+            "channelName": channel,
+            "userName": friend
+        }
+
+    results = get_all(
+        model + "s",
+        **args
     )
 
-    results = None
+    fields = {
+        "channelId" = chan_id,
+        "channelName" = chan_name,
+        "userName" = username,
+        "userId" = user_id
+    }
 
     packet, code = generate_response(
         model,
         request.path,
         request.method,
         request.values,
-        data=results
+        data=results,
+        fields=fields
     )
+
+    print("packet:\t", packet)
+    print("code:\t", code)
 
     if request.method == "GET":
 
@@ -580,8 +627,8 @@ def beam_user(username):
                 active=True,
                 confirmed_at=rethink.now(),
                 email=request.values.get("email", ""),
-                provider_id="{}${}".format(request.values.get("provider", ""),
-                                           request.values.get("pid", "")),
+                providerId="{}${}".format(request.values.get("provider", ""),
+                                          request.values.get("pid", "")),
                 roles=[
                     "user"
                 ],

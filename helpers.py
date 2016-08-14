@@ -219,9 +219,9 @@ def generate_packet(packet_type, uid, attributes, path, relationships,
     return to_return
 
 
-def create_resource(model, path, params, data=None):
+def create_resource(model, path, params, fields=None, data=None):
 
-    print("generate_response:\t", locals().items())
+    print("create_resource:\t", locals().items())
 
     not_allowed = {}
     fields = {}
@@ -232,6 +232,7 @@ def create_resource(model, path, params, data=None):
         if name.lower() == model:
             # Yes it does, let's make the new resource
             # Sort the parameters included by obj.fields
+            print("helper:235:\t", params)
             for param in params:
                 if param not in obj.fields:
                     not_allowed[param] = {
@@ -239,7 +240,7 @@ def create_resource(model, path, params, data=None):
                         "object": params[param]
                     }
                 elif param in obj.fields and \
-                        not isinstance(param, obj.fields[param]):
+                        not isinstance(param, obj.fields[param]["type"]):
                     # It's the wrong type
                     not_allowed[param] = {
                         "error": "Wrong type {} for field {}".format(
@@ -257,7 +258,7 @@ def create_resource(model, path, params, data=None):
                 # The fields for the new object match the schema
                 # Create the new object
                 created = obj(
-                    fields
+                    **fields
                 )
                 created.save()
 

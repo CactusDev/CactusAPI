@@ -12,12 +12,27 @@ class User(Model):
     """
     has_many = ("Ticket", "TicketResponse")
     has_one = ("Channel", )
-    fields = {"active": bool,
-              "confirmed_at": type(now),
-              "email": str,
-              "provider_id": str,
-              "roles": list,
-              "userName": str}
+    fields = {
+        "active": {
+            "type": bool,
+            "default": True
+        },
+        "confirmed_at": {
+          "type": type(now)
+        },
+        "email": {
+            "type": str
+        },
+        "providerId": {
+          "type": str
+        },
+        "roles": {
+          "type": list
+        },
+        "userName": {
+          "type": str
+        }
+      }
 
     def get_id(self):
         """
@@ -50,7 +65,24 @@ class Friend(Model):
     belongs_to = ('Channel', )
     has_one = ("User", )
     ignore = ["owner", "userId"]
-    fields = {}
+    fields = {
+        "channelId": {
+            "type": int
+        },
+        "channelName": {
+            "type": str
+        }
+        "userName": {
+            "type": str
+        },
+        "userId": {
+            "type": str
+        },
+        "active": {
+            "type": bool,
+            "default": True
+        }
+    }
 
 
 class Role(Model):
@@ -58,6 +90,7 @@ class Role(Model):
     A remodel table model
     """
     fields = {}
+    ignore = []
 
 
 class Channel(Model):
