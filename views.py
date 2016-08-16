@@ -92,60 +92,23 @@ def chan_friend(channel, friend):
 
     model = "friend"
 
-    local = rethink.table("cactus")
+    # Get beam data for the provided channel (<channel>)
+    data = requests.get(
+        "https://beam.pro/api/v1/channels/{}".format(channel)).json()
+    channel_id = data["id"]
+    token = data["token"]
 
-    # Get channel
-    # Does it exist locally yet?
-    # No - get data from Beam API
-    #      create channel
-
-    # Get user
-    # Does it exist locally yet?
-    # No - get data from Beam API
-
-    # Create friend
-
-    # Check if the channel is an int or a string
-    if channel.isdigit() and friend.isdigit():
-        # Both are integers
-        args = {
-            "channelId": channel,
-            "userId": friend
-        }
-        chan_id = channel
-        user_id = friend
-
-    elif not channel.isdigit() and friend.isdigit():
-        # Channel is not a digit, but friend is
-        args = {
-            "channelName": channel,
-            "userId": friend
-        }
-
-
-    elif channel.isdigit() and not friend.isdigit():
-        # Channel is an integer, but friend is not
-        args = {
-            "channelId": channel,
-            "userName": friend
-        }
-    else:
-        # Both are not integers
-        args = {
-            "channelName": channel,
-            "userName": friend
-        }
-
-    results = get_all(
-        model + "s",
-        **args
-    )
+    # Get beam data for the provided user (<friend>)
+    data = requests.get(
+        "https://beam.pro/api/v1/users/{}".format(channel)).json()
+    user_id = data["id"]
+    username = data["username"]
 
     fields = {
-        "channelId" = chan_id,
-        "channelName" = chan_name,
-        "userName" = username,
-        "userId" = user_id
+        "channelId": channel_id,
+        "token": token,
+        "userName": username,
+        "userId": user_id
     }
 
     packet, code = generate_response(
@@ -153,8 +116,7 @@ def chan_friend(channel, friend):
         request.path,
         request.method,
         request.values,
-        data=results,
-        fields=fields
+        data=fields
     )
 
     print("packet:\t", packet)

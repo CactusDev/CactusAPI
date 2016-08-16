@@ -330,6 +330,7 @@ def generate_response(model, path, method, params, data=None):
         if name.lower() == model:
             # Yes, continue on with the code
             for row in data:
+                print(row)
                 post_ignore.append(
                     {key: row[key] for key in row if key not in obj.ignore}
                 )

@@ -69,9 +69,9 @@ class Friend(Model):
         "channelId": {
             "type": int
         },
-        "channelName": {
+        "token": {
             "type": str
-        }
+        },
         "userName": {
             "type": str
         },
