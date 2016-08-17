@@ -12,6 +12,16 @@ import rethinkdb as rethink
 from flask import g
 import models
 
+META_CREATED = {
+    "created": True,
+    "updated": False
+}
+
+META_EDITED = {
+    "created": False,
+    "updated": True
+}
+
 
 def retrieve_user(username):
     """
@@ -48,7 +58,7 @@ def get_single(table, uid=None, **kwargs):
             return None
 
         # It's either type str or uuid.UUID, so we can continue on
-        query = rethink.table(table).filter({id: uid})
+        query = rethink.table(table).filter({"id": uid})
 
     elif kwargs == {}:
         # uid was not included and neither were any kwargs
@@ -219,42 +229,63 @@ def generate_packet(packet_type, uid, attributes, path, relationships,
     return to_return
 
 
-def create_resource(model, path, params, fields=None, data=None):
+def create_resource(model, fields):
+    """
+    Creates a new resource
 
-    print("create_resource:\t", locals().items())
+    Arguments:
+        model:      The model for the resource to be created
+        fields:     The data to fill the object with
+    """
 
-    not_allowed = {}
-    fields = {}
+    errors = {}
 
-    # It's specifically a creation request
     for name, obj in inspect.getmembers(models):
+        does_exist = list(
+            rethink.table(
+                name.lower()+"s"
+            ).filter(fields).limit(1).run(g.rdb_conn)
+        )
+
+        if does_exist:
+            return does_exist, None
+
         # Does the current object's name match the resource we're on?
         if name.lower() == model:
             # Yes it does, let's make the new resource
             # Sort the parameters included by obj.fields
-            print("helper:235:\t", params)
-            for param in params:
-                if param not in obj.fields:
-                    not_allowed[param] = {
-                        "error": "{} not declared field".format(param),
-                        "object": params[param]
-                    }
-                elif param in obj.fields and \
-                        not isinstance(param, obj.fields[param]["type"]):
-                    # It's the wrong type
-                    not_allowed[param] = {
-                        "error": "Wrong type {} for field {}".format(
-                            type(param),
-                            param
-                        ),
-                        "object": params[param]
-                    }
 
-                elif param in obj.fields and \
-                        isinstance(param, obj.fields[param]):
-                    fields[param] = params[param]
+            if fields is not None:
+                check = {key: fields[key] for key in fields if
+                         key in obj.fields}
 
-            if fields.keys() == obj.fields.keys():
+                for field in obj.fields:
+                    if field in check:
+                        if not isinstance(check[field],
+                                          obj.fields[field]["type"]):
+                            errors[field] = {
+                                "detail": "Field is incorrect type '{}'."
+                                          " Should be '{}'".format(
+                                              type(check[field]),
+                                              obj.fields[field]["type"]
+                                          ),
+                                "title": "Field is incorrect type",
+                                "code": "102"
+                            }
+
+                    elif "default" in obj.fields[field]:
+                        check[field] = obj.fields[field]["default"]
+
+                    else:
+                        errors[field] = {
+                            "detail": "Required field {} not included".format(
+                                field
+                            ),
+                            "title": "Required field is not included",
+                            "code": "103"
+                            }
+
+            if check.keys() == obj.fields.keys() and errors == {}:
                 # The fields for the new object match the schema
                 # Create the new object
                 created = obj(
@@ -262,11 +293,11 @@ def create_resource(model, path, params, fields=None, data=None):
                 )
                 created.save()
 
-                data = get_single(model, uid=created["id"])
-
-                print("HELPERS:260:\t", data)
+                data = get_single(model + "s", uid=created["id"])
 
                 return data
+
+    return packet, True if errors == {} else errors, False
 
 
 def generate_response(model, path, method, params, data=None):
@@ -282,30 +313,70 @@ def generate_response(model, path, method, params, data=None):
         data:       Optional, the data retrieved from the database. If not
                         included everything will be retrieved for the model
     """
+    print(method)
+
+    model_dict = {name.lower(): obj for
+                  name, obj in inspect.getmembers(models)}
+    errors = {}
+
+    if model not in model_dict:
+        return {"error": "Field '{}' not in defined models".format(model)}, 404
+    else:
+        obj = model_dict[model]
+        relationships = [
+            relationship.lower() for relationship in obj.belongs_to]
+        relationships.extend([relate.lower() for relate in obj.has_one])
+        relationships.extend([relate.lower() for relate in obj.has_many])
+        relationships.extend([
+            relate.lower() for relate in obj.has_and_belongs_to_many])
 
     # Make sure we have the data we need
-    if data is None and method.lower() == "get":
-        # Retrieve everything in the table
-        data = list(rethink.table(model + "s").run(g.rdb_conn))
+    if method == "GET":
+        if data is None:
+            # Retrieve everything in the table
+            data = list(rethink.table(model + "s").run(g.rdb_conn))
 
-    if method.lower() in ["patch", "post"]:
-        print("edit/create!")
+    elif method in ["PATCH", "POST"]:
         # Create/edit a new object
         if "id" in params:
             # Retrieve a specific row
             data = get_single(model, uid=params["id"])
 
-        if method.lower() == "post":
+        if method == "POST":
             # Specifically create a new resource
-            new_resource = create_resource(model, path, params, data)
+            data, created = create_resource(model, data)
 
-        # if errors is not None:
-        #     print("Errors occured while generating the error packet!")
-        #     return {"errors": [error_packet]}, 500
-        # else:
-        #     return {"errors": [error_packet]}, 400
+            if created is False:
+                # It's an error
+                errors = data
+            elif created is True:
+                meta = META_CREATED
 
-    if data == []:
+        elif method == "PATCH":
+            # record editing/creation
+            if data is not None:
+                check = {key: data[key] for key in
+                         data if key in obj.fields}
+
+                for field in check:
+                    if not isinstance(check[field], obj.data[field]["type"]):
+                        errors[field] = {
+                            "title": "Field is incorrect type",
+                            "detail": "Field is incorrect type '{}'."
+                                      "Should be '{}'".format(
+                                          type(check[field]),
+                                          obj.fields[field]["type"]
+                                       ),
+                            "code": "102"
+                        }
+    if errors != {}:
+        [generate_error(
+            uid=uuid4(),
+            source={"pointer": path},
+            **errors[error]
+        ) for error in errors]
+
+    if data == [] and errors == {}:
         print("ERRORS AND DOOM!")
         error_packet, errors = generate_error(
             uid=uuid4(),

@@ -76,7 +76,7 @@ class Friend(Model):
             "type": str
         },
         "userId": {
-            "type": str
+            "type": int
         },
         "active": {
             "type": bool,

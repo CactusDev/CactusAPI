@@ -100,7 +100,10 @@ def chan_friend(channel, friend):
 
     # Get beam data for the provided user (<friend>)
     data = requests.get(
-        "https://beam.pro/api/v1/users/{}".format(channel)).json()
+        "https://beam.pro/api/v1/users/search",
+        params={"query": channel, "limit": 1}
+    ).json()[0]
+
     user_id = data["id"]
     username = data["username"]
 
@@ -121,6 +124,8 @@ def chan_friend(channel, friend):
 
     print("packet:\t", packet)
     print("code:\t", code)
+
+    return make_response(jsonify(packet), code)
 
     if request.method == "GET":
 
