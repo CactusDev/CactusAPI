@@ -241,17 +241,19 @@ def create_resource(model, fields):
     errors = {}
 
     for name, obj in inspect.getmembers(models):
-        does_exist = list(
-            rethink.table(
-                name.lower()+"s"
-            ).filter(fields).limit(1).run(g.rdb_conn)
-        )
-
-        if does_exist:
-            return does_exist, None
 
         # Does the current object's name match the resource we're on?
         if name.lower() == model:
+
+            does_exist = list(
+                rethink.table(
+                    name.lower() + "s"
+                ).filter(fields).limit(1).run(g.rdb_conn)
+            )
+
+            if does_exist:
+                return does_exist, None
+
             # Yes it does, let's make the new resource
             # Sort the parameters included by obj.fields
 
@@ -295,9 +297,7 @@ def create_resource(model, fields):
 
                 data = get_single(model + "s", uid=created["id"])
 
-                return data
-
-    return packet, True if errors == {} else errors, False
+    return data, True if errors == {} else errors, False
 
 
 def generate_response(model, path, method, params, data=None):
@@ -321,14 +321,6 @@ def generate_response(model, path, method, params, data=None):
 
     if model not in model_dict:
         return {"error": "Field '{}' not in defined models".format(model)}, 404
-    else:
-        obj = model_dict[model]
-        relationships = [
-            relationship.lower() for relationship in obj.belongs_to]
-        relationships.extend([relate.lower() for relate in obj.has_one])
-        relationships.extend([relate.lower() for relate in obj.has_many])
-        relationships.extend([
-            relate.lower() for relate in obj.has_and_belongs_to_many])
 
     # Make sure we have the data we need
     if method == "GET":
@@ -369,6 +361,28 @@ def generate_response(model, path, method, params, data=None):
                                        ),
                             "code": "102"
                         }
+
+    elif method == "DELETE":
+        # Some data is required
+        data = list(rethink.table(model + "s").filter(
+            data
+        ).limit(1).run(g.rdb_conn))[0]
+
+        print("377:\t", data)
+
+        if data != []:
+            success = rethink.table(model + "s").get(
+                data["id"]).delete().run(g.rdb_conn)
+
+            print(success)
+
+            return {"deleted": data["id"], "success": True}, 200
+        else:
+            return {
+                "deleted": None,
+                "success": False
+            }, 500
+
     if errors != {}:
         [generate_error(
             uid=uuid4(),
@@ -400,11 +414,21 @@ def generate_response(model, path, method, params, data=None):
         # Does the current object's name match the resource we're on?
         if name.lower() == model:
             # Yes, continue on with the code
-            for row in data:
-                print(row)
+            if isinstance(data, list):
+                for row in data:
+                    print(row)
+                    post_ignore.append(
+                        {key: row[key] for
+                         key in row if
+                         key not in obj.ignore}
+                    )
+            else:
                 post_ignore.append(
-                    {key: row[key] for key in row if key not in obj.ignore}
+                    {key: data[key] for
+                     key in data if
+                     key not in obj.ignore}
                 )
+
             relationships = [
                 relationship.lower() for relationship in obj.belongs_to]
             relationships.extend([relate.lower() for relate in obj.has_one])
