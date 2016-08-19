@@ -64,7 +64,7 @@ class Friend(Model):
     """
     belongs_to = ('Channel', )
     has_one = ("User", )
-    ignore = ["owner", "userId"]
+    ignore = ["owner", "userId", "id"]
     fields = {
         "channelId": {
             "type": int

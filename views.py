@@ -52,10 +52,9 @@ def chan_friends(channel):
     # model = request.path.split("/")[-1]
     model = "friend"
 
-    try:
-        chan_id = int(channel)
-        results = get_all(model + "s", channelId=chan_id)
-    except ValueError:
+    if channel.isdigit():
+        results = get_all(model + "s", channelId=int(channel))
+    else:
         results = get_all(model + "s", owner=channel.lower())
 
     packet, code = generate_response(
@@ -99,13 +98,25 @@ def chan_friend(channel, friend):
     token = data["token"]
 
     # Get beam data for the provided user (<friend>)
-    data = requests.get(
-        "https://beam.pro/api/v1/users/search",
-        params={"query": channel, "limit": 1}
-    ).json()[0]
+    endpoint = "users" if friend.isdigit() else "channels"
+    # If it's numeric, "users" endpoint, else "channels"
 
-    user_id = data["id"]
-    username = data["username"]
+    data = requests.get(
+        "https://beam.pro/api/v1/{}/{}".format(
+            endpoint, friend
+        ), params={"limit": 1}
+    ).json()
+
+    if len(data) > 1:
+        if "user" in data:
+            data = data["user"]
+
+        user_id = data["id"]
+        username = data["username"]
+    else:
+        # Error handling for getting data
+        print("Errors and weirdness!")
+        print("data:\t", data)
 
     fields = {
         "channelId": channel_id,
@@ -114,18 +125,19 @@ def chan_friend(channel, friend):
         "userId": user_id
     }
 
-    packet, code = generate_response(
+    response = generate_response(
         model,
         request.path,
         request.method,
         request.values,
+        user=username,
         data=fields
     )
 
-    return make_response(jsonify(packet), code)
+    return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/channel/<string:channel>/message", methods=["GET"])
+@APP.route("/api/v1/channel/<channel>/message", methods=["GET"])
 def chan_messages(channel):
 
     """
@@ -133,29 +145,25 @@ def chan_messages(channel):
     with <channel> replaced for the messages you want to get
     """
 
-    results = list(
-        rethink.table("messages").filter(
-            {
-                "channelId": channel
-            }
-        ).run(g.rdb_conn))
+    model = "message"
 
-    to_return = [generate_packet(
-        "message",
-        result["id"],
-        {
-            "message": result["message"],
-            "channelId": channel,
-            "userId": result["userId"],
-            "createdAt": result["createdAt"]
-        },
-        request.path
-    ) for result in results]
+    if channel.isdigit():
+        results = get_all(model + "s", channelId=int(channel))
+    else:
+        results = get_all(model + "s", owner=channel.lower())
 
-    return jsonify(to_return)
+    packet, code = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=results
+    )
+
+    return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/channel/<string:channel>/message/<message>",
+@APP.route("/api/v1/channel/<channel>/message/<int:message>",
            methods=["GET", "POST"])
 def chan_message(channel, message):
     """
@@ -176,6 +184,10 @@ def chan_message(channel, message):
             - packet:       The raw JSON packet in string form from Beam
     """
 
+    model = "message"
+
+    channel = int(channel) if channel.isdigit() else channel
+
     if request.method == "GET":
         results = list(
             rethink.table("messages").filter(
@@ -185,18 +197,6 @@ def chan_message(channel, message):
                 }
             ).limit(1).run(g.rdb_conn)
         )
-
-        to_return = [generate_packet(
-            "message",
-            result["id"],
-            {
-                "message": result["message"],
-                "channelId": channel,
-                "userId": result["userId"],
-                "createdAt": result["createdAt"],
-                "packet": result["packet"]
-            },
-            request.path) for result in results]
 
     elif request.method == "POST":
 

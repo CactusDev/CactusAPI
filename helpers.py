@@ -175,51 +175,36 @@ def generate_error(meta=None, **kwargs):
     return (packet, None) if len(errors) == 0 else (None, errors)
 
 
-def generate_packet(packet_type, uid, attributes, path, relationships,
-                    meta=None):
+def generate_packet(packet_type, uid, data, path,
+                    user=None, meta=None):
     """Create and return a packet.
 
     Parameters:
         packet_type:    String of object type being returned
-        uid:            ID of whatever is being returned
-        attributes:     Dict of data attributes to return
-                            MUST include a "user" key
+        uid:            String ID of whatever is being returned
+        data:           List or dict of data to return
         path:           String of endpoint being accessed for link generation
-        relationships:  A list of all endpoints that the resource is related to
+        user:           String of username related to resource
         meta:           Dict of meta information, not required
     """
 
-    user = attributes["userName"] if "userName" in attributes else None
-
     print("id:    ", uid)
     print("\ttype:\t", packet_type)
-    print("\tattr:\t", attributes)
+    print("\tattr:\t", data)
     print("\tpath:\t", path)
     print("\tuser:\t", user)
-
-    link_base = "/api/v1/user/{}".format(user.lower())
-
-    # TODO: Add code that creates relationships for messages/channel-level
-
-    relationship_return = {key: {
-        "links": {
-            "self": "{}/relationships/{}".format(link_base, str(key)),
-            "related": "{}/{}".format(link_base, str(key))
-        }
-    } for key in relationships if key != str(packet_type) and user is not None}
 
     to_return = {
         "data": {
             "type": str(packet_type),
             "id": str(uid),
-            "attributes": attributes,
-            "relationships": relationship_return,
-            "jsonapi": {
-                "version": "1.0"
-            },
-            "links": {
-                "self": str(path)
-            }
+            "attributes": data
+        },
+        "jsonapi": {
+            "version": "1.0"
+        },
+        "links": {
+            "self": str(path)
         }
     }
 
@@ -300,7 +285,7 @@ def create_resource(model, fields):
     return data, True if errors == {} else errors, False
 
 
-def generate_response(model, path, method, params, data=None):
+def generate_response(model, path, method, params, user=None, data=None):
     """
     Generates and returns the required response packet(s)
 
@@ -310,6 +295,7 @@ def generate_response(model, path, method, params, data=None):
         method:     The HTTP request's method, decides if editing or just
                         retrieving results
         params:     The HTTP request parameters in dict form
+        user:       Optional, string of the user the resource is related to
         data:       Optional, the data retrieved from the database. If not
                         included everything will be retrieved for the model
     """
@@ -324,7 +310,7 @@ def generate_response(model, path, method, params, data=None):
 
     # Make sure we have the data we need
     if method == "GET":
-        if data is None:
+        if data is None or data == []:
             # Retrieve everything in the table
             data = list(rethink.table(model + "s").run(g.rdb_conn))
 
@@ -336,7 +322,10 @@ def generate_response(model, path, method, params, data=None):
 
         if method == "POST":
             # Specifically create a new resource
-            data, created = create_resource(model, data)
+            resource = create_resource(model, data)
+
+            data = resource[0]
+            created = resource[1]
 
             if created is False:
                 # It's an error
@@ -366,17 +355,21 @@ def generate_response(model, path, method, params, data=None):
         # Some data is required
         data = list(rethink.table(model + "s").filter(
             data
-        ).limit(1).run(g.rdb_conn))[0]
+        ).limit(1).run(g.rdb_conn))
 
-        print("377:\t", data)
+        print(data)
 
         if data != []:
+            data = data[0]
             success = rethink.table(model + "s").get(
                 data["id"]).delete().run(g.rdb_conn)
 
-            print(success)
-
             return {"deleted": data["id"], "success": True}, 200
+        elif data == []:
+            return {
+                "deleted": None,
+                "success": True
+            }, 200
         else:
             return {
                 "deleted": None,
@@ -390,23 +383,6 @@ def generate_response(model, path, method, params, data=None):
             **errors[error]
         ) for error in errors]
 
-    if data == [] and errors == {}:
-        print("ERRORS AND DOOM!")
-        error_packet, errors = generate_error(
-            uid=uuid4(),
-            status="404",
-            code="405",
-            title="Table does not have any entries",
-            detail="Friends table does not have any entries",
-            source={"pointer": path}
-        )
-
-        if errors is not None:
-            print("Errors occured while generating the error packet!")
-            return {"errors": [error_packet]}, 500
-        else:
-            return {"errors": [error_packet]}, 404
-
     # List to hold all data after ignored fields are removed
     post_ignore = []
 
@@ -416,7 +392,6 @@ def generate_response(model, path, method, params, data=None):
             # Yes, continue on with the code
             if isinstance(data, list):
                 for row in data:
-                    print(row)
                     post_ignore.append(
                         {key: row[key] for
                          key in row if
@@ -429,20 +404,13 @@ def generate_response(model, path, method, params, data=None):
                      key not in obj.ignore}
                 )
 
-            relationships = [
-                relationship.lower() for relationship in obj.belongs_to]
-            relationships.extend([relate.lower() for relate in obj.has_one])
-            relationships.extend([relate.lower() for relate in obj.has_many])
-            relationships.extend([
-                relate.lower() for relate in obj.has_and_belongs_to_many])
-
-    to_return = [generate_packet(
+    to_return = generate_packet(
         model,
         uuid4(),
-        data,
+        post_ignore,
         path,
-        relationships,
-    ) for data in post_ignore]
+        user=user
+    )
 
     # Return the response in JSON form, with proper success code
     return to_return, 200
