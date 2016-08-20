@@ -172,7 +172,7 @@ def generate_error(meta=None, **kwargs):
     if meta is not None and isinstance(meta, dict):
         packet["meta"] = meta
 
-    return (packet, None) if len(errors) == 0 else (None, errors)
+    return packet, None if len(errors) == 0 else None, errors
 
 
 def generate_packet(packet_type, uid, data, path,
@@ -285,7 +285,8 @@ def create_resource(model, fields):
     return data, True if errors == {} else errors, False
 
 
-def generate_response(model, path, method, params, user=None, data=None):
+def generate_response(model, path, method, params,
+                      user=None, fields=None, data=None):
     """
     Generates and returns the required response packet(s)
 
@@ -298,6 +299,9 @@ def generate_response(model, path, method, params, user=None, data=None):
         user:       Optional, string of the user the resource is related to
         data:       Optional, the data retrieved from the database. If not
                         included everything will be retrieved for the model
+                        Is also the data to create new records if a POST/PATCH
+        fields:     Optional, a dict of the fields and values to filter the
+                        table by
     """
     print(method)
 
@@ -310,9 +314,13 @@ def generate_response(model, path, method, params, user=None, data=None):
 
     # Make sure we have the data we need
     if method == "GET":
-        if data is None or data == []:
+        if data is None or data == [] or fields is None or fields == []:
             # Retrieve everything in the table
             data = list(rethink.table(model + "s").run(g.rdb_conn))
+        elif fields is not None or fields != []:
+            data = list(rethink.table(model + "s").filter(
+                fields
+            ).run(g.rdb_conn))
 
     elif method in ["PATCH", "POST"]:
         # Create/edit a new object
@@ -357,8 +365,6 @@ def generate_response(model, path, method, params, user=None, data=None):
             data
         ).limit(1).run(g.rdb_conn))
 
-        print(data)
-
         if data != []:
             data = data[0]
             success = rethink.table(model + "s").get(
@@ -387,22 +393,29 @@ def generate_response(model, path, method, params, user=None, data=None):
     post_ignore = []
 
     for name, obj in inspect.getmembers(models):
-        # Does the current object's name match the resource we're on?
-        if name.lower() == model:
-            # Yes, continue on with the code
-            if isinstance(data, list):
-                for row in data:
+        try:
+            ignore = getattr(obj, "ignore", [])
+        except RecursionError:
+            print("foo")
+        # Don't continue if none are being ignored
+        print("1:\t", name)
+        if len(ignore) > 0:
+            # Does the current object's name match the resource we're on?
+            if name.lower() == model:
+                # Yes, continue on with the code
+                if isinstance(data, list):
+                    for row in data:
+                        post_ignore.append(
+                            {key: row[key] for
+                             key in row if
+                             key not in ignore}
+                        )
+                else:
                     post_ignore.append(
-                        {key: row[key] for
-                         key in row if
-                         key not in obj.ignore}
+                        {key: data[key] for
+                         key in data if
+                         key not in ignore}
                     )
-            else:
-                post_ignore.append(
-                    {key: data[key] for
-                     key in data if
-                     key not in obj.ignore}
-                )
 
     to_return = generate_packet(
         model,

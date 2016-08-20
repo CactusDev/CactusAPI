@@ -64,7 +64,7 @@ class Friend(Model):
     """
     belongs_to = ('Channel', )
     has_one = ("User", )
-    ignore = ["owner", "userId", "id"]
+    ignore = ("owner", "userId", "id")
     fields = {
         "channelId": {
             "type": int
@@ -90,7 +90,6 @@ class Role(Model):
     A remodel table model
     """
     fields = {}
-    ignore = []
 
 
 class Channel(Model):

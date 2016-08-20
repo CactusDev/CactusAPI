@@ -1,7 +1,6 @@
 """Views for the API"""
 
-# TODO: Fix DELETE endpoints everywhere
-# TODO: Implement proper error packet creation/return
+# TODO: Make resource creation/editing smarter in terms of required values
 
 import time
 from datetime import datetime, timedelta
@@ -53,16 +52,17 @@ def chan_friends(channel):
     model = "friend"
 
     if channel.isdigit():
-        results = get_all(model + "s", channelId=int(channel))
+        fields = {"channelId": int(channel)}
     else:
-        results = get_all(model + "s", owner=channel.lower())
+        fields = {"owner": channel.lower()}
 
     packet, code = generate_response(
         model,
         request.path,
         request.method,
         request.values,
-        data=results
+        data=results,
+        fields=fields
     )
 
     return make_response(jsonify(packet), code)
@@ -118,7 +118,7 @@ def chan_friend(channel, friend):
         print("Errors and weirdness!")
         print("data:\t", data)
 
-    fields = {
+    data = {
         "channelId": channel_id,
         "token": token,
         "userName": username,
@@ -131,7 +131,7 @@ def chan_friend(channel, friend):
         request.method,
         request.values,
         user=username,
-        data=fields
+        data=data
     )
 
     return make_response(jsonify(response[0]), response[1])
@@ -185,61 +185,47 @@ def chan_message(channel, message):
     """
 
     model = "message"
+    errors = []
+
+    required_parameters = ["foo", "test"]
+
+    for param in request.values:
+        if param not in required_parameters:
+            errors.append(
+                generate_error(
+                    uid=uuid4(),
+                    status="400",
+                    title="Incorrect parameters for endpoint",
+                    detail="Missing required {} parameter".format(param),
+                    source={"pointer": request.path}
+                )
+            )
+
+    if errors != []:
+        return make_response(jsonify(errors), 400)
 
     channel = int(channel) if channel.isdigit() else channel
 
-    if request.method == "GET":
-        results = list(
-            rethink.table("messages").filter(
-                {
-                    "channelId": channel,
-                    "id": message
-                }
-            ).limit(1).run(g.rdb_conn)
-        )
+    fields = {"channelId": channel, "id": message}
 
-    elif request.method == "POST":
+    data = {
+        "message": request.values.get("message", ""),
+        "channelId": request.values.get("channelId", ""),
+        "userId": request.values.get("userId", ""),
+        "createdAt": rethink.epoch_time(
+            int(request.values.get("timestamp", time.time()))),
+        "packet": request.values.get("packet", "")
+    }
 
-        results = list(
-            rethink.table("messages").filter(
-                {
-                    "channelId": channel,
-                    "id": message
-                }
-            ).run(g.rdb_conn)
-        )
+    response = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=data
+    )
 
-        # It's [] (empty), so we need to make a NEW quote
-        if results == []:
-            result = Messages(
-                message=request.values.get("message", ""),
-                channelId=request.values.get("channelId", ""),
-                userId=request.values.get("userId", ""),
-                createdAt=rethink.epoch_time(
-                    int(request.values.get("timestamp", ""))),
-                packet=request.values.get("packet", "")
-            )
-
-            result.save()
-
-            results.append(result)
-
-        to_return = [generate_packet(
-            "message",
-            result["id"],
-            {
-                "message": result["message"],
-                "channelId": channel,
-                "userId": result["userId"],
-                "createdAt": result["createdAt"],
-                "packet": result["packet"]
-            },
-            request.path,
-            {
-                "created": True
-            }) for result in results]
-
-    return jsonify(to_return)
+    return make_response(jsonify(response[0]), response[1])
 
 
 @APP.route("/api/v1/channel/<string:channel>/quote", methods=["GET"])
