@@ -148,23 +148,23 @@ def chan_messages(channel):
     model = "message"
 
     if channel.isdigit():
-        results = get_all(model + "s", channelId=int(channel))
+        fields = {"channelId": int(channel)}
     else:
-        results = get_all(model + "s", owner=channel.lower())
+        fields = {"owner": channel.lower()}
 
     packet, code = generate_response(
         model,
         request.path,
         request.method,
         request.values,
-        data=results
+        fields=fields
     )
 
     return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/channel/<channel>/message/<int:message>",
-           methods=["GET", "POST"])
+@APP.route("/api/v1/channel/<channel>/message/<message>",
+           methods=["GET", "POST", "DELETE"])
 def chan_message(channel, message):
     """
     If you GET this endpoint, go to /api/v1/channel/<channel>/message/<message>
@@ -187,7 +187,7 @@ def chan_message(channel, message):
     model = "message"
     errors = []
 
-    required_parameters = ["foo", "test"]
+    required_parameters = ["message", "timestamp", "userId", "packet"]
 
     for param in request.values:
         if param not in required_parameters:
@@ -201,77 +201,62 @@ def chan_message(channel, message):
                 )
             )
 
-    if errors != []:
-        return make_response(jsonify(errors), 400)
-
     channel = int(channel) if channel.isdigit() else channel
 
-    fields = {"channelId": channel, "id": message}
+    fields = {"channelId": channel, "messageId": message}
 
     data = {
+        "messageId": message,
         "message": request.values.get("message", ""),
-        "channelId": request.values.get("channelId", ""),
+        "channelId": channel,
         "userId": request.values.get("userId", ""),
         "createdAt": rethink.epoch_time(
             int(request.values.get("timestamp", time.time()))),
         "packet": request.values.get("packet", "")
     }
 
+    data = {key: unescape(data[key]) for key in data
+            if isinstance(data[key], str)}
+
     response = generate_response(
         model,
         request.path,
         request.method,
         request.values,
-        data=data
+        data=data,
+        fields=fields
     )
+
+    packet = response[0]
 
     return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/channel/<string:channel>/quote", methods=["GET"])
+@APP.route("/api/v1/channel/<channel>/quote", methods=["GET"])
 def user_quotes(channel):
     """
     If you GET this endpoint, go to /api/v1/channel/<channel>/quote
     with <channel> replaced for the channel you want to get quotes for
     """
+    model = "quote"
 
-    # Get all users that match the channel
-    users = retrieve_user(channel)
-
-    # Were any returned?
-    if len(users) < 1:
-        # No, return 204 since it's not an error, the user just doesn't exist
-        return jsonify(None), 204
+    if channel.isdigit():
+        fields = {"channelId": int(channel), "deleted": False}
     else:
-        # Yes, user the first user
-        user = users[0]
+        fields = {"owner": channel.lower(), "deleted": False}
 
-    results = list(
-        rethink.table("quotes").filter(
-            {
-                "userId": user["id"],
-                "deleted": False
-            }
-        ).run(g.rdb_conn))
+    packet, code = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        fields=fields
+    )
 
-    to_return = [generate_packet(
-        "quote",
-        result["id"],
-        {
-            "quote": str(result["quote"]),
-            "enabled": result["enabled"],
-            "channelId": result["channelId"],
-            "createdAt": str(result["createdAt"]),
-            "messageId": str(result["messageId"]),
-            "userId": result["userId"],
-            "userName": user["userName"]
-        },
-        request.path) for result in results]
-
-    return jsonify(to_return)
+    return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/channel/<string:channel>/quote/<string:quote>",
+@APP.route("/api/v1/channel/<channel>/quote/<string:quote>",
            methods=["GET", "PATCH", "DELETE"])
 def chan_quote(channel, quote):
     """
@@ -286,137 +271,45 @@ def chan_quote(channel, quote):
         want to look up
 
         Parameters needed:
-            - quote: The new contents of the quote
+            - quote:        The new contents of the quote
+            - messageId:    The ID of the quote's message
+            - userId:       The ID of the message's sender
 
     If you DELETE this endpoint:
         Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
         for the channel you want and <quote> replaced with the quote ID you
         want to remove
     """
+    model = "quote"
+    required_parameters = ["quote", "messageId", "userId"]
 
-    # Get all users that match the channel
-    users = retrieve_user(channel)
+    channel = int(channel) if channel.isdigit() else channel
 
-    # Were any returned?
-    if len(users) < 1:
-        # No, return 204 since it's not an error, the user just doesn't exist
-        return jsonify(None), 204
-    else:
-        # Yes, user the first user
-        user = users[0]
+    fields = {"channelId": channel, "quoteId": quote}
 
-    if request.method == "GET":
-        results = list(rethink.table("quotes").filter(
-            {"userId": user["id"],
-             "id": str(quote)}
-        ).limit(1).run(g.rdb_conn))
+    data = {
+        "quote": request.values.get("quote", ""),
+        "messageId": request.values.get("messageId", ""),
+        "channelId": channel,
+        "userId": request.values.get("userId", ""),
+        "createdAt": rethink.now(),
+    }
 
-        to_return = [generate_packet(
-            "quote",
-            result["id"],
-            {
-                "quote": str(result["quote"]),
-                "enabled": result["enabled"],
-                "channelId": result["channelId"],
-                "createdAt": str(result["createdAt"]),
-                "messageId": str(result["messageId"]),
-                "userId": result["userId"],
-                "userName": user["userName"]    # For packet generation
-            },
-            request.path) for result in results]
+    data = {key: unescape(data[key]) for key in data
+            if isinstance(data[key], str)}
 
-    elif request.method == "PATCH":
+    response = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=data,
+        fields=fields
+    )
 
-        results = list(
-            rethink.table("quotes").filter(
-                {
-                    "userId": user["id"],
-                    "id": str(quote)
-                }
-            ).run(g.rdb_conn)
-        )
+    packet = response[0]
 
-        # It's [] (empty), so we need to make a NEW quote
-        if results == []:
-            result = Quotes(
-                quote=request.values.get("quote", ""),
-                messageId=request.values.get("messageId", ""),
-                channelId=request.values.get("channelId", ""),
-                createdAt=rethink.now(),
-                userId=user["id"],
-                enabled=True,
-                deleted=False
-            )
-
-            result.save()
-
-            to_return = generate_packet(
-                "quote",
-                result["id"],
-                {
-                    "quote": str(result["quote"]),
-                    "enabled": result["enabled"],
-                    "channelId": result["channelId"],
-                    "createdAt": str(result["createdAt"]),
-                    "messageId": str(result["messageId"]),
-                    "userId": result["userId"],
-                    "userName": user["userName"]    # For packet generation
-                },
-                request.path,
-                META_CREATED)
-
-        # it's not [], so it already exists
-        else:
-            result = results[0]
-
-            new_text = request.values.get("quote", "")
-
-            if new_text != "" and new_text is not None:
-                result["quote"] = new_text
-                # Save the edited quote
-                Quotes(
-                    **result
-                ).save()
-            # No need for an else, if it's blank, then we'll just return
-            #   the same exact quote object, no changes made
-
-            to_return = [generate_packet(
-                "quote",
-                result["id"],
-                {
-                    "quote": str(result["quote"]),
-                    "enabled": result["enabled"],
-                    "channelId": result["channelId"],
-                    "createdAt": str(result["createdAt"]),
-                    "messageId": str(result["messageId"]),
-                    "userId": result["userId"],
-                    "userName": user["userName"]    # For packet generation
-                },
-                request.path,
-                META_EDITED)
-                         for result in results]
-
-    elif request.method == "DELETE":
-
-        results = list(
-            rethink.table("quotes").limit(1).run(g.rdb_conn)
-        )
-
-        # If the user DOES exist in the DB in the quote table
-        if results != []:
-            try:
-                rethink.table("quotes").get(
-                    results[0]["id"]).delete().run(g.rdb_conn)
-
-                return make_response(jsonify(None), 204)
-
-            except Exception as error:
-                print("Exception caught! views:225")
-                print(error)
-
-                return make_response(jsonify([{"error": error}]), 500)
-
-    return jsonify(to_return)
+    return make_response(jsonify(response[0]), response[1])
 
 
 @APP.route("/api/v1/user/<string:username>",

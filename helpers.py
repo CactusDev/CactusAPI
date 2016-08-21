@@ -7,6 +7,7 @@ Beginnings of a super simple ORM of sorts
 # TODO: Implement exceptions instead of error return
 
 import inspect
+from html import unescape
 from uuid import UUID, uuid4
 import rethinkdb as rethink
 from flask import g
@@ -344,26 +345,72 @@ def generate_response(model, path, method, params,
         elif method == "PATCH":
             # record editing/creation
             if data is not None:
-                check = {key: data[key] for key in
-                         data if key in obj.fields}
+                for name, obj in inspect.getmembers(models):
+                    # Creates a Recursion error if not ignored
+                    if name == "Model":
+                        # So skip this iteration
+                        continue
 
-                for field in check:
-                    if not isinstance(check[field], obj.data[field]["type"]):
-                        errors[field] = {
-                            "title": "Field is incorrect type",
-                            "detail": "Field is incorrect type '{}'."
-                                      "Should be '{}'".format(
-                                          type(check[field]),
-                                          obj.fields[field]["type"]
-                                       ),
-                            "code": "102"
-                        }
+                    # Don't want to start on the builtins
+                    if name.startswith("__"):
+                        break
+
+                    # TODO: Make this fix not be hacky and lazy
+                    if isinstance(data, list):
+                        data = data[0]
+
+                    check = {key: data[key] for key in
+                             data if key in obj.fields}
+
+                    for field in check:
+                        if not isinstance(check[field],
+                                          obj.fields[field]["type"]):
+                            errors[field] = {
+                                "title": "Field is incorrect type",
+                                "detail": "Field is incorrect type '{}'."
+                                          "Should be '{}'".format(
+                                              type(check[field]),
+                                              obj.fields[field]["type"]
+                                           ),
+                                "code": "102"
+                            }
+
+                    # Only continue if there are errors
+                    if errors == {}:
+
+                        results = obj.get(**fields)
+
+                        print("fields:\t", fields)
+                        print("results:\t", results)
+
+                        # There are no results that match
+                        if results is None:
+                            # Create new object
+                            print("model:\t", model)
+                            print("data:\t", data)
+                            resource = create_resource(model, data)
+
+                            data = resource[0]
+                            created = resource[1]
+
+                            if created is False:
+                                # It's an error
+                                errors = data
+                            elif created is True:
+                                meta = META_CREATED
+                        else:
+                            results = obj.update(**data)
+
+
 
     elif method == "DELETE":
         # Some data is required
         data = list(rethink.table(model + "s").filter(
-            data
+            fields
         ).limit(1).run(g.rdb_conn))
+
+        print("fields:\t", fields)
+        print("data:\t", data)
 
         if data != []:
             data = data[0]
@@ -390,15 +437,14 @@ def generate_response(model, path, method, params,
         ) for error in errors]
 
     # List to hold all data after ignored fields are removed
-    post_ignore = []
+    post_ignore = data
 
     for name, obj in inspect.getmembers(models):
-        try:
-            ignore = getattr(obj, "ignore", [])
-        except RecursionError:
-            print("foo")
+        if name == "Model":
+            continue
+
+        ignore = getattr(obj, "ignore", [])
         # Don't continue if none are being ignored
-        print("1:\t", name)
         if len(ignore) > 0:
             # Does the current object's name match the resource we're on?
             if name.lower() == model:
