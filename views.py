@@ -372,7 +372,7 @@ def user_commands(username):
     If you GET this endpoint, simply go to /api/v1/user/<username>/command with
     <username> replaced for the user you want to get commands for
     """
-    model = "Friend"
+    model = "Command"
 
     if username.isdigit():
         fields = {"userId": int(username), "deleted": False}
@@ -384,7 +384,6 @@ def user_commands(username):
         request.path,
         request.method,
         request.values,
-        data=results,
         fields=fields
     )
 

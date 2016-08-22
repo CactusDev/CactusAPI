@@ -481,5 +481,13 @@ def generate_response(model, path, method, params,
         user=user
     )
 
+    # We got this far, it's probably a success
+    code = 200
+
+    # But if it's empty we need to make it 404
+    if to_return["data"]["attributes"] == [] or \
+            to_return["data"]["attributes"] == {}:
+        code = 404
+
     # Return the response with proper success code
-    return to_return, 200
+    return to_return, code
