@@ -1,6 +1,7 @@
 """Views for the API"""
 
 # TODO: Make resource creation/editing smarter in terms of required values
+# TODO: Auth checking
 
 import time
 from datetime import datetime, timedelta
@@ -49,7 +50,7 @@ def chan_friends(channel):
     """
 
     # model = request.path.split("/")[-1]
-    model = "friend"
+    model = "Friend"
 
     if channel.isdigit():
         fields = {"channelId": int(channel)}
@@ -89,7 +90,7 @@ def chan_friend(channel, friend):
         friend you want to edit or create.
     """
 
-    model = "friend"
+    model = "Friend"
 
     # Get beam data for the provided channel (<channel>)
     data = requests.get(
@@ -145,7 +146,7 @@ def chan_messages(channel):
     with <channel> replaced for the messages you want to get
     """
 
-    model = "message"
+    model = "Message"
 
     if channel.isdigit():
         fields = {"channelId": int(channel)}
@@ -184,7 +185,7 @@ def chan_message(channel, message):
             - packet:       The raw JSON packet in string form from Beam
     """
 
-    model = "message"
+    model = "Message"
     errors = []
 
     required_parameters = ["message", "timestamp", "userId", "packet"]
@@ -256,7 +257,7 @@ def user_quotes(channel):
     return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/channel/<channel>/quote/<string:quote>",
+@APP.route("/api/v1/channel/<channel>/quote/<int:quote>",
            methods=["GET", "PATCH", "DELETE"])
 def chan_quote(channel, quote):
     """
@@ -280,23 +281,26 @@ def chan_quote(channel, quote):
         for the channel you want and <quote> replaced with the quote ID you
         want to remove
     """
-    model = "quote"
-    required_parameters = ["quote", "messageId", "userId"]
+    model = "Quote"
 
     channel = int(channel) if channel.isdigit() else channel
 
-    fields = {"channelId": channel, "quoteId": quote}
+    fields = {"channelId": channel,
+              "quoteId": quote}
 
     data = {
-        "quote": request.values.get("quote", ""),
-        "messageId": request.values.get("messageId", ""),
+        "quote": request.values.get("quote"),
+        "quoteId": quote,
+        "messageId": request.values.get("messageId"),
         "channelId": channel,
-        "userId": request.values.get("userId", ""),
-        "createdAt": rethink.now(),
+        "userId": request.values.get("userId")
     }
 
-    data = {key: unescape(data[key]) for key in data
-            if isinstance(data[key], str)}
+    for key in data:
+        if isinstance(data[key], str):
+            data[key] = unescape(data[key])
+
+    data = {key: data[key] for key in data if data[key] is not None}
 
     response = generate_response(
         model,
@@ -315,7 +319,6 @@ def chan_quote(channel, quote):
 @APP.route("/api/v1/user/<string:username>",
            methods=["GET", "PATCH", "DELETE"])
 def beam_user(username):
-    # TODO: Auth checking
 
     """
     If you GET this endpoint, simply go to /api/v1/user/<username> with
@@ -329,161 +332,68 @@ def beam_user(username):
             - provider: OAuth provider
             - pid:      User ID from OAuth provider
     """
+    model = "User"
 
-    to_return = []
-    meta = None
+    fields = {"channelId": channel,
+              "quoteId": quote}
 
-    results = retrieve_user(username)
+    data = {
+        "email": request.values.get("email"),
+        "providerId": "{}${}".format(request.values.get("provider", ""),
+                                     request.values.get("pid", "")),
+        "roles": ["user"],
+        "userName": username
+    }
 
-    if request.method == "GET":
-        if results == []:
-            # Nothing exists for that user
-            to_return, errors = generate_error(
-                uid=str(uuid4()),
-                status="404",
-                title="Requested 'user' Resource Does Not Exist",
-                detail="The requested user '{}' does not exist".format(
-                    username),
-                source={"pointer": request.path}
-            )
+    for key in data:
+        if isinstance(data[key], str):
+            data[key] = unescape(data[key])
 
-            if errors is not None:
-                print("ERRARS!")
-                print(errors)
+    data = {key: data[key] for key in data if data[key] is not None}
 
-            code = 404
-        else:
-            code = 200
+    response = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=data,
+        fields=fields
+    )
 
-    elif request.method == "PATCH":
-        # User doesn't exist, let's create it
-        if results == []:
-            result = User(
-                active=True,
-                confirmed_at=rethink.now(),
-                email=request.values.get("email", ""),
-                providerId="{}${}".format(request.values.get("provider", ""),
-                                          request.values.get("pid", "")),
-                roles=[
-                    "user"
-                ],
-                userName=username
-            )
+    packet = response[0]
 
-            meta = META_CREATED
-            code = 200
-
-            result.save()
-        else:
-            # Take the first one
-            result = results[0]
-
-            for key in request.values:
-                if key in result and request.values.get(key) != "" and \
-                        request.values.get(key) is not None:
-                    result[key] = request.values.get(key)
-
-            # Set the values of that object and save changes
-            User(
-                **result
-            ).save()
-
-            # User exists, and we edited it, so set the meta correctly
-            meta = META_EDITED
-            code = 200
-
-        results = retrieve_user(username)
-
-    elif request.method == "DELETE":
-        results = retrieve_user(username)
-
-        # If the user DOES exist in the DB in the users table
-        if results != []:
-            try:
-                rethink.table("users").get(
-                    results[0]["id"]).delete().run(g.rdb_conn)
-
-                return make_response(jsonify(None), 204)
-
-            except Exception as error:
-                print("Exception caught! views:774")
-                print(error)
-
-                return make_response(jsonify([{"error": error}]), 500)
-
-    # If to_return still has it's initialization value of None, then there
-    # were no errors, and go ahead with creating the success packet
-    if to_return == []:
-        to_return = [generate_packet("user",
-                                     result["id"],
-                                     {
-                                         "userName": result["userName"],
-                                         "enabled": result["active"],
-                                         "botUsername": str(result.get(
-                                             "botUsername", None))
-                                     },
-                                     request.path,
-                                     meta)
-                     for result in results]
-    else:
-        to_return = {
-            "jsonapi": {
-                "version": "1.0"
-            },
-            "errors": [to_return]
-        }
-
-    print(to_return)
-
-    return make_response(jsonify(to_return), code)
+    return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/user/<string:username>/command", methods=["GET"])
+@APP.route("/api/v1/user/<username>/command", methods=["GET"])
 def user_commands(username):
 
     """
     If you GET this endpoint, simply go to /api/v1/user/<username>/command with
     <username> replaced for the user you want to get commands for
     """
-    users = retrieve_user(username)
+    model = "Friend"
 
-    if len(users) < 1:
-        return "", 204
+    if username.isdigit():
+        fields = {"userId": int(username), "deleted": False}
     else:
-        user = users[0]
+        fields = {"userName": username.lower(), "deleted": False}
 
-    results = list(
-        rethink.table("commands").filter(
-            {
-                "userId": user["id"],
-                "deleted": False
-            }
-        ).run(g.rdb_conn))
+    packet, code = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=results,
+        fields=fields
+    )
 
-    to_return = [generate_packet(
-        "command",
-        result["id"],
-        {
-            "name": str(result["name"]),
-            "response": str(result["response"]),
-            "enabled": result["enabled"],
-            "channelId": result["channelId"],
-            "createdAt": str(result["createdAt"]),
-            "syntax": str(result["syntax"]),
-            "help": str(result["help"]),
-            "builtIn": result["builtIn"],
-            "userName": user["userName"]
-        },
-        request.path) for result in results]
-
-    return jsonify(to_return)
+    return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/user/<string:username>/command/<string:cmd>",
+@APP.route("/api/v1/user/<username>/command/<int:cmd>",
            methods=["GET", "PATCH", "DELETE"])
 def user_command(username, cmd):
-    # TODO: Auth checking
-
     """
     If you GET this endpoint, go to /api/v1/user/<username>/command/<cmd> with
     <username> replaced for the user you want & <cmd> replaced with the command
@@ -491,145 +401,51 @@ def user_command(username, cmd):
 
     If you PATCH this endpoint:
         Go to /api/v1/user/<username>/command/<cmd> with <username> replaced
-            for the user wanted & <cmd> replaced for the command you want to
-            look up
+            for the user wanted & <cmd> replaced with the command you wish
+            to look up or the command ID
         Parameters needed:
+            - name:     The command's name/command that is run
             - response: The new response for the command
             - level:    An integer for the user level required to run the
                         command.
+                            Basics:
                             0 - Accessible by ALL users
                             1 - Channel Moderator Only
                             2 - Channel Owner Only
                             3 - Channel Subscriber Only
     """
 
-    # Get the first user object that matches the username
-    users = retrieve_user(username)
+    model = "Command"
 
-    if len(users) < 1:
-        return "", 204
+    if username.isdigit():
+        fields = {"userId": int(username), "commandId": cmd}
     else:
-        user = users[0]
+        fields = {"userName": username.lower(), "commandId": cmd}
 
-    if request.method == "GET":
-        result = list(rethink.table("commands").filter(
-            {"userId": user["id"],
-             "name": cmd}
-        ).limit(1).run(g.rdb_conn))[0]
+    data = {
+        "name": request.values.get("name"),
+        "response": request.values.get("response"),
+        "channelId": request.values.get("channelId"),
+        "userLevel": request.values.get("level", None),
+        "userId": request.values.get("userId"),
+        **fields
+    }
 
-        to_return = generate_packet(
-            "command",
-            result["id"],
-            {
-                "name": str(result["name"]),
-                "response": str(result["response"]),
-                "enabled": result["enabled"],
-                "channelId": result["channelId"],
-                "createdAt": str(result["createdAt"]),
-                "syntax": str(result["syntax"]),
-                "help": str(result["help"]),
-                "builtIn": result["builtIn"],
-                "userName": user["userName"],
-                "level": result["level"]
-            },
-            request.path)
+    for key in data:
+        if isinstance(data[key], str):
+            data[key] = unescape(data[key])
 
-        if len(to_return) > 0:
-            to_return = to_return
+    data = {key: data[key] for key in data if data[key] is not None}
 
-    elif request.method == "PATCH":
+    response = generate_response(
+        model,
+        request.path,
+        request.method,
+        request.values,
+        data=data,
+        fields=fields
+    )
 
-        results = list(rethink.table("commands").filter(
-            {"userId": user["id"],
-             "name": str(cmd)}
-        ).run(g.rdb_conn))
+    packet = response[0]
 
-        # It's [] (empty), so we need to make a NEW command
-        if results == []:
-            result = Commands(name=str(cmd),
-                              response=request.values.get("response", ""),
-                              channelId="2Cubed",
-                              userLevel=0,
-                              createdAt=rethink.now(),
-                              userId=user["id"],
-                              syntax="foo bar123",
-                              help="lolnope",
-                              enabled=True,
-                              deleted=False,
-                              builtIn=False,
-                              level=request.values.get("level", 0))
-
-            result.save()
-
-            to_return = [generate_packet(
-                "command",
-                result["id"],
-                {
-                    "name": str(result["name"]),
-                    "response": str(result["response"]),
-                    "enabled": result["enabled"],
-                    "channelId": result["channelId"],
-                    "createdAt": str(result["createdAt"]),
-                    "syntax": str(result["syntax"]),
-                    "help": str(result["help"]),
-                    "builtIn": result["builtIn"],
-                    "user": user["userName"],
-                    "level": result["level"]
-                },
-                request.path,
-                META_CREATED)]
-
-        # it's not [], so it already exists
-        else:
-            result = results[0]
-
-            new_response = request.values.get("response", "")
-
-            if new_response != "" and new_response is not None:
-                result["response"] = new_response
-
-                # Save the edited command
-                Commands(
-                    **result
-                ).save()
-
-            to_return = [generate_packet(
-                "command",
-                result["id"],
-                {
-                    "name": str(result["name"]),
-                    "response": str(result["response"]),
-                    "enabled": result["enabled"],
-                    "channelId": result["channelId"],
-                    "createdAt": str(result["createdAt"]),
-                    "syntax": str(result["syntax"]),
-                    "help": str(result["help"]),
-                    "builtIn": result["builtIn"],
-                    "userName": user["userName"]
-                },
-                request.path,
-                META_EDITED)
-                         for result in results]
-
-    elif request.method == "DELETE":
-
-        # TODO: MUCHO GRANDE BUGO HEREO! Just deletes the first command it
-        #   finds, no actual searching going on
-
-        results = list(rethink.table("commands").limit(1).run(g.rdb_conn))
-
-        # If the user DOES exist in the DB in the friend table
-        if results != []:
-            try:
-                rethink.table("commands").get(
-                    results[0]["id"]).delete().run(g.rdb_conn)
-
-                return make_response(jsonify(None), 204)
-
-            except Exception as error:
-                print("Exception caught! views:225")
-                print(error)
-
-                return make_response(jsonify([{"error": error}]), 500)
-
-    return jsonify(to_return)
+    return make_response(jsonify(response[0]), response[1])

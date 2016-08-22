@@ -3,7 +3,8 @@ RethinkDB models for remodel
 """
 
 from remodel.models import Model
-from rethinkdb import now
+import rethinkdb as rethink
+from datetime import datetime
 
 
 class User(Model):
@@ -18,7 +19,8 @@ class User(Model):
             "default": True
         },
         "confirmed_at": {
-          "type": type(now)
+          "type": datetime,
+          "default": rethink.now().run(rethink.connect())
         },
         "email": {
             "type": str
@@ -116,7 +118,39 @@ class Command(Model):
     """
     A remodel table model
     """
-    fields = {}
+    fields = {
+        "name": {
+            "type": str
+        },
+        "commandId": {
+            "type": int
+        },
+        "response": {
+            "type": str
+        },
+        "enabled": {
+            "type": bool,
+            "default": True,
+        },
+        "deleted": {
+            "type": bool,
+            "default": False
+        },
+        "userLevel": {
+            "type": int,
+            "default": 0
+        },
+        "createdAt": {
+            "type": datetime,
+            "default": rethink.now().run(rethink.connect())
+        },
+        "userId": {
+            "type": str
+        },
+        "userName": {
+            "type": str
+        }
+    }
 
 
 class Message(Model):
@@ -138,7 +172,35 @@ class Quote(Model):
     """
     A remodel table model
     """
-    fields = {}
+    fields = {
+        "quoteId": {
+            "type": int
+        },
+        "messageId": {
+          "type": str
+        },
+        "channelId": {
+            "type": str
+        },
+        "userId": {
+          "type": str
+        },
+        "quote": {
+            "type": str
+        },
+        "createdAt": {
+          "type": datetime,
+          "default": rethink.now().run(rethink.connect())
+        },
+        "enabled": {
+          "type": bool,
+          "default": True
+        },
+        "deleted": {
+            "type": bool,
+            "default": False
+        }
+      }
 
 
 class UserRole(Model):

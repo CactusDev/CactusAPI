@@ -156,24 +156,24 @@ def generate_error(meta=None, **kwargs):
     for arg in packet:
         if correct_types[arg] is not None and \
                 not isinstance(packet[arg], correct_types[arg]):
-            errors[arg] = "incorrect type {}, should be type {}".format(
+            raise Exception("incorrect type {}, should be type {}".format(
                 arg.__class__.__name__, correct_types[arg].__name__
-                )
+                ))
 
     if "links" in packet:
         if "about" in packet["links"]:
             if not isinstance(packet["links"]["about"], str):
-                errors["links:about"] = "link 'about' key is not a string"
+                raise Exception("link 'about' key is not a string")
         else:
-            errors["links"] = "link key does not contain required 'about' key"
+            raise Exception("link key does not contain required 'about' key")
 
     if "source" in packet and not isinstance(packet["source"], dict):
-        errors["source"] = "'source' key is not a dict"
+        raise Exception("'source' key is not a dict")
 
     if meta is not None and isinstance(meta, dict):
         packet["meta"] = meta
 
-    return packet, None if len(errors) == 0 else None, errors
+    return packet if len(errors) == 0 else errors
 
 
 def generate_packet(packet_type, uid, data, path,
@@ -215,6 +215,54 @@ def generate_packet(packet_type, uid, data, path,
     return to_return
 
 
+def check_types(model, fields):
+    """
+    Checks if the included types are correct
+    """
+    obj = getattr(models, model, None)
+    errors = {}
+
+    if obj is None:
+        print("ERRARS AND DOOM!")
+        print("check_types:226")
+        # TODO: Errars
+        return None
+
+    check = {key: fields[key] for key in fields if
+             key in obj.fields}
+
+    for field in obj.fields:
+        if field in check:
+            if not isinstance(
+                check[field],
+                obj.fields[field]["type"]
+            ):
+                errors[field] = {
+                    "detail": "Field '{}' is incorrect type '{}'."
+                              " Should be '{}'".format(
+                                  field,
+                                  type(check[field]),
+                                  obj.fields[field]["type"]
+                              ),
+                    "title": "Field is incorrect type",
+                    "code": "102"
+                }
+
+        elif "default" in obj.fields[field]:
+            check[field] = obj.fields[field]["default"]
+
+        else:
+            errors[field] = {
+                "detail": "Required field {} not included".format(
+                    field
+                ),
+                "title": "Required field is not included",
+                "code": "103"
+                }
+
+    return (errors, False) if errors != {} else (check, True)
+
+
 def create_resource(model, fields):
     """
     Creates a new resource
@@ -226,64 +274,42 @@ def create_resource(model, fields):
 
     errors = {}
 
-    for name, obj in inspect.getmembers(models):
+    obj = getattr(models, model, None)
 
-        # Does the current object's name match the resource we're on?
-        if name.lower() == model:
+    if obj is None:
+        # The model does not exist
+        # TODO: Add errar handling
+        pass
 
-            does_exist = list(
-                rethink.table(
-                    name.lower() + "s"
-                ).filter(fields).limit(1).run(g.rdb_conn)
-            )
+    does_exist = list(
+        rethink.table(
+            model.lower() + "s"
+        ).filter(fields).limit(1).run(g.rdb_conn)
+    )
 
-            if does_exist:
-                return does_exist, None
+    if does_exist:
+        return (does_exist, None)
 
-            # Yes it does, let's make the new resource
-            # Sort the parameters included by obj.fields
+    # Yes it does, let's make the new resource
+    # Sort the parameters included by obj.fields
 
-            if fields is not None:
-                check = {key: fields[key] for key in fields if
-                         key in obj.fields}
+    if fields is not None:
+        check, success = check_types(model, fields)
 
-                for field in obj.fields:
-                    if field in check:
-                        if not isinstance(check[field],
-                                          obj.fields[field]["type"]):
-                            errors[field] = {
-                                "detail": "Field is incorrect type '{}'."
-                                          " Should be '{}'".format(
-                                              type(check[field]),
-                                              obj.fields[field]["type"]
-                                          ),
-                                "title": "Field is incorrect type",
-                                "code": "102"
-                            }
+        if not success:
+            errors = check
 
-                    elif "default" in obj.fields[field]:
-                        check[field] = obj.fields[field]["default"]
+    if check.keys() == obj.fields.keys() and errors == {}:
+        # The fields for the new object match the schema
+        # Create the new object
+        created = obj(
+            **fields
+        )
+        created.save()
 
-                    else:
-                        errors[field] = {
-                            "detail": "Required field {} not included".format(
-                                field
-                            ),
-                            "title": "Required field is not included",
-                            "code": "103"
-                            }
+        data = get_single(model.lower() + "s", uid=created["id"])
 
-            if check.keys() == obj.fields.keys() and errors == {}:
-                # The fields for the new object match the schema
-                # Create the new object
-                created = obj(
-                    **fields
-                )
-                created.save()
-
-                data = get_single(model + "s", uid=created["id"])
-
-    return data, True if errors == {} else errors, False
+    return (errors, False) if errors != {} else (data, True)
 
 
 def generate_response(model, path, method, params,
@@ -310,16 +336,16 @@ def generate_response(model, path, method, params,
                   name, obj in inspect.getmembers(models)}
     errors = {}
 
-    if model not in model_dict:
+    if model.lower() not in model_dict:
         return {"error": "Field '{}' not in defined models".format(model)}, 404
 
     # Make sure we have the data we need
     if method == "GET":
         if data is None or data == [] or fields is None or fields == []:
             # Retrieve everything in the table
-            data = list(rethink.table(model + "s").run(g.rdb_conn))
+            data = list(rethink.table(model.lower() + "s").run(g.rdb_conn))
         elif fields is not None or fields != []:
-            data = list(rethink.table(model + "s").filter(
+            data = list(rethink.table(model.lower() + "s").filter(
                 fields
             ).run(g.rdb_conn))
 
@@ -343,78 +369,59 @@ def generate_response(model, path, method, params,
                 meta = META_CREATED
 
         elif method == "PATCH":
+
             # record editing/creation
             if data is not None:
-                for name, obj in inspect.getmembers(models):
-                    # Creates a Recursion error if not ignored
-                    if name == "Model":
-                        # So skip this iteration
-                        continue
+                obj = getattr(models, model, None)
 
-                    # Don't want to start on the builtins
-                    if name.startswith("__"):
-                        break
+                if obj is None:
+                    # TODO: Error catching & stuff
+                    pass
 
-                    # TODO: Make this fix not be hacky and lazy
-                    if isinstance(data, list):
-                        data = data[0]
+                # TODO: Make this fix not be hacky and lazy
+                # NOTE: May not be required anymore because of model
+                #       detection
+                if isinstance(data, list):
+                    data = data[0]
 
-                    check = {key: data[key] for key in
-                             data if key in obj.fields}
+                check, success = check_types(model, data)
 
-                    for field in check:
-                        if not isinstance(check[field],
-                                          obj.fields[field]["type"]):
-                            errors[field] = {
-                                "title": "Field is incorrect type",
-                                "detail": "Field is incorrect type '{}'."
-                                          "Should be '{}'".format(
-                                              type(check[field]),
-                                              obj.fields[field]["type"]
-                                           ),
-                                "code": "102"
-                            }
+                if not success:
+                    errors = check
 
-                    # Only continue if there are errors
-                    if errors == {}:
+                # Only continue if there are errors
+                if errors == {}:
 
-                        results = obj.get(**fields)
+                    results = obj.get(**fields)
 
-                        print("fields:\t", fields)
-                        print("results:\t", results)
+                    # There are no results that match
+                    if results is None:
+                        # Create new object
+                        resource = create_resource(model, data)
 
-                        # There are no results that match
-                        if results is None:
-                            # Create new object
-                            print("model:\t", model)
-                            print("data:\t", data)
-                            resource = create_resource(model, data)
+                        data = resource[0]
+                        created = resource[1]
 
-                            data = resource[0]
-                            created = resource[1]
-
-                            if created is False:
-                                # It's an error
-                                errors = data
-                            elif created is True:
-                                meta = META_CREATED
-                        else:
-                            results = obj.update(**data)
-
-
+                        if created is False:
+                            # It's an error
+                            errors = data
+                        elif created is True:
+                            # It was created
+                            meta = META_CREATED
+                    else:
+                        results = rethink.table(model.lower() + "s").get(
+                            results["id"]
+                        ).update(data).run(g.rdb_conn)
 
     elif method == "DELETE":
         # Some data is required
-        data = list(rethink.table(model + "s").filter(
+        data = list(rethink.table(model.lower() + "s").filter(
             fields
         ).limit(1).run(g.rdb_conn))
 
-        print("fields:\t", fields)
-        print("data:\t", data)
-
         if data != []:
             data = data[0]
-            success = rethink.table(model + "s").get(
+            success = rethink.table(model.lower() + "s").get(
                 data["id"]).delete().run(g.rdb_conn)
 
             return {"deleted": data["id"], "success": True}, 200
@@ -430,46 +437,49 @@ def generate_response(model, path, method, params,
             }, 500
 
     if errors != {}:
-        [generate_error(
+        # There were errors, so return that
+        errors = [generate_error(
             uid=uuid4(),
             source={"pointer": path},
             **errors[error]
         ) for error in errors]
 
+        # Return the errors in JSON form, with proper success code
+        return {"errors": errors}, 500
+
     # List to hold all data after ignored fields are removed
     post_ignore = data
 
-    for name, obj in inspect.getmembers(models):
-        if name == "Model":
-            continue
+    obj = getattr(models, model, None)
 
-        ignore = getattr(obj, "ignore", [])
-        # Don't continue if none are being ignored
-        if len(ignore) > 0:
-            # Does the current object's name match the resource we're on?
-            if name.lower() == model:
-                # Yes, continue on with the code
-                if isinstance(data, list):
-                    for row in data:
-                        post_ignore.append(
-                            {key: row[key] for
-                             key in row if
-                             key not in ignore}
-                        )
-                else:
-                    post_ignore.append(
-                        {key: data[key] for
-                         key in data if
-                         key not in ignore}
-                    )
+    if obj is None:
+        pass
+        # TODO: Do stuff for errars
+
+    ignore = getattr(obj, "ignore", [])
+    # Don't continue if none are being ignored
+    if len(ignore) > 0:
+        if isinstance(data, list):
+            for row in data:
+                post_ignore.append(
+                    {key: row[key] for
+                     key in row if
+                     key not in ignore}
+                )
+        else:
+            post_ignore.append(
+                {key: data[key] for
+                 key in data if
+                 key not in ignore}
+            )
 
     to_return = generate_packet(
-        model,
+        model.lower(),
         uuid4(),
         post_ignore,
         path,
         user=user
     )
 
-    # Return the response in JSON form, with proper success code
+    # Return the response with proper success code
     return to_return, 200
