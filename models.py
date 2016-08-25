@@ -5,6 +5,7 @@ RethinkDB models for remodel
 from remodel.models import Model
 import rethinkdb as rethink
 from datetime import datetime
+import config
 
 
 class User(Model):
@@ -20,7 +21,11 @@ class User(Model):
         },
         "confirmed_at": {
           "type": datetime,
-          "default": rethink.now().run(rethink.connect())
+          "default": rethink.now().run(rethink.connect(
+              db=config.RDB_DB,
+              port=config.RDB_PORT,
+              host=config.RDB_HOST
+          ))
         },
         "email": {
             "type": str
@@ -142,7 +147,11 @@ class Command(Model):
         },
         "createdAt": {
             "type": datetime,
-            "default": rethink.now().run(rethink.connect())
+            "default": rethink.now().run(rethink.connect(
+                db=config.RDB_DB,
+                port=config.RDB_PORT,
+                host=config.RDB_HOST
+            ))
         },
         "userId": {
             "type": str
@@ -190,7 +199,11 @@ class Quote(Model):
         },
         "createdAt": {
           "type": datetime,
-          "default": rethink.now().run(rethink.connect())
+          "default": rethink.now().run(rethink.connect(
+              db=config.RDB_DB,
+              port=config.RDB_PORT,
+              host=config.RDB_HOST
+          ))
         },
         "enabled": {
           "type": bool,

@@ -44,7 +44,7 @@ if not rethink.db_list().contains(RDB_DB).run(conn):
     rethink.db_create(RDB_DB).run(conn)
     print("Database {} successfully created!".format(RDB_DB))
 
-remodel.connection.pool.configure(db=RDB_DB)
+remodel.connection.pool.configure(db=RDB_DB, host=RDB_HOST, port=RDB_PORT)
 
 remodel.helpers.create_tables()
 remodel.helpers.create_indexes()
