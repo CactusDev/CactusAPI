@@ -158,6 +158,12 @@ class Command(Model):
         },
         "userName": {
             "type": str
+        },
+        "channelName": {
+            "type": str
+        },
+        "channelId": {
+            "type": str
         }
     }
 

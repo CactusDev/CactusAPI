@@ -15,9 +15,11 @@ from flask import jsonify, request, g, make_response
 from models import User, Command, Quote, Message, Friend
 from helpers import *
 
-from run import APP
+from run import app
 
-remodel.connection.pool.configure(db=APP.config["RDB_DB"])
+remodel.connection.pool.configure(db=app.config["RDB_DB"],
+                                  host=app.config["RDB_HOST"],
+                                  port=app.config["RDB_PORT"])
 REDIS_CONN = redis.Redis()
 
 META_CREATED = {
@@ -31,15 +33,15 @@ META_EDITED = {
 }
 
 
-@APP.before_request
+@app.before_request
 def before_request():
     """Set the Flask session object's user to Flask-Login's current_user"""
-    g.rdb_conn = rethink.connect(host=APP.config["RDB_HOST"],
-                                 port=APP.config["RDB_PORT"],
-                                 db=APP.config["RDB_DB"])
+    g.rdb_conn = rethink.connect(host=app.config["RDB_HOST"],
+                                 port=app.config["RDB_PORT"],
+                                 db=app.config["RDB_DB"])
 
 
-@APP.route("/api/v1/channel/<channel>/friend", methods=["GET"])
+@app.route("/api/v1/channel/<channel>/friend", methods=["GET"])
 def chan_friends(channel):
     """
     If you GET this endpoint, go to /api/v1/channel/<channel>/friend
@@ -76,7 +78,7 @@ def chan_friends(channel):
 
 # TODO: Fix this endpoint to remove timing elements (friends are forever)
 # TODO: Use Object.update(**changes) instead of Object(**updated_object).save()
-@APP.route("/api/v1/channel/<channel>/friend/<friend>",
+@app.route("/api/v1/channel/<channel>/friend/<friend>",
            methods=["GET", "POST", "DELETE"])
 def chan_friend(channel, friend):
     """
@@ -138,7 +140,7 @@ def chan_friend(channel, friend):
     return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/channel/<channel>/message", methods=["GET"])
+@app.route("/api/v1/channel/<channel>/message", methods=["GET"])
 def chan_messages(channel):
 
     """
@@ -164,7 +166,7 @@ def chan_messages(channel):
     return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/channel/<channel>/message/<message>",
+@app.route("/api/v1/channel/<channel>/message/<message>",
            methods=["GET", "POST", "DELETE"])
 def chan_message(channel, message):
     """
@@ -207,14 +209,14 @@ def chan_message(channel, message):
     fields = {"channelId": channel, "messageId": message}
 
     data = {
-        "messageId": message,
-        "message": request.values.get("message", ""),
-        "channelId": channel,
-        "userId": request.values.get("userId", ""),
-        "createdAt": rethink.epoch_time(
-            int(request.values.get("timestamp", time.time()))),
-        "packet": request.values.get("packet", "")
+        key: request.values.get(key) for key in request.values
     }
+    data.update(**fields)
+    data.update({
+        "createdAt": rethink.epoch_time(
+            int(request.values.get("timestamp", time.time()))
+        )
+    })
 
     data = {key: unescape(data[key]) for key in data
             if isinstance(data[key], str)}
@@ -233,7 +235,7 @@ def chan_message(channel, message):
     return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/channel/<channel>/quote", methods=["GET"])
+@app.route("/api/v1/channel/<channel>/quote", methods=["GET"])
 def user_quotes(channel):
     """
     If you GET this endpoint, go to /api/v1/channel/<channel>/quote
@@ -257,9 +259,9 @@ def user_quotes(channel):
     return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/channel/<channel>/quote/<int:quote>",
+@app.route("/api/v1/channel/<channel>/quote/<int:quoteId>",
            methods=["GET", "PATCH", "DELETE"])
-def chan_quote(channel, quote):
+def chan_quote(channel, quoteId):
     """
     If you GET this endpoint:
         Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
@@ -285,16 +287,15 @@ def chan_quote(channel, quote):
 
     channel = int(channel) if channel.isdigit() else channel
 
-    fields = {"channelId": channel,
-              "quoteId": quote}
+    fields = {
+        "channelId": channel,
+        "quoteId": quoteId
+    }
 
     data = {
-        "quote": request.values.get("quote"),
-        "quoteId": quote,
-        "messageId": request.values.get("messageId"),
-        "channelId": channel,
-        "userId": request.values.get("userId")
+        key: request.values.get(key) for key in request.values
     }
+    data.update(**fields)
 
     for key in data:
         if isinstance(data[key], str):
@@ -316,7 +317,7 @@ def chan_quote(channel, quote):
     return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/user/<string:username>",
+@app.route("/api/v1/user/<string:username>",
            methods=["GET", "PATCH", "DELETE"])
 def beam_user(username):
 
@@ -365,19 +366,19 @@ def beam_user(username):
     return make_response(jsonify(response[0]), response[1])
 
 
-@APP.route("/api/v1/user/<username>/command", methods=["GET"])
-def user_commands(username):
+@app.route("/api/v1/channel/<channel>/command", methods=["GET"])
+def user_commands(channel):
 
     """
-    If you GET this endpoint, simply go to /api/v1/user/<username>/command with
-    <username> replaced for the user you want to get commands for
+    If you GET this endpoint, simply go to /api/v1/channel/<channel>/command
+    with <channel> replaced for the channel you want to get commands for
     """
     model = "Command"
 
-    if username.isdigit():
-        fields = {"userId": int(username), "deleted": False}
+    if channel.isdigit():
+        fields = {"channelId": int(channel), "deleted": False}
     else:
-        fields = {"userName": username.lower(), "deleted": False}
+        fields = {"channelName": channel.lower(), "deleted": False}
 
     packet, code = generate_response(
         model,
@@ -390,45 +391,33 @@ def user_commands(username):
     return make_response(jsonify(packet), code)
 
 
-@APP.route("/api/v1/user/<username>/command/<int:cmd>",
+@app.route("/api/v1/channel/<channel>/command/<int:cmd>",
            methods=["GET", "PATCH", "DELETE"])
-def user_command(username, cmd):
+def user_command(channel, cmd):
     """
-    If you GET this endpoint, go to /api/v1/user/<username>/command/<cmd> with
-    <username> replaced for the user you want & <cmd> replaced with the command
-    you wish to look up
+    If you GET this endpoint, go to /api/v1/channel/<channel>/command/<cmd>
+    with <channel> replaced for the channel you want & <cmd> replaced with the
+    command you wish to look up
 
     If you PATCH this endpoint:
-        Go to /api/v1/user/<username>/command/<cmd> with <username> replaced
-            for the user wanted & <cmd> replaced with the command you wish
+        Go to /api/v1/channel/<channel>/command/<cmd> with <channel> replaced
+            for the channel wanted & <cmd> replaced with the command you wish
             to look up or the command ID
-        Parameters needed:
-            - name:     The command's name/command that is run
-            - response: The new response for the command
-            - level:    An integer for the user level required to run the
-                        command.
-                            Basics:
-                            0 - Accessible by ALL users
-                            1 - Channel Moderator Only
-                            2 - Channel Owner Only
-                            3 - Channel Subscriber Only
     """
 
     model = "Command"
 
-    if username.isdigit():
-        fields = {"userId": int(username), "commandId": cmd}
+    if channel.isdigit():
+        fields = {"channelId": int(channel), "commandId": cmd}
     else:
-        fields = {"userName": username.lower(), "commandId": cmd}
+        fields = {"channelName": channel.lower(), "commandId": cmd}
+
+    data = dict(request.values)
 
     data = {
-        "name": request.values.get("name"),
-        "response": request.values.get("response"),
-        "channelId": request.values.get("channelId"),
-        "userLevel": request.values.get("level", None),
-        "userId": request.values.get("userId"),
-        **fields
+        key: request.values.get(key) for key in request.values
     }
+    data.update(**fields)
 
     for key in data:
         if isinstance(data[key], str):
