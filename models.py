@@ -197,6 +197,9 @@ class Quote(Model):
         "channelId": {
             "type": str
         },
+        "channelName": {
+            "type": str
+        },
         "userId": {
           "type": str
         },
