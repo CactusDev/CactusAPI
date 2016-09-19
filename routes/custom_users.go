@@ -13,7 +13,6 @@ import (
 
 // GetUser get an individual user and send it to the client requesting it
 func GetUser(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	// FIXME: Make this use some sort of a global connection
 	connection, _ := driver.Initialize("localhost:28015", "api", "users")
 
 	user, _ := connection.GetOne(params.ByName("id"))

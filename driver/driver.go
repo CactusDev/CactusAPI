@@ -14,24 +14,31 @@ type Storage struct {
 	Session *rethink.Session
 }
 
+var globalStorage Storage
+
 // Initialize the RethinkDB session
 func Initialize(address string, db string, table string) (*Storage, error) {
-	session, err := rethink.Connect(rethink.ConnectOpts{
-		Address:  address,
-		Database: db,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+	empty := Storage{}
+	if globalStorage == empty {
+		session, err := rethink.Connect(rethink.ConnectOpts{
+			Address:  address,
+			Database: db,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	storage := Storage{
-		DB:      db,
-		Address: address,
-		Table:   table,
-		Session: session,
-	}
+		storage := Storage{
+			DB:      db,
+			Address: address,
+			Table:   table,
+			Session: session,
+		}
 
-	return &storage, err
+		globalStorage = storage
+		return &storage, err
+	}
+	return &globalStorage, nil
 }
 
 // GetOne Retrieve a single record from the table supplied, based on an ID
