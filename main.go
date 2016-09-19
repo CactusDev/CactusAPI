@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/cactusbot/API/driver"
-	"github.com/cactusbot/API/model"
-	"github.com/cactusbot/API/resource"
-	"github.com/cactusbot/API/routes"
-	"github.com/cactusbot/API/util"
+	"github.com/cactusbot/CactusAPI/driver"
+	"github.com/cactusbot/CactusAPI/model"
+	"github.com/cactusbot/CactusAPI/resource"
+	"github.com/cactusbot/CactusAPI/routes"
+	"github.com/cactusbot/CactusAPI/util"
 
 	"github.com/julienschmidt/httprouter"
 

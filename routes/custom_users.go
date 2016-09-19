@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/cactusbot/API/driver"
-	"github.com/cactusbot/API/model"
+	"github.com/cactusbot/CactusAPI/driver"
+	"github.com/cactusbot/CactusAPI/model"
 	"github.com/cactusbot/api2go/jsonapi"
 	"github.com/julienschmidt/httprouter"
 )

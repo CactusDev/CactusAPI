@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/cactusbot/API/driver"
-	"github.com/cactusbot/API/util"
+	"github.com/cactusbot/CactusAPI/driver"
+	"github.com/cactusbot/CactusAPI/util"
 )
 
 // User struct defines the fields for api2go to send
