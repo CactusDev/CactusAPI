@@ -22,19 +22,19 @@ func (u User) GetID() string {
 }
 
 // SetID sets ID of a User object to satisfy the requirement of api2go
-func (u User) SetID(id string) error {
+func (u *User) SetID(id string) error {
 	u.ID = id
 	return nil
 }
 
 // CreateUser create a new user
 func (u *User) CreateUser() {
-	userStorage, err := driver.Initialize("localhost:28015", "api", "users")
+	database, err := driver.Initialize("localhost:28015", "api", "users")
 	if err != nil {
 		util.GetLogger().Error(err)
 	}
 
-	userStorage.Insert(map[string]interface{}{
+	database.Insert(map[string]interface{}{
 		"active":       u.Active,
 		"confirmed_at": u.Confirmed,
 		"email":        u.Email,

@@ -22,14 +22,23 @@ func main() {
 	port := 8000
 	api := api2go.NewAPI("v1")
 
-	userStorage, _ := driver.Initialize("localhost:28015", "api", "users")
+	userStorage, err := driver.Initialize("localhost:28015", "api", "users")
+	if err != nil {
+		log.Fatal(err)
+	}
+	commandStorage, err := driver.Initialize("localhost:28015", "api", "commands")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	api.AddResource(model.User{}, resource.UserResource{UserStorage: userStorage})
+	api.AddResource(model.Command{}, resource.CommandResource{CommandStorage: commandStorage})
 
 	log.Info("Listening on :" + strconv.Itoa(port))
 	handler := api.Handler().(*httprouter.Router)
 
 	handler.GET("/v1/user/:id", routes.GetUser)
+	handler.GET("/v1/command/:command", routes.GetCommand)
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 }
