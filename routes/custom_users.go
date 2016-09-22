@@ -7,8 +7,8 @@ import (
 
 	"github.com/cactusbot/CactusAPI/driver"
 	"github.com/cactusbot/CactusAPI/model"
-	"github.com/cactusbot/api2go/jsonapi"
 	"github.com/julienschmidt/httprouter"
+	"github.com/manyminds/api2go/jsonapi"
 )
 
 // GetUser get an individual user and send it to the client requesting it

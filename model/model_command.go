@@ -11,6 +11,7 @@ type Command struct {
 	Command  string `json:"command"`
 	Response string `json:"response"`
 	Calls    int    `json:"calls"`
+	Channel  string `json:"channel"`
 }
 
 // GetID Returns the user's ID to satisfy api2go

@@ -7,6 +7,7 @@ import (
 
 	"github.com/cactusbot/CactusAPI/driver"
 	"github.com/cactusbot/CactusAPI/model"
+	"github.com/cactusbot/sepal/util"
 	"github.com/manyminds/api2go"
 )
 
@@ -21,17 +22,18 @@ func (s CommandResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 
 	commands, err := s.CommandStorage.GetAll()
 	if err != nil {
-		log.Fatalln(err)
+		util.GetLogger().Error(err)
 	}
 
 	for _, command := range commands {
+		log.Info("COMMAND")
 		log.Info(command)
 		marshalled, _ := json.Marshal(command)
 		appended := model.Command{}
 		err = json.Unmarshal(marshalled, &appended)
 		if err != nil {
 			// TODO: Add stuff to handle errors
-			log.Fatalln(err)
+			util.GetLogger().Error(err)
 		}
 
 		result = append(result, appended)
@@ -44,7 +46,7 @@ func (s CommandResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 func (s CommandResource) FindOne(ID string, r api2go.Request) (api2go.Responder, error) {
 	command, err := s.CommandStorage.GetOne(ID)
 	if err != nil {
-		log.Fatalln(err)
+		util.GetLogger().Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusNotFound)
 	}
 
@@ -53,7 +55,7 @@ func (s CommandResource) FindOne(ID string, r api2go.Request) (api2go.Responder,
 	err = json.Unmarshal(marshalled, &result)
 	if err != nil {
 		// TODO: Add stuff to handle errors
-		log.Fatalln(err)
+		util.GetLogger().Error(err)
 	}
 
 	return &Response{Res: result}, nil
@@ -63,7 +65,7 @@ func (s CommandResource) FindOne(ID string, r api2go.Request) (api2go.Responder,
 func (s CommandResource) GetOne(ID string) (api2go.Responder, error) {
 	user, err := s.CommandStorage.GetOne(ID)
 	if err != nil {
-		log.Fatalln(err)
+		util.GetLogger().Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusNotFound)
 	}
 
@@ -72,7 +74,7 @@ func (s CommandResource) GetOne(ID string) (api2go.Responder, error) {
 	err = json.Unmarshal(marshalled, &result)
 	if err != nil {
 		// TODO: Add stuff to handle errors
-		log.Fatalln(err)
+		util.GetLogger().Error(err)
 	}
 
 	return &Response{Res: result}, nil
@@ -87,7 +89,7 @@ func (s CommandResource) Create(obj interface{}, r api2go.Request) (api2go.Respo
 
 	id, err := s.CommandStorage.Insert(command)
 	if err != nil {
-		log.Fatalln(err)
+		util.GetLogger().Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusInternalServerError)
 	}
 	command.ID = id

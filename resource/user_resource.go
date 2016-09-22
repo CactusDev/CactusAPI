@@ -25,7 +25,7 @@ func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 
 	users, err := s.UserStorage.GetAll()
 	if err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 	}
 
 	for _, user := range users {
@@ -35,7 +35,7 @@ func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 		err = json.Unmarshal(marshalled, &appended)
 		if err != nil {
 			// TODO: Add stuff to handle errors
-			log.Fatalln(err)
+			log.Error(err)
 		}
 
 		result = append(result, appended)
@@ -48,7 +48,7 @@ func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 func (s UserResource) FindOne(ID string, r api2go.Request) (api2go.Responder, error) {
 	user, err := s.UserStorage.GetOne(ID)
 	if err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusNotFound)
 	}
 
@@ -57,7 +57,7 @@ func (s UserResource) FindOne(ID string, r api2go.Request) (api2go.Responder, er
 	err = json.Unmarshal(marshalled, &result)
 	if err != nil {
 		// TODO: Add stuff to handle errors
-		log.Fatalln(err)
+		log.Error(err)
 	}
 
 	return &Response{Res: result}, nil
@@ -67,7 +67,7 @@ func (s UserResource) FindOne(ID string, r api2go.Request) (api2go.Responder, er
 func (s UserResource) GetOne(ID string) (api2go.Responder, error) {
 	user, err := s.UserStorage.GetOne(ID)
 	if err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusNotFound)
 	}
 
@@ -76,7 +76,7 @@ func (s UserResource) GetOne(ID string) (api2go.Responder, error) {
 	err = json.Unmarshal(marshalled, &result)
 	if err != nil {
 		// TODO: Add stuff to handle errors
-		log.Fatalln(err)
+		log.Error(err)
 	}
 
 	return &Response{Res: result}, nil
@@ -93,7 +93,7 @@ func (s UserResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 	id, err := s.UserStorage.Insert(user)
 	if err != nil {
 		// Log the error and return an HTTP error
-		log.Fatalln(err)
+		log.Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusInternalServerError)
 	}
 	user.ID = id

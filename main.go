@@ -38,7 +38,7 @@ func main() {
 	handler := api.Handler().(*httprouter.Router)
 
 	handler.GET("/v1/user/:id", routes.GetUser)
-	handler.GET("/v1/command/:command", routes.GetCommand)
+	handler.GET("/v1/:target/command/:command", routes.GetCommand)
 
 	http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 }
