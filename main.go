@@ -71,11 +71,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	repeatStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "repeats", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	api.AddResource(model.User{}, resource.UserResource{UserStorage: userStorage})
 	api.AddResource(model.Command{}, resource.CommandResource{CommandStorage: commandStorage})
 	api.AddResource(model.Quote{}, resource.QuoteResource{QuoteStorage: quoteStorage})
 	api.AddResource(model.Friend{}, resource.FriendResource{FriendStorage: friendStorage})
 	api.AddResource(model.Permit{}, resource.PermitResource{PermitStorage: permitStorage})
+	api.AddResource(model.Repeat{}, resource.RepeatResource{RepeatStorage: repeatStorage})
 
 	log.Info("Listening on :" + strconv.Itoa(port))
 	handler := api.Handler().(*httprouter.Router)
