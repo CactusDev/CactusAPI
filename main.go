@@ -60,9 +60,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	friendStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "friends", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	api.AddResource(model.User{}, resource.UserResource{UserStorage: userStorage})
 	api.AddResource(model.Command{}, resource.CommandResource{CommandStorage: commandStorage})
 	api.AddResource(model.Quote{}, resource.QuoteResource{QuoteStorage: quoteStorage})
+	api.AddResource(model.Friend{}, resource.FriendResource{FriendStorage: friendStorage})
 
 	log.Info("Listening on :" + strconv.Itoa(port))
 	handler := api.Handler().(*httprouter.Router)

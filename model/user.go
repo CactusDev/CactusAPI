@@ -8,6 +8,7 @@ type User struct {
 	Roles     []string    `json:"roles"`
 	Channels  interface{} `json:"channels"`
 	Username  string      `json:"username"`
+	Password  string      `json:"-"`
 }
 
 // GetID Returns the user's ID to satisfy api2go
