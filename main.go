@@ -10,17 +10,10 @@ import (
 	"github.com/CactusDev/CactusAPI/driver"
 	"github.com/CactusDev/CactusAPI/model"
 	"github.com/CactusDev/CactusAPI/resource"
-	"github.com/CactusDev/sepal/util"
+	"github.com/CactusDev/CactusAPI/util"
 	"github.com/julienschmidt/httprouter"
-
 	"github.com/manyminds/api2go"
 )
-
-type config struct {
-	Host  string
-	Port  string
-	Table string
-}
 
 func main() {
 	var log = util.InitLogger(true)
@@ -41,11 +34,13 @@ func main() {
 	}
 
 	decoder := json.NewDecoder(file)
-	conf := config{}
+	conf := util.Config{}
+
 	err = decoder.Decode(&conf)
 	if err != nil {
 		log.Fatal(err)
 	}
+	util.GlobalConfig = conf
 
 	port := 8000
 	api := api2go.NewAPI("v1")

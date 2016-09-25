@@ -1,9 +1,13 @@
 package driver
 
 import (
+	"fmt"
 	"regexp"
 
-	"github.com/CactusDev/CactusAPI/util"
+	"github.com/CactusDev/CactusAPI/model"
+	"github.com/CactusDev/sepal/util"
+
+	// "github.com/CactusDev/CactusAPI/util"
 
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
@@ -163,4 +167,14 @@ func (s Storage) Update(obj interface{}, id string) (map[string]interface{}, err
 	}
 
 	return result, nil
+}
+
+// GetUser get a single user
+func (s Storage) GetUser(username string) (map[string]interface{}, error) {
+	var user model.User
+	res, err := rethink.Table(s.Table).Filter(rethink.Row.Field("username").Eq(username)).Run(s.Session)
+
+	res.One(&user)
+	fmt.Println(user)
+	return nil, err
 }
