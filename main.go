@@ -65,10 +65,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	permitStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "permits", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	api.AddResource(model.User{}, resource.UserResource{UserStorage: userStorage})
 	api.AddResource(model.Command{}, resource.CommandResource{CommandStorage: commandStorage})
 	api.AddResource(model.Quote{}, resource.QuoteResource{QuoteStorage: quoteStorage})
 	api.AddResource(model.Friend{}, resource.FriendResource{FriendStorage: friendStorage})
+	api.AddResource(model.Permit{}, resource.PermitResource{PermitStorage: permitStorage})
 
 	log.Info("Listening on :" + strconv.Itoa(port))
 	handler := api.Handler().(*httprouter.Router)
