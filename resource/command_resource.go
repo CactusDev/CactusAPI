@@ -26,8 +26,6 @@ func (s CommandResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 	}
 
 	for _, command := range commands {
-		log.Info("COMMAND")
-		log.Info(command)
 		marshalled, _ := json.Marshal(command)
 		appended := model.Command{}
 		err = json.Unmarshal(marshalled, &appended)
