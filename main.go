@@ -48,6 +48,7 @@ func main() {
 	userStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "users", "userName")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	commandStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "commands", "name")
