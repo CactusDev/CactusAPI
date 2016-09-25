@@ -3,7 +3,7 @@ package driver
 import (
 	"regexp"
 
-	"github.com/cactusbot/sepal/util"
+	"github.com/CactusDev/CactusAPI/util"
 
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )

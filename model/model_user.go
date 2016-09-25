@@ -5,7 +5,6 @@ type User struct {
 	ID        string      `json:"-"`
 	Confirmed string      `json:"confirmedAt"`
 	Active    bool        `json:"active"`
-	Email     string      `json:"email"`
 	Roles     []string    `json:"roles"`
 	Channels  interface{} `json:"channels"`
 	Username  string      `json:"username"`
