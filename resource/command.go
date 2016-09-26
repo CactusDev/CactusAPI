@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cactusbot/cactusapi/driver"
-	"github.com/cactusbot/cactusapi/model"
-	"github.com/cactusbot/sepal/util"
+	"github.com/CactusDev/CactusAPI/driver"
+	"github.com/CactusDev/CactusAPI/model"
+	"github.com/CactusDev/CactusAPI/util"
 	"github.com/manyminds/api2go"
 )
 
@@ -26,8 +26,6 @@ func (s CommandResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 	}
 
 	for _, command := range commands {
-		log.Info("COMMAND")
-		log.Info(command)
 		marshalled, _ := json.Marshal(command)
 		appended := model.Command{}
 		err = json.Unmarshal(marshalled, &appended)

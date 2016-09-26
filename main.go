@@ -7,21 +7,13 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/cactusbot/cactusapi/driver"
-	"github.com/cactusbot/cactusapi/model"
-	"github.com/cactusbot/cactusapi/resource"
-	"github.com/cactusbot/cactusapi/util"
-
+	"github.com/CactusDev/CactusAPI/driver"
+	"github.com/CactusDev/CactusAPI/model"
+	"github.com/CactusDev/CactusAPI/resource"
+	"github.com/CactusDev/CactusAPI/util"
 	"github.com/julienschmidt/httprouter"
-
 	"github.com/manyminds/api2go"
 )
-
-type config struct {
-	Host  string
-	Port  string
-	Table string
-}
 
 func main() {
 	var log = util.InitLogger(true)
@@ -42,11 +34,13 @@ func main() {
 	}
 
 	decoder := json.NewDecoder(file)
-	conf := config{}
+	conf := util.Config{}
+
 	err = decoder.Decode(&conf)
 	if err != nil {
 		log.Fatal(err)
 	}
+	util.GlobalConfig = conf
 
 	port := 8000
 	api := api2go.NewAPI("v1")
@@ -54,6 +48,7 @@ func main() {
 	userStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "users", "userName")
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	commandStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "commands", "name")
@@ -61,8 +56,32 @@ func main() {
 		log.Fatal(err)
 	}
 
+	quoteStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "quotes", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	friendStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "friends", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	permitStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "permits", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	repeatStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Table, "repeats", "name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	api.AddResource(model.User{}, resource.UserResource{UserStorage: userStorage})
 	api.AddResource(model.Command{}, resource.CommandResource{CommandStorage: commandStorage})
+	api.AddResource(model.Quote{}, resource.QuoteResource{QuoteStorage: quoteStorage})
+	api.AddResource(model.Friend{}, resource.FriendResource{FriendStorage: friendStorage})
+	api.AddResource(model.Permit{}, resource.PermitResource{PermitStorage: permitStorage})
+	api.AddResource(model.Repeat{}, resource.RepeatResource{RepeatStorage: repeatStorage})
 
 	log.Info("Listening on :" + strconv.Itoa(port))
 	handler := api.Handler().(*httprouter.Router)
