@@ -3,10 +3,12 @@ package driver
 import (
 	"regexp"
 
-	"github.com/cactusbot/sepal/util"
+	"github.com/cactusbot/cactusapi-go/util"
 
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
+
+var log = util.GetLogger()
 
 // Storage stores the information required for a DB query
 type Storage struct {
@@ -24,7 +26,7 @@ func Initialize(address string, db string, table string, secondary string) (*Sto
 		Database: db,
 	})
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	storage := Storage{
@@ -43,6 +45,27 @@ func getUUIDValidator(text string) bool {
 	return r.MatchString(text)
 }
 
+// Exists checks if a certain record already exists based on the map given
+func (s Storage) Exists(compare interface{}) (bool, map[string]interface{}, error) {
+	res, err := rethink.Table(s.Table).Filter(compare).Run(s.Session)
+	defer res.Close()
+
+	if err != nil {
+		log.Error(err)
+		return false, nil, err
+	}
+
+	response := make(map[string]interface{})
+	err = res.One(&response)
+
+	if err != nil {
+		log.Error(err)
+		return false, nil, err
+	}
+
+	return len(response) > 0, response, err
+}
+
 // GetOne Retrieve a single record from the table supplied, based on an ID
 func (s Storage) GetOne(id string) (map[string]interface{}, error) {
 
@@ -57,14 +80,14 @@ func (s Storage) GetOne(id string) (map[string]interface{}, error) {
 
 	defer res.Close()
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	response := make(map[string]interface{})
 
 	err = res.One(&response)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	return response, err
@@ -76,7 +99,7 @@ func (s Storage) GetCommand(name string, channel string) (map[string]interface{}
 	defer res.Close()
 
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 		return nil, err
 	}
 
@@ -96,14 +119,14 @@ func (s Storage) GetAll() ([]map[string]interface{}, error) {
 	res, err := rethink.Table(s.Table).Run(s.Session)
 	defer res.Close()
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	var response []map[string]interface{}
 
 	err = res.All(&response)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	return response, err
@@ -114,14 +137,14 @@ func (s Storage) GetMultiple(limit int) ([]map[string]interface{}, error) {
 	res, err := rethink.Table(s.Table).Limit(limit).Run(s.Session)
 	defer res.Close()
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	var response []map[string]interface{}
 
 	err = res.All(&response)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 	}
 
 	return response, err
@@ -131,7 +154,7 @@ func (s Storage) GetMultiple(limit int) ([]map[string]interface{}, error) {
 func (s Storage) Insert(obj interface{}) (string, error) {
 	result, err := rethink.Table(s.Table).Insert(obj).RunWrite(s.Session)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 		return "", err
 	}
 
@@ -142,7 +165,7 @@ func (s Storage) Insert(obj interface{}) (string, error) {
 func (s Storage) Delete(id string) error {
 	_, err := rethink.Table(s.Table).Get(id).Delete().Run(s.Session)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -152,13 +175,13 @@ func (s Storage) Delete(id string) error {
 func (s Storage) Update(obj interface{}, id string) (map[string]interface{}, error) {
 	_, err := rethink.Table(s.Table).Get(id).Update(obj).RunWrite(s.Session)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 		return nil, err
 	}
 
 	result, err := s.GetOne(id)
 	if err != nil {
-		util.GetLogger().Error(err)
+		log.Error(err)
 		return nil, err
 	}
 

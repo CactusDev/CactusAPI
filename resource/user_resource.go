@@ -9,6 +9,8 @@ import (
 	"github.com/cactusbot/cactusapi/model"
 	"github.com/cactusbot/cactusapi/util"
 	"github.com/manyminds/api2go"
+
+	rethink "gopkg.in/dancannon/gorethink.v2"
 )
 
 var log = util.GetLogger()
@@ -88,18 +90,31 @@ func (s UserResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 	// Check that the object supplied has the proper info to fill a model.User
 	user, ok := obj.(model.User)
 	if !ok {
-		return &Response{}, api2go.NewHTTPError(errors.New("Invalid instance given"), "Invalid instance given", http.StatusBadRequest)
+		return &Response{}, api2go.NewHTTPError(errors.New("Invalid instance given"), "JSON does not match required model for User", http.StatusBadRequest)
 	}
 
-	id, err := s.UserStorage.Insert(user)
-	if err != nil {
+	// Check if the user already exists
+	exists, obj, err := s.UserStorage.Exists(obj)
+
+	if err != nil && err != rethink.ErrEmptyResult {
 		// Log the error and return an HTTP error
 		log.Error(err)
 		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusInternalServerError)
-	}
-	user.ID = id
+	} else if exists {
+		// Just return that object, since it already exists
+		return &Response{Res: obj, Code: http.StatusOK}, err
+	} else {
+		// It doesn't already exist, so lets create create the user
+		id, err := s.UserStorage.Insert(user)
+		if err != nil {
+			// Log the error and return an HTTP error
+			log.Error(err)
+			return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusInternalServerError)
+		}
+		user.ID = id
 
-	return &Response{Res: user, Code: http.StatusCreated}, nil
+		return &Response{Res: user, Code: http.StatusCreated}, nil
+	}
 }
 
 // Delete implements deletion of resources, satisfying api2go.DataSource interface

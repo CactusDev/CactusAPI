@@ -2,13 +2,12 @@ package model
 
 // User struct defines the fields for api2go to send
 type User struct {
-	ID        string      `json:"-"`
-	Confirmed string      `json:"confirmedAt"`
-	Active    bool        `json:"active"`
-	Email     string      `json:"email"`
-	Roles     []string    `json:"roles"`
-	Channels  interface{} `json:"channels"`
-	Username  string      `json:"username"`
+	ID       string      `json:"-"`
+	Active   bool        `json:"active"`
+	Email    string      `json:"email"`
+	Roles    []string    `json:"-"`
+	Channels interface{} `json:"channels"`
+	Username string      `json:"username"`
 }
 
 // GetID Returns the user's ID to satisfy api2go
