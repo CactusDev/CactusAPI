@@ -3,7 +3,7 @@ package driver
 import (
 	"regexp"
 
-	"github.com/cactusbot/cactusapi-go/util"
+	"github.com/cactusdev/cactusapi/util"
 
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )

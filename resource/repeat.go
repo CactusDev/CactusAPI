@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/CactusDev/CactusAPI/driver"
-	"github.com/CactusDev/CactusAPI/model"
-	"github.com/CactusDev/CactusAPI/util"
+	"github.com/cactusdev/cactusapi/driver"
+	"github.com/cactusdev/cactusapi/model"
+	"github.com/cactusdev/cactusapi/util"
 	"github.com/manyminds/api2go"
 )
 

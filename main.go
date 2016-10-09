@@ -7,10 +7,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/CactusDev/CactusAPI/driver"
-	"github.com/CactusDev/CactusAPI/model"
-	"github.com/CactusDev/CactusAPI/resource"
-	"github.com/CactusDev/CactusAPI/util"
+	"github.com/cactusdev/cactusapi/driver"
+	"github.com/cactusdev/cactusapi/model"
+	"github.com/cactusdev/cactusapi/resource"
+	"github.com/cactusdev/cactusapi/util"
 	"github.com/julienschmidt/httprouter"
 	"github.com/manyminds/api2go"
 )
