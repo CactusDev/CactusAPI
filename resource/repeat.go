@@ -7,11 +7,8 @@ import (
 
 	"github.com/cactusdev/cactusapi/driver"
 	"github.com/cactusdev/cactusapi/model"
-	"github.com/cactusdev/cactusapi/util"
 	"github.com/manyminds/api2go"
 )
-
-var log = util.GetLogger()
 
 // RepeatResource keeps track of the information required for accessing the Repeat information
 type RepeatResource struct {

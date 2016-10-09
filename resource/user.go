@@ -7,13 +7,10 @@ import (
 
 	"github.com/cactusdev/cactusapi/driver"
 	"github.com/cactusdev/cactusapi/model"
-	"github.com/cactusdev/cactusapi/util"
 	"github.com/manyminds/api2go"
 
 	rethink "gopkg.in/dancannon/gorethink.v2"
 )
-
-var log = util.GetLogger()
 
 // UserResource keeps track of the information required for accessing the user information
 type UserResource struct {

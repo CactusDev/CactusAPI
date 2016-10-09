@@ -8,12 +8,12 @@ type Repeat struct {
 }
 
 // GetID Returns the user's ID to satisfy api2go
-func (u User) GetID() string {
+func (u Repeat) GetID() string {
 	return u.ID
 }
 
 // SetID sets ID of a User object to satisfy the requirement of api2go
-func (u *User) SetID(id string) error {
+func (u *Repeat) SetID(id string) error {
 	u.ID = id
 	return nil
 }

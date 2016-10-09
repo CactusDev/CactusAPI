@@ -4,9 +4,9 @@ import "io/ioutil"
 
 // Config api config
 type Config struct {
-	Host  string
-	Port  string
-	Table string
+	Host     string
+	Port     string
+	Database string
 }
 
 // GlobalConfig config for other files to use

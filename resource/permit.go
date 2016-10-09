@@ -13,13 +13,13 @@ import (
 
 var log = util.GetLogger()
 
-// PermitStorage keeps track of the information required for accessing the permit information
-type PermitStorage struct {
+// PermitResource keeps track of the information required for accessing the permit information
+type PermitResource struct {
 	PermitStorage *driver.Storage
 }
 
-// FindAll returns all values in the database for the PermitStorage, satisfying the api2go source interface
-func (s PermitStorage) FindAll(r api2go.Request) (api2go.Responder, error) {
+// FindAll returns all values in the database for the PermitResource, satisfying the api2go source interface
+func (s PermitResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 
 	var result []model.Permit
 
@@ -44,7 +44,7 @@ func (s PermitStorage) FindAll(r api2go.Request) (api2go.Responder, error) {
 }
 
 // FindOne returns a single permit from the database based on ID
-func (s PermitStorage) FindOne(ID string, r api2go.Request) (api2go.Responder, error) {
+func (s PermitResource) FindOne(ID string, r api2go.Request) (api2go.Responder, error) {
 	log.Debug(ID)
 	permit, err := s.PermitStorage.GetOne(ID)
 	if err != nil {
@@ -64,7 +64,7 @@ func (s PermitStorage) FindOne(ID string, r api2go.Request) (api2go.Responder, e
 }
 
 // GetOne returns a single permit from the database based on ID
-func (s PermitStorage) GetOne(ID string) (api2go.Responder, error) {
+func (s PermitResource) GetOne(ID string) (api2go.Responder, error) {
 	permit, err := s.PermitStorage.GetOne(ID)
 	if err != nil {
 		log.Error(err)
@@ -83,7 +83,7 @@ func (s PermitStorage) GetOne(ID string) (api2go.Responder, error) {
 }
 
 // Create method satisfies the api2go.DataSource interface
-func (s PermitStorage) Create(obj interface{}, r api2go.Request) (api2go.Responder, error) {
+func (s PermitResource) Create(obj interface{}, r api2go.Request) (api2go.Responder, error) {
 	// Check that the object supplied has the proper info to fill a model.Permit
 	permit, ok := obj.(model.Permit)
 	if !ok {
@@ -102,7 +102,7 @@ func (s PermitStorage) Create(obj interface{}, r api2go.Request) (api2go.Respond
 }
 
 // Delete implements deletion of resources, satisfying api2go.DataSource interface
-func (s PermitStorage) Delete(id string, r api2go.Request) (api2go.Responder, error) {
+func (s PermitResource) Delete(id string, r api2go.Request) (api2go.Responder, error) {
 	// Check if there is even a permit with that ID
 	err := s.PermitStorage.Delete(id)
 	// Either way there should be no content, so return that & err, which will be nil if the record was properly deleted
@@ -110,6 +110,6 @@ func (s PermitStorage) Delete(id string, r api2go.Request) (api2go.Responder, er
 }
 
 // Update implements the updating of a resource, satisfying api2go.DataSource interface
-func (s PermitStorage) Update(obj interface{}, r api2go.Request) (api2go.Responder, error) {
+func (s PermitResource) Update(obj interface{}, r api2go.Request) (api2go.Responder, error) {
 	return &Response{Code: http.StatusOK}, nil
 }
