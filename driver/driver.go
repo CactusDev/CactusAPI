@@ -58,7 +58,10 @@ func (s Storage) Exists(compare interface{}) (bool, map[string]interface{}, erro
 	response := make(map[string]interface{})
 	err = res.One(&response)
 
-	if err != nil {
+	if err == rethink.ErrEmptyResult {
+		log.Error(err)
+		return false, nil, nil
+	} else if err != nil {
 		log.Error(err)
 		return false, nil, err
 	}
@@ -93,27 +96,6 @@ func (s Storage) GetOne(id string) (map[string]interface{}, error) {
 	return response, err
 }
 
-// GetCommand get a single command
-func (s Storage) GetCommand(name string, channel string) (map[string]interface{}, error) {
-	res, err := rethink.Table(s.Table).Filter(rethink.Row.Field("command").Eq(name)).Run(s.Session)
-	defer res.Close()
-
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
-	response := make(map[string]interface{})
-
-	for res.Next(&response) {
-		if response["channel"] == channel {
-			return response, nil
-		}
-	}
-
-	return nil, err
-}
-
 // GetAll Retrieve all records from the table supplied
 func (s Storage) GetAll() ([]map[string]interface{}, error) {
 	res, err := rethink.Table(s.Table).Run(s.Session)
@@ -127,6 +109,10 @@ func (s Storage) GetAll() ([]map[string]interface{}, error) {
 	err = res.All(&response)
 	if err != nil {
 		log.Error(err)
+	}
+
+	if err == rethink.ErrEmptyResult {
+		return response, nil
 	}
 
 	return response, err
@@ -145,6 +131,10 @@ func (s Storage) GetMultiple(limit int) ([]map[string]interface{}, error) {
 	err = res.All(&response)
 	if err != nil {
 		log.Error(err)
+	}
+
+	if err == rethink.ErrEmptyResult {
+		return response, nil
 	}
 
 	return response, err
@@ -179,11 +169,15 @@ func (s Storage) Update(obj interface{}, id string) (map[string]interface{}, err
 		return nil, err
 	}
 
-	result, err := s.GetOne(id)
+	response, err := s.GetOne(id)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
-	return result, nil
+	if err == rethink.ErrEmptyResult {
+		return response, nil
+	}
+
+	return response, nil
 }
