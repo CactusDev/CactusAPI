@@ -2,9 +2,8 @@ package resource
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
-	"reflect"
+	"strings"
 
 	"github.com/cactusdev/cactusapi/driver"
 	"github.com/cactusdev/cactusapi/model"
@@ -44,7 +43,6 @@ func (s UserResource) FindAll(r api2go.Request) (api2go.Responder, error) {
 
 // FindOne returns a single user from the database based on ID
 func (s UserResource) FindOne(ID string, r api2go.Request) (api2go.Responder, error) {
-	log.Debug(ID)
 	user, err := s.UserStorage.GetOne(ID)
 	if err != nil {
 		return &Response{}, CheckEmpty(err, "user", ID)
@@ -84,11 +82,12 @@ func (s UserResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 	// Check that the object supplied has the proper info to fill a model.User
 	user, ok := obj.(model.User)
 	if !ok {
-		return &Response{}, api2go.NewHTTPError(errors.New("Invalid instance given"), "JSON does not match required model for User", http.StatusBadRequest)
+		log.Error("Invalid instance given")
+		return &Response{}, api2go.NewHTTPError(nil, "JSON does not match required model for User", http.StatusBadRequest)
 	}
 
 	// Check if the user already exists
-	exists, obj, err := s.UserStorage.Exists(obj)
+	exists, _, err := s.UserStorage.Exists(obj)
 
 	if err != nil {
 		log.Debug("top err != nil")
@@ -97,14 +96,9 @@ func (s UserResource) Create(obj interface{}, r api2go.Request) (api2go.Responde
 
 	// FIXME: This makes it work, but it's returning a 201 created. Need to figure out what it should be returning
 	if exists {
-		log.Debug("if exists")
-		log.Debug(reflect.TypeOf(obj))
-		marshalled, _ := json.Marshal(user)
-		result := model.User{}
-		err = json.Unmarshal(marshalled, &result)
-		log.Debug(result)
+		log.Error("Tried to create an already existing resource")
 		// Just return that object, since it already exists
-		return &Response{Res: result, Code: http.StatusCreated}, err
+		return &Response{}, api2go.NewHTTPError(nil, "Resource at this endpoint already exists", http.StatusConflict)
 	}
 
 	// It doesn't already exist, so lets create create the user
@@ -129,5 +123,13 @@ func (s UserResource) Delete(id string, r api2go.Request) (api2go.Responder, err
 
 // Update implements the updating of a resource, satisfying api2go.DataSource interface
 func (s UserResource) Update(obj interface{}, r api2go.Request) (api2go.Responder, error) {
-	return &Response{Code: http.StatusOK}, nil
+	response, err := s.UserStorage.Update(obj, strings.SplitAfter(r.PlainRequest.URL.RequestURI(), "users/")[1])
+	if err != nil {
+		log.Error(err)
+		return &Response{}, api2go.NewHTTPError(err, err.Error(), http.StatusInternalServerError)
+	}
+
+	log.Debug(response)
+
+	return &Response{Res: response, Code: http.StatusOK}, nil
 }

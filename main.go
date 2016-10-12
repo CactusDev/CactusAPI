@@ -23,7 +23,6 @@ var log = util.InitLogger(true)
 
 func main() {
 	createDB := flag.Bool("create", false, "Create the required RethinkDB database and tables")
-
 	flag.Parse()
 
 	file, err := os.Open("config.json")
@@ -64,7 +63,7 @@ func initializeAPI(conf *util.Config) (http.Handler, int) {
 	port := 8000
 	api := api2go.NewAPI("v1")
 
-	userStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Database, "users", "userName")
+	userStorage, err := driver.Initialize(conf.Host+":"+conf.Port, conf.Database, "users", "username")
 	if err != nil {
 		log.Fatal(err)
 	}

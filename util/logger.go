@@ -1,12 +1,15 @@
 package util
 
-import "github.com/Sirupsen/logrus"
+import (
+	"github.com/Sirupsen/logrus"
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
+)
 
 var log = logrus.New()
 
 // InitLogger Initialize a new logger and return said logger.
 func InitLogger(debug bool) *logrus.Logger {
-	log.Formatter = new(logrus.TextFormatter)
+	log.Formatter = new(prefixed.TextFormatter)
 
 	if debug {
 		log.Level = logrus.DebugLevel

@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"errors"
 	"regexp"
 
 	"github.com/cactusdev/cactusapi/util"
@@ -9,6 +10,7 @@ import (
 )
 
 var log = util.GetLogger()
+var emptyMap map[string]interface{}
 
 // Storage stores the information required for a DB query
 type Storage struct {
@@ -153,29 +155,46 @@ func (s Storage) Insert(obj interface{}) (string, error) {
 
 // Delete removes a record from the database based on ID
 func (s Storage) Delete(id string) error {
-	_, err := rethink.Table(s.Table).Get(id).Delete().Run(s.Session)
-	if err != nil {
-		log.Error(err)
-		return err
+	response, err := s.GetOne(id)
+	if len(response) != 0 {
+		_, err = rethink.Table(s.Table).Filter(response).Delete().Run(s.Session)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
 	}
+
 	return nil
 }
 
 // Update allows editing of records
-func (s Storage) Update(obj interface{}, id string) (map[string]interface{}, error) {
-	_, err := rethink.Table(s.Table).Get(id).Update(obj).RunWrite(s.Session)
+// FIXME - Make this work in regards to actually editing a resource
+func (s Storage) Update(obj interface{}, id string) ([]map[string]interface{}, error) {
+	log.Debug(id)
+	res, err := s.GetOne(id)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 
-	response, err := s.GetOne(id)
-	if err != nil {
-		log.Error(err)
-		return nil, err
+	if len(res) != 0 {
+		_, err = rethink.Table(s.Table).Get(res["id"]).Update(obj).RunWrite(s.Session)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("Requested endpoint does not exist")
 	}
 
-	if err == rethink.ErrEmptyResult {
+	var response []map[string]interface{}
+
+	res, err = s.GetOne(id)
+	if err != nil && err != rethink.ErrEmptyResult {
+		log.Error(err)
+		return nil, err
+	} else if err == rethink.ErrEmptyResult {
+		response = append(response, res)
 		return response, nil
 	}
 
