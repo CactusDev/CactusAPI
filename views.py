@@ -9,6 +9,7 @@ import remodel.connection
 import requests
 import pytz
 import redis
+import auth
 import rethinkdb as rethink
 from uuid import uuid4
 from flask import jsonify, request, g, make_response
@@ -40,6 +41,8 @@ def before_request():
                                  port=app.config["RDB_PORT"],
                                  db=app.config["RDB_DB"])
 
+    g.redis = redis.Redis()
+
 
 @app.route("/api/v1/channel/<channel>/friend", methods=["GET"])
 def chan_friends(channel):
@@ -51,7 +54,6 @@ def chan_friends(channel):
     that matches the owner's username
     """
 
-    # model = request.path.split("/")[-1]
     model = "Friend"
 
     if channel.isdigit():
@@ -64,7 +66,6 @@ def chan_friends(channel):
         request.path,
         request.method,
         request.values,
-        data=results,
         fields=fields
     )
 
@@ -76,10 +77,10 @@ def chan_friends(channel):
     # NOTE: Not needed currently, but this is how you would check
 
 
-# TODO: Fix this endpoint to remove timing elements (friends are forever)
 # TODO: Use Object.update(**changes) instead of Object(**updated_object).save()
 @app.route("/api/v1/channel/<channel>/friend/<friend>",
            methods=["GET", "POST", "DELETE"])
+@auth.scopes_required(["friend:create", "friend:delete", "friend:edit"])
 def chan_friend(channel, friend):
     """
     If you GET this endpoint, go to /api/v1/channel/<channel>/friend/<friend>

@@ -349,7 +349,7 @@ def generate_response(model, path, method, params,
                 fields
             ).run(g.rdb_conn))
 
-    elif method in ["PATCH", "POST"]:
+    elif method in ("PATCH", "POST"):
         # Create/edit a new object
         if "id" in params:
             # Retrieve a specific row
