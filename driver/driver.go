@@ -177,7 +177,11 @@ func (s Storage) Update(obj interface{}, id string) ([]map[string]interface{}, e
 		return nil, err
 	}
 
+	log.Debug(res)
+	log.Debug(obj)
+
 	if len(res) != 0 {
+		resource, err := rethink.Table(s.Table).Get(res["id"]).Run(s.Session)
 		_, err = rethink.Table(s.Table).Get(res["id"]).Update(obj).RunWrite(s.Session)
 		if err != nil {
 			log.Error(err)
