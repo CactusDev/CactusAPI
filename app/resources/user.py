@@ -1,0 +1,2 @@
+class UserResource:
+    pass
