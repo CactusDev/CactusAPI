@@ -1,4 +1,3 @@
-from .user import UserResource
-from .friend import FriendResource
+from .command import CommandResource
 
-__all__ = ["UserResource", "FriendResource"]
+__all__ = ["CommandResource"]

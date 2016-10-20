@@ -3,6 +3,7 @@
 import argparse
 import logging
 import coloredlogs
+from flask_restplus import Api
 from app import app
 
 parser = argparse.ArgumentParser()
@@ -76,6 +77,8 @@ if __name__ == "__main__":
         logging.info("Database and tables successfully created!")
 
         raise SystemExit
+
+    print(app.url_map)
 
     app.run(
         port=app.config.get("PORT", 8000),
