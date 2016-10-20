@@ -11,7 +11,7 @@ from html import unescape
 from uuid import UUID, uuid4
 import rethinkdb as rethink
 from flask import g
-import models
+from ..models import *
 
 META_CREATED = {
     "created": True,
