@@ -3,7 +3,6 @@
 import argparse
 import logging
 import coloredlogs
-from flask_restplus import Api
 from app import app
 
 parser = argparse.ArgumentParser()
@@ -36,7 +35,6 @@ logging.basicConfig(
 )
 
 coloredlogs.install(level=args.debug)
-
 
 if __name__ == "__main__":
     if args.create_db:

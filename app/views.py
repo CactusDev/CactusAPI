@@ -5,7 +5,6 @@ import redis
 import remodel
 from app import app
 from flask import g
-from . import resources
 
 remodel.connection.pool.configure(db=app.config["RDB_DB"],
                                   host=app.config["RDB_HOST"],
