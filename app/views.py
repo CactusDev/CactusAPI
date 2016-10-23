@@ -3,7 +3,7 @@
 import rethinkdb as rethink
 import redis
 import remodel
-from app import app
+from . import app
 from flask import g
 
 remodel.connection.pool.configure(db=app.config["RDB_DB"],

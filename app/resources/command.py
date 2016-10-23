@@ -1,28 +1,15 @@
 from flask_restplus import Resource, fields
-
-model = api.model("Command", {
-    "command": fields.String,
-    "response": fields.String
-})
+from ..model import CommandModel
 
 
 class CommandResource(Resource):
-    @api.marshall_with(CommandModel.model)
+    # @api.marshall_with(CommandModel.model)
     def get(self, **kwargs):
         return CommandModel(command="foo", response="bar")
         # return {"foo": "bar"}
 
     def post(self):
         return {"spam": "eggs"}
-
-
-class CommandModel:
-    def __init__(self, command, response):
-        self.command = command
-        self.response = response
-
-        self.status = True
-
 
 #
 # @app.route("/api/v1/channel/<channel>/command", methods=["GET"])
