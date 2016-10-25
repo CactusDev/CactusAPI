@@ -51,7 +51,7 @@ if __name__ == "__main__":
         import remodel.connection
         import rethinkdb as rethink
         from rethinkdb.errors import ReqlDriverError
-        from models import *
+        from app.models import *
 
         try:
             conn = rethink.connect(RDB_HOST, RDB_PORT)
@@ -76,9 +76,9 @@ if __name__ == "__main__":
 
         raise SystemExit
 
-    print(app.url_map)
+    logging.debug(app.url_map)
 
     app.run(
-        port=app.config.get("PORT", 8000),
-        host=app.config.get("HOST", "127.0.0.1"),
+        port=app.config.get("PORT", 80),
+        host=app.config.get("HOST", "0.0.0.0"),
         debug=app.config.get("DEBUG", False))

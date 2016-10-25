@@ -38,7 +38,7 @@ def retrieve_user(username):
     return list(user)
 
 
-def get_single(table, uid=None, **kwargs):
+def get_one(table, uid=None, **kwargs):
     """ Get and return a single object from the given table via the UUID
 
     Returns None if table is not type str
@@ -59,7 +59,7 @@ def get_single(table, uid=None, **kwargs):
             return None
 
         # It's either type str or uuid.UUID, so we can continue on
-        query = rethink.table(table).filter({"id": uid})
+        query = rethink.table(table).filter({"id": uid}).limit(1)
 
     elif kwargs == {}:
         # uid was not included and neither were any kwargs
@@ -103,13 +103,14 @@ def get_multiple(table, limit=None, **kwargs):
         return None
 
     # Check if limit is not None, then the user wants a limit
-
     if limit is not None and kwargs != {}:
         query = rethink.table(table).filter(kwargs).limit(limit)
-    elif limit is None and kwargs != {}:
-        query = rethink.table(table).filter(kwargs)
     elif limit is not None and kwargs == {}:
         query = rethink.table(table).limit(limit)
+    elif limit is None and kwargs != {}:
+        query = rethink.table(table).filter(kwargs)
+    elif limit is None and kwargs == {}:
+        query = rethink.table(table)
 
     return list(query.run(g.rdb_conn))
 
@@ -158,7 +159,7 @@ def generate_error(meta=None, **kwargs):
                 not isinstance(packet[arg], correct_types[arg]):
             raise Exception("incorrect type {}, should be type {}".format(
                 arg.__class__.__name__, correct_types[arg].__name__
-                ))
+            ))
 
     if "links" in packet:
         if "about" in packet["links"]:
@@ -258,7 +259,7 @@ def check_types(model, fields):
                 ),
                 "title": "Required field is not included",
                 "code": "103"
-                }
+            }
 
     return (errors, False) if errors != {} else (check, True)
 

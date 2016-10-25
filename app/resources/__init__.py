@@ -1,4 +1,3 @@
-from .command import CommandResource
-from .quotes import QuoteResource
+from .command import CommandResource, CommandList
 
-__all__ = ["CommandResource", "QuoteResource"]
+__all__ = ["CommandResource", "CommandList"]

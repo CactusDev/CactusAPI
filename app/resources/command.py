@@ -1,12 +1,64 @@
-from flask_restplus import Resource, fields
-from ..model import CommandModel
+from flask import request
+
+from flask_restplus import Resource, abort, fields, reqparse
+
+from .. import api
+from ..models import Command
+from ..util.helpers import *
+
+import logging
+
+parser = reqparse.RequestParser()
+
+log = logging.getLogger(__name__)
+
+
+class CommandList(Resource):
+    """
+    Lists all the commands. Has to be defined separately because of how
+    Flask-RESTPlus works.
+    """
+
+    def get(self, **kwargs):
+        return get_multiple("commands")
 
 
 class CommandResource(Resource):
-    # @api.marshall_with(CommandModel.model)
+
+    @api.marshal_with(Command.model)
     def get(self, **kwargs):
-        return CommandModel(command="foo", response="bar")
-        # return {"foo": "bar"}
+        """
+        If you GET this endpoint, go to /api/v1/channel/<channel>/command
+        with <channel> replaced for the channel you want to get commands for
+        """
+        channel = kwargs["channel"]
+
+        if channel.isdigit():
+            fields = {"channelId": int(channel), "deleted": False}
+        else:
+            fields = {"channelName": channel.lower(), "deleted": False}
+
+        response = get_one("commands")
+
+        if len(response) > 0:
+            response = response[0]
+            return Command(
+                name=response["name"],
+                command_id=response["id"],
+                response=response["response"],
+                user_id=None,
+                user_name=None,
+                channel_name=response["channel"],
+                channel_id=response["channelId"],
+                enabled=response["enabled"],
+                deleted=response["deleted"],
+                user_level=response["userLevel"]
+            )
+        else:
+            abort(500, "foo", custom="bar", spam="eggs")
+
+        # Custom errors if needed, otherwise abort() does a prebuilt 500
+        # abort(CODE_INT, CUSTOM_MSG, CUSTOM_KEY=CUSTOM_TEXT)
 
     def post(self):
         return {"spam": "eggs"}
@@ -15,26 +67,7 @@ class CommandResource(Resource):
 # @app.route("/api/v1/channel/<channel>/command", methods=["GET"])
 # def user_commands(channel):
 #
-#     """
-#     If you GET this endpoint, simply go to /api/v1/channel/<channel>/command
-#     with <channel> replaced for the channel you want to get commands for
-#     """
-#     model = "Command"
-#
-#     if channel.isdigit():
-#         fields = {"channelId": int(channel), "deleted": False}
-#     else:
-#         fields = {"channelName": channel.lower(), "deleted": False}
-#
-#     packet, code = generate_response(
-#         model,
-#         request.path,
-#         request.method,
-#         request.values,
-#         fields=fields
-#     )
-#
-#     return make_response(jsonify(packet), code)
+
 #
 #
 # @app.route("/api/v1/channel/<channel>/command/<int:cmd>",
