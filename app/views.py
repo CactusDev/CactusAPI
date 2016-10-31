@@ -5,6 +5,7 @@ import redis
 import remodel
 from . import app
 from flask import g
+from flask_restplus import reqparse
 
 remodel.connection.pool.configure(db=app.config["RDB_DB"],
                                   host=app.config["RDB_HOST"],
@@ -14,9 +15,17 @@ REDIS_CONN = redis.Redis()
 
 @app.before_request
 def before_request():
-    """Set the Flask session object's user to Flask-Login's current_user"""
+    """Make certain things accessible in every new request"""
     g.rdb_conn = rethink.connect(host=app.config["RDB_HOST"],
                                  port=app.config["RDB_PORT"],
                                  db=app.config["RDB_DB"])
 
     g.redis = redis.Redis()
+    g.parser = reqparse.RequestParser()
+
+
+# @app.teardown_request
+# def teardown_request(response):
+#     """Do things after the request is done"""
+#     for arg in g.parser.args:
+#         g.parser.remove_argument(arg)

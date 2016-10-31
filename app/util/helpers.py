@@ -12,6 +12,7 @@ from uuid import UUID, uuid4
 import rethinkdb as rethink
 from flask import g
 from ..models import *
+from flask_restplus import fields
 
 META_CREATED = {
     "created": True,
@@ -36,6 +37,20 @@ def retrieve_user(username):
     ).limit(1).run(g.rdb_conn)
 
     return list(user)
+
+
+def create_record(table, data):
+    """
+    Create a single record in the RethinkDB DB
+    """
+    if not table.endswith('s'):
+        table = table + 's'
+
+    try:
+        record = rethink.table(table).insert(data).run(g.rdb_conn)
+        return record.get("generated_keys")[0]
+    except rethink.ReqlOpFailedError as e:
+        return e
 
 
 def get_one(table, uid=None, **kwargs):

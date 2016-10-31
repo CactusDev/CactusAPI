@@ -1,16 +1,20 @@
-from flask import request
+from flask import request, make_response, g
 
-from flask_restplus import Resource, abort, fields, reqparse
+from flask_restplus import Resource, marshal, fields, reqparse, fields
+
+from datetime import datetime
 
 from .. import api
-from ..models import Command
-from ..util.helpers import *
+from ..models import Command, fields_map
+from ..util import helpers
+# TODO: Convert all these as resp_helpers, r_helpers, etc. to single helpers
+from ..util import resource_helpers as r_helpers
 
 import logging
 
-parser = reqparse.RequestParser()
-
 log = logging.getLogger(__name__)
+
+parser = reqparse.RequestParser()
 
 
 class CommandList(Resource):
@@ -20,12 +24,11 @@ class CommandList(Resource):
     """
 
     def get(self, **kwargs):
-        return get_multiple("commands")
+        return helpers.get_multiple("commands")
 
 
 class CommandResource(Resource):
 
-    @api.marshal_with(Command.model)
     def get(self, **kwargs):
         """
         If you GET this endpoint, go to /api/v1/channel/<channel>/command
@@ -38,38 +41,32 @@ class CommandResource(Resource):
         else:
             fields = {"channelName": channel.lower(), "deleted": False}
 
-        response = get_one("commands")
+        response = helpers.get_one("commands")
 
         if len(response) > 0:
             response = response[0]
-            return Command(
-                name=response["name"],
-                command_id=response["id"],
-                response=response["response"],
-                user_id=None,
-                user_name=None,
-                channel_name=response["channel"],
-                channel_id=response["channelId"],
-                enabled=response["enabled"],
-                deleted=response["deleted"],
-                user_level=response["userLevel"]
-            )
+            return marshal(
+                Command(
+                    name=response["name"],
+                    command_id=response["id"],
+                    response=response["response"],
+                    # user_id=None,
+                    # user_name=None,
+                    channel_name=response["channel"],
+                    channel_id=response["channelId"],
+                    enabled=response["enabled"],
+                    deleted=response["deleted"],
+                    user_level=response["userLevel"]
+                ), Command.model), 200
         else:
-            abort(500, "foo", custom="bar", spam="eggs")
+            return {"foo": "bar"}, 500
 
-        # Custom errors if needed, otherwise abort() does a prebuilt 500
-        # abort(CODE_INT, CUSTOM_MSG, CUSTOM_KEY=CUSTOM_TEXT)
+    def patch(self, **kwargs):
 
-    def post(self):
-        return {"spam": "eggs"}
+        created, code = r_helpers.create("command", Command)
 
-#
-# @app.route("/api/v1/channel/<channel>/command", methods=["GET"])
-# def user_commands(channel):
-#
+        return created, code
 
-#
-#
 # @app.route("/api/v1/channel/<channel>/command/<int:cmd>",
 #            methods=["GET", "PATCH", "DELETE"])
 # def user_command(channel, cmd):
