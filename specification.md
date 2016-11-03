@@ -11,114 +11,137 @@ All responses from endpoints are returned in JSON form and are [JSON:API](http:/
 Regular HTTP codes are in use. If the request completes successfully and is able to return data, then the status code will be `200`. Other results and their respective codes include:
 
 * **`201`** Created:
-     * The request has been fulfilled and resulted in a new resource being created.
+  * The request has been fulfilled and resulted in a new resource being created.
 
 * **`204`** No Content:
-     * The server has fulfilled the request but does not need to return an entity-body, and might want to return updated metainformation.
-     * The server has successfully processed the request, but will not be returning any content.
+  * The server has fulfilled the request but does not need to return an entity-body, and might want to return updated metainformation.
+  * The server has successfully processed the request, but will not be returning any content.
 
 * **`400`** Bad request:
-     * The request could not be understood by the server due to malformed syntax.
+  * The request could not be understood by the server due to malformed syntax.
 
-
-*    **`404`** Resource not found:
-     * There is no API endpoint for that path
-
-     An error object will be returned with more details.
-
-*    **`500`** Internal Server Error:
-     * The server encountered an unexpected condition which prevented it from fulfilling the request.Used when there is no more specific error code
-
-
-## Users
-
-### User Creation
-
-  `PATCH` `/api/v1/user/:username`
-
-   A `PATCH` request to this endpoint must have the following parameters included:
+* **`500`** Internal Server Error:
+  * The server encountered an unexpected condition which prevented it from fulfilling the request.
+  * Used when there is no more specific error code
    
-   * `email` - The user's email address
-   * `provider` - The user's OAuth provider
-     * `pid` - User ID from the OAuth provider
-     * `userName` - The properly formatted username involving case from the OAuth provider
-   * `token` - The user's platform-agnostic token, in string form
+* **`404`** Resource not found:
 
-### Search for a user
-  `GET` `/api/v1/user/:token`
+  * There is no API endpoint for that path
+    
+    An error object will be returned with more details.
 
-  `GET` `/api/v1/user/:username?service=:service`
-
-  A `GET` request to this endpoint will return a list of all users that the token matches the username provided in the path. Normally will only return a single object.
-
-  Alternatively, you can search by username, but you will also have to provide the service that user is on (Twitch, Beam, etc.)
-
-### Link a new service
-
-  `POST` `/api/v1/user/:token/link?service=:service&source=:channelId`
-
-  To link a new service/platform to an existing account, make a `POST` request to this endpoint, providing the new service in the request parameter `service` and the channel ID on that platform in parameter `channelId`.
 
 ## Commands
 
-### Get all commands
-  `GET` `/api/v1/user/:token/command`
+ * ### Get all commands
+     `GET` `/api/v1/user/:token/command`
 
-  A `GET` request to this endpoint will return a list of all commands associated with the token supplied.
+      A `GET` request to this endpoint will return a list of all commands associated with the token supplied.
 
-### Get an individual command
-  `GET` `/api/v1/user/:token/command/:command`
+ * ### Get an individual command
 
-  A `GET` request to this endpoint will return a single command object in response if the command requested exists. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
+    `GET` `/api/v1/user/:token/command/:command`
+
+     A `GET` request to this endpoint will return a single command object in response if the command requested exists. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
+
+ * ### Creating and editing a command
+
+      `PATCH` `/api/v1/user/:token/command/:name`
+      A `PATCH` request to this endpoint must have the following parameters included:
+    
+    *  `response` - **Optional if editing, required for command creation**
+         The command's response
+    
+    *  `level` - **Optional, defaults to `0`**
+         Sets the user level requirement to run the command.
+       * `0` - Accessible by ALL users
+       * `1` - Channel Moderator Only
+       * `2` - Channel Owner Only
+       * `3` - Channel Subscriber Only
+    
+    This endpoint will return the newly created command with HTTP status code `201` if the command is created.
+    
+    When editing via this endpoint, simply supply any changes wished to be made. If successful, the endpoint will return the newly changed command with status code `200`.
+    
+ * ### Remove a command
+      `DELETE` `/api/v1/user/:token/command/:command`
+    
+    A `DELETE` request to this endpoint will return nothing with the HTTP status code `204` if the deletion was successful.
+    
+    If it fails due to a token or command being supplied that does not exist, then an error will be returned with what was missing.
 
 ## Quotes
-### Get all quotes
-  `GET` `/api/v1/user/:token/quote`
 
-   A `GET` request to this endpoint will return a list of all quotes associated with the token supplied.
+* ### Get all quotes
+    `GET` `/api/v1/user/:token/quote`
 
-### Get an individual quote
+     A `GET` request to this endpoint will return a list of all quotes associated with the username supplied.
 
-  `GET` `/api/v1/user/:token/quote/<int:quote>`
+* ### Get an individual quote
 
-   A `GET` request to this endpoint will return a single quote object in response if the quote requested exists. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
+    `GET` `/api/v1/user/:token/quote/:quoteId`
+
+    A `GET` request to this endpoint will return a single quote object in response if the quote requested exists. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
+
+
+ * ### Creating and editing a quote
+      `PATCH` `/api/v1/user/:token/quote/:quoteId`
+      A `PATCH` request to this endpoint must have the following parameters included:
+
+    * `quote` - **Required**
+      The quote's content (text)
+
+      This endpoint will return the newly created quote with HTTP status code `201` if the quote is created.
+
+    When editing via this endpoint, simply supply any changes wished to be made. If successful, the endpoint will return the newly changed quote with status code `200`.
+
+ * ### Remove a quote
+      `DELETE` `/api/v1/user/:token/quote/quoteId`
+
+    A `DELETE` request to this endpoint will return nothing with the HTTP status code `204` if the deletion was successful.
+
+    If it fails due to a token or quote ID being supplied that does not exist, then an error will be returned with what was missing.
 
 ## Trusts
 
-### Get all trusts
+* ### Get all trusts
 
-  `GET` `/api/v1/user/:token/trust?service=:service`
+    `GET` `/api/v1/user/:token/trust`
 
-  A `GET` request to this endpoint will return a list of all trusts associated with the token supplied.
-  
-  Optionally a request parameter `:service` may be provided to limit the results to trusts specific to that platform.
+     A `GET` request to this endpoint will return a list of all trusts associated with the channel supplied.
 
-### Get an individual trust
+    **Optional Parameters**:
 
-  `GET` `/api/v1/user/:token/trust/:username?service=:service`
+    * `service` - A comma-separated string representing the platform(s) you want to limit the trusts returned to
 
-  A `GET` request to this endpoint will return a single trust object in response if the trust requested exists on the supplied service. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
+* ### Get an individual trust
 
-  `:service` may be omitted if the trust requested is universal.
+    `GET` `/api/v1/user/:token/trust/:username`
 
-### Creating and editing a trust
+    A `GET` request to this endpoint will return a single trust object in response if the trust requested exists. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
 
-  `PATCH` `/api/v1/user/:token/trust/:username?service=:service`
+    **Optional Parameters**:
 
-  ***INFO ABOUT PERMIT REQUEST PARAMETERS FOR SHORTER THAN FOREVER TRUST GOES HERE***
+    - `service` - A comma-separated string representing the platform(s) you want to limit the trusts returned to.
 
-  This endpoint will return the newly created trust with HTTP status code `201` if the creation is successful.
+* ### Creating and editing a trust
 
-  When editing via this endpoint, simply supply any changes wished to be made. If successful, the endpoint will return the modified trust with status code `200`.
+    `PATCH` `/api/v1/user/:token/trust/:username`
 
-  The `:service` request parameter is optional unless you want to create the trust for only a specific platform.
+    ***INFO ABOUT PERMIT REQUEST PARAMETERS FOR SHORTER THAN FOREVER PERMITS***
 
-### Remove a trust
+    This endpoint will return the newly created resource with HTTP status code `201` if the creation is successful.
 
-  `DELETE` `/api/v1/user/:token/trust/:username?service=:service`
+    When editing via this endpoint, simply supply any changes wished to be made. If successful, the endpoint will return the newly changed resource with status code `200`.
 
-  A `DELETE` request to this endpoint will return nothing with the HTTP status code `204` if the deletion was successful.
+* ### Remove a trust
 
-  If it fails due to a user being supplied that does not exist, then an error will be returned with what was missing.
+    `DELETE` `/api/v1/channel/:token/trust/:username`
 
-  The `:service` request parameter is optional unless you want to remove the trust for only a specific platform.
+    A `DELETE` request to this endpoint will return nothing with the HTTP status code `204` if the deletion was successful.
+
+    If it fails due to a channel being supplied that does not exist, then an error will be returned with what was missing.
+
+    **Optional Parameters**:
+
+    - `service` - A comma-separated string representing the platform(s) you want to remove the trusts from.
