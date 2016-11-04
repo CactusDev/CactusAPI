@@ -1,20 +1,17 @@
 from flask import request, make_response, g
 
-from flask_restplus import Resource, marshal, fields, reqparse, fields
+from flask_restplus import Resource, marshal
 
 from datetime import datetime
 
 from .. import api
-from ..models import Command, fields_map
+from ..models import CommandModel
+from ..schemas import CommandSchema
 from ..util import helpers
-# TODO: Convert all these as resp_helpers, r_helpers, etc. to single helpers
-from ..util import resource_helpers as r_helpers
 
 import logging
 
 log = logging.getLogger(__name__)
-
-parser = reqparse.RequestParser()
 
 
 class CommandList(Resource):
@@ -30,86 +27,74 @@ class CommandList(Resource):
 class CommandResource(Resource):
 
     def get(self, **kwargs):
-        """
-        If you GET this endpoint, go to /api/v1/channel/<channel>/command
-        with <channel> replaced for the channel you want to get commands for
-        """
-        channel = kwargs["channel"]
+        """/api/v1/:token/command/:command -> [int ID | str Name]"""
 
-        if channel.isdigit():
-            fields = {"channelId": int(channel), "deleted": False}
+        token = kwargs["token"]
+        command = kwargs["command"]
+
+        if not helpers.exists("commands", token=token):
+            return {"errors": ["doom and stuff. Probably some death too"]}, 400
+
+        # TODO: Implement cross-platform regex for checking valid tokens.
+        # Currently just looking to see if anything exists with that token
+        # if not helpers.is_valid_token(token):
+        # return {"errors": "doom and stuff. Probably some death too."}, 400
+
+        lookup_fields = {"token": token}
+
+        if command.isdigit():
+            lookup_fields["instanceCmdId"] = int(command)
         else:
-            fields = {"channelName": channel.lower(), "deleted": False}
+            lookup_fields["name"] = command.lower()
 
-        response = helpers.get_one("commands")
+        response = helpers.get_one("commands", **lookup_fields)
 
         if len(response) > 0:
             response = response[0]
             return marshal(
                 Command(
                     name=response["name"],
-                    command_id=response["id"],
+                    instance_cmd_id=response["id"],
                     response=response["response"],
-                    # user_id=None,
-                    # user_name=None,
-                    channel_name=response["channel"],
-                    channel_id=response["channelId"],
                     enabled=response["enabled"],
                     deleted=response["deleted"],
-                    user_level=response["userLevel"]
+                    user_level=response["userLevel"],
+                    token=response["token"]
                 ), Command.model), 200
         else:
             return {"foo": "bar"}, 500
 
     def patch(self, **kwargs):
+        token = kwargs["token"]
+        command = kwargs["command"]
 
-        created, code = r_helpers.create("command", Command)
+        # if not helpers.exists("commands", token=token):
+        # return {"errors": ["doom and stuff. Probably some death too"]}, 400
 
-        return created, code
+        # TODO: Implement cross-platform regex for checking valid tokens.
+        # Currently just looking to see if anything exists with that token
+        # if not helpers.is_valid_token(token):
+        # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-# @app.route("/api/v1/channel/<channel>/command/<int:cmd>",
-#            methods=["GET", "PATCH", "DELETE"])
-# def user_command(channel, cmd):
-#     """
-#     If you GET this endpoint, go to /api/v1/channel/<channel>/command/<cmd>
-#     with <channel> replaced for the channel you want & <cmd> replaced with the
-#     command you wish to look up
-#
-#     If you PATCH this endpoint:
-#         Go to /api/v1/channel/<channel>/command/<cmd> with <channel> replaced
-#             for the channel wanted & <cmd> replaced with the command you wish
-#             to look up or the command ID
-#     """
-#
-#     model = "Command"
-#
-#     if channel.isdigit():
-#         fields = {"channelId": int(channel), "commandId": cmd}
-#     else:
-#         fields = {"channelName": channel.lower(), "commandId": cmd}
-#
-#     data = dict(request.values)
-#
-#     data = {
-#         key: request.values.get(key) for key in request.values
-#     }
-#     data.update(**fields)
-#
-#     for key in data:
-#         if isinstance(data[key], str):
-#             data[key] = unescape(data[key])
-#
-#     data = {key: data[key] for key in data if data[key] is not None}
-#
-#     response = generate_response(
-#         model,
-#         request.path,
-#         request.method,
-#         request.values,
-#         data=data,
-#         fields=fields
-#     )
-#
-#     packet = response[0]
-#
-#     return make_response(jsonify(response[0]), response[1])
+        path_data = {"token": token}
+
+        if command.isdigit():
+            path_data["commandId"] = int(command)
+            # TODO: Make this get the associated name from the commands table
+            #       If it doesn't exist then there will have to be a name key
+            #       in the request JSON
+            path_data["name"] = "foo"
+        else:
+            path_data["name"] = command.lower()
+            # TODO: Make this get the associated ID from the commands table
+            #       OR make it get the next ID from the user table if
+            #       the command with the name provided doesn't exist
+            path_data["commandId"] = 1
+
+        data = {**request.get_json(), **path_data}
+
+        response, errors, code = helpers.create_or_update(
+            "command", CommandModel, data, ["commandId", "token"]
+        )
+
+        return {"data": [response], "errors": errors}, code

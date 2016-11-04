@@ -22,10 +22,3 @@ def before_request():
 
     g.redis = redis.Redis()
     g.parser = reqparse.RequestParser()
-
-
-# @app.teardown_request
-# def teardown_request(response):
-#     """Do things after the request is done"""
-#     for arg in g.parser.args:
-#         g.parser.remove_argument(arg)
