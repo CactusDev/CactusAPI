@@ -5,13 +5,9 @@ from flask_restplus import Resource, marshal
 from datetime import datetime
 
 from .. import api
-from ..models import CommandModel
+from ..models import Command
 from ..schemas import CommandSchema
 from ..util import helpers
-
-import logging
-
-log = logging.getLogger(__name__)
 
 
 class CommandList(Resource):
@@ -22,7 +18,7 @@ class CommandList(Resource):
 
     def get(self, **kwargs):
         response, errors, code = helpers.multi_response(
-            "commands", CommandModel, {"token": kwargs["token"]})
+            "command", Command, {"token": kwargs["token"]})
 
         return {"data": response, "errors": errors}, code
 
@@ -38,7 +34,7 @@ class CommandResource(Resource):
         if not helpers.exists("commands", token=token):
             return {"errors": ["doom and stuff. Probably some death too"]}, 400
 
-        # TODO: Implement cross-platform regex for checking valid tokens.
+        # TODO:210 Implement cross-platform regex for checking valid tokens.
         # Currently just looking to see if anything exists with that token
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
@@ -47,19 +43,19 @@ class CommandResource(Resource):
 
         if command.isdigit():
             path_data["commandId"] = int(command)
-            # TODO: Make this get the associated name from the commands table
+            # TODO:290 Make this get the associated name from the commands table
             #       If it doesn't exist then there will have to be a name key
             #       in the request JSON
             path_data["name"] = "foo"
         else:
             path_data["name"] = command.lower()
-            # TODO: Make this get the associated ID from the commands table
+            # TODO:270 Make this get the associated ID from the commands table
             #       OR make it get the next ID from the user table if
             #       the command with the name provided doesn't exist
             path_data["commandId"] = 1
 
         response, errors, code = helpers.single_response(
-            "command", CommandModel, path_data)
+            "command", Command, path_data)
 
         return {"data": [response], "errors": errors}, code
 
@@ -70,7 +66,7 @@ class CommandResource(Resource):
         # if not helpers.exists("commands", token=token):
         # return {"errors": ["doom and stuff. Probably some death too"]}, 400
 
-        # TODO: Implement cross-platform regex for checking valid tokens.
+        # TODO:220 Implement cross-platform regex for checking valid tokens.
         # Currently just looking to see if anything exists with that token
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
@@ -79,13 +75,13 @@ class CommandResource(Resource):
 
         if command.isdigit():
             path_data["commandId"] = int(command)
-            # TODO: Make this get the associated name from the commands table
+            # TODO:300 Make this get the associated name from the commands table
             #       If it doesn't exist then there will have to be a name key
             #       in the request JSON
             path_data["name"] = "foo"
         else:
             path_data["name"] = command.lower()
-            # TODO: Make this get the associated ID from the commands table
+            # TODO:280 Make this get the associated ID from the commands table
             #       OR make it get the next ID from the user table if
             #       the command with the name provided doesn't exist
             path_data["commandId"] = 1
@@ -98,7 +94,11 @@ class CommandResource(Resource):
         data = {**json_data, **path_data}
 
         response, errors, code = helpers.create_or_update(
-            "command", CommandModel, data, ["commandId", "token"]
+            "command", Command, data, ["commandId", "token"]
         )
 
         return {"data": response, "errors": errors}, code
+
+    def delete(self, **kwargs):
+        # TODO: Implement DELETE functionality
+        pass

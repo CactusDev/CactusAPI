@@ -1,3 +1,4 @@
-from .command import CommandModel
+from .command import Command
+from .trust import Trust
 
-__all__ = ["CommandModel"]
+__all__ = ["Command", "Trust"]

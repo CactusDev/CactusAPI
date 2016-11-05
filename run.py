@@ -56,14 +56,14 @@ if __name__ == "__main__":
         try:
             conn = rethink.connect(RDB_HOST, RDB_PORT)
         except ReqlDriverError as error:
-            print("Failed to connect to database at '{}:{}'!".format(
+            logging.error("Failed to connect to database at '{}:{}'!".format(
                 RDB_HOST, RDB_PORT))
-            print(error)
+            logging.fatal(error)
             raise SystemExit
 
         if not rethink.db_list().contains(RDB_DB).run(conn):
             rethink.db_create(RDB_DB).run(conn)
-            print("Database {} successfully created!".format(RDB_DB))
+            logging.info("Database {} successfully created!".format(RDB_DB))
 
         remodel.connection.pool.configure(db=RDB_DB,
                                           host=RDB_HOST,

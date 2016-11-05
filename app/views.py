@@ -5,7 +5,6 @@ import redis
 import remodel
 from . import app
 from flask import g
-from flask_restplus import reqparse
 
 remodel.connection.pool.configure(db=app.config["RDB_DB"],
                                   host=app.config["RDB_HOST"],
@@ -21,4 +20,11 @@ def before_request():
                                  db=app.config["RDB_DB"])
 
     g.redis = redis.Redis()
-    g.parser = reqparse.RequestParser()
+
+from . import api
+from . import resources
+
+api.add_resource(resources.CommandList, "/user/<token>/command")
+api.add_resource(resources.CommandResource, "/user/<token>/command/<command>")
+api.add_resource(resources.TrustList, "/user/<token>/trust")
+api.add_resource(resources.TrustResource, "/user/<token>/trust/<userName>")

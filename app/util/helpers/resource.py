@@ -13,7 +13,7 @@ def parse(model, data):
 
     errors = model.schema.validate(data)
     if errors:
-        return {"errors": [errors]}, 400
+        return {}, errors, 400
 
     response, errors = model.schema.dump(model(**data))
 
@@ -23,6 +23,7 @@ def parse(model, data):
 def multi_response(table_name, model, filter_data, limit=None):
     response = []
     errors = []
+    code = 200
     if limit is not None:
         results = get_all(table_name, **filter_data)
     else:

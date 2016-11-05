@@ -20,26 +20,26 @@ class User(Model):
             "default": True
         },
         "confirmed_at": {
-          "type": datetime,
-          "default": rethink.now().run(rethink.connect(
-              db=config.RDB_DB,
-              port=config.RDB_PORT,
-              host=config.RDB_HOST
-          ))
+            "type": datetime,
+            "default": rethink.now().run(rethink.connect(
+                db=config.RDB_DB,
+                port=config.RDB_PORT,
+                host=config.RDB_HOST
+            ))
         },
         "email": {
             "type": str
         },
         "providerId": {
-          "type": str
+            "type": str
         },
         "roles": {
-          "type": list
+            "type": list
         },
         "userName": {
-          "type": str
+            "type": str
         }
-      }
+    }
 
     def get_id(self):
         """
@@ -63,33 +63,6 @@ class User(Model):
     def is_authenticated(self):
         """Check if the user is authenticated."""
         return True
-
-
-class Friend(Model):
-    """
-    A remodel table model
-    """
-    belongs_to = ('Channel', )
-    has_one = ("User", )
-    ignore = ("owner", "userId", "id")
-    fields = {
-        "channelId": {
-            "type": int
-        },
-        "token": {
-            "type": str
-        },
-        "userName": {
-            "type": str
-        },
-        "userId": {
-            "type": int
-        },
-        "active": {
-            "type": bool,
-            "default": True
-        }
-    }
 
 
 class Role(Model):
@@ -181,48 +154,6 @@ class Execution(Model):
     A remodel table model
     """
     fields = {}
-
-
-class Quote(Model):
-    """
-    A remodel table model
-    """
-    fields = {
-        "quoteId": {
-            "type": int
-        },
-        "messageId": {
-          "type": str
-        },
-        "channelId": {
-            "type": str
-        },
-        "channelName": {
-            "type": str
-        },
-        "userId": {
-          "type": str
-        },
-        "quote": {
-            "type": str
-        },
-        "createdAt": {
-          "type": datetime,
-          "default": rethink.now().run(rethink.connect(
-              db=config.RDB_DB,
-              port=config.RDB_PORT,
-              host=config.RDB_HOST
-          ))
-        },
-        "enabled": {
-          "type": bool,
-          "default": True
-        },
-        "deleted": {
-            "type": bool,
-            "default": False
-        }
-      }
 
 
 class UserRole(Model):

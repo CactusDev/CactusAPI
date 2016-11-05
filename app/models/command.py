@@ -5,7 +5,7 @@ from remodel.models import Model
 from ..schemas import CommandSchema
 
 
-class CommandModel(Model):
+class Command(Model):
 
     schema = CommandSchema()
 

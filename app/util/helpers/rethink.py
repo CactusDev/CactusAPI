@@ -4,8 +4,6 @@ Provides various helper functions for accessing RethinkDB
 Beginnings of a super simple ORM of sorts
 """
 
-# TODO: Implement exceptions instead of error return
-
 import inspect
 from html import unescape
 from uuid import UUID, uuid4
@@ -97,7 +95,7 @@ def get_one(table, uid=None, **kwargs):
     # uid, if included, must be type string or uuid.UUID
     if uid is not None:
         if not isinstance(uid, str) and not isinstance(uid, UUID):
-            return None
+            raise TypeError("uid must be type {} or {}".format(str, UUID))
 
         # It's either type str or uuid.UUID, so we can continue on
         query = rethink.table(table).get(uid).limit(1)
@@ -123,20 +121,22 @@ def get_all(table, **kwargs):
 
     A wrapper for retrieve_multiple() to provide more functionality
 
-    Returns None if table is not type str
+    Raises a TypeError if table is not type str
 
     Arguments:
         table:  String of the table objects are to be retrieved from
         Other keyword arguments may be included to filter the request by
     """
+    if not isinstance(table, str):
+        raise TypeError("table must be type {}".format(str))
 
-    return get_multiple(table, **kwargs) if isinstance(table, str) else None
+    return get_multiple(table, **kwargs)
 
 
 def get_multiple(table, limit=None, **kwargs):
     """ Get and return multiple rows in the provided table in list form
 
-    Returns None if table is not type str
+    Raises a TypeError if table is not type str
 
     Arguments:
         table:  String of the table objects are to be retrieved from
@@ -146,6 +146,9 @@ def get_multiple(table, limit=None, **kwargs):
 
     if not isinstance(table, str):
         return None
+
+    if not table.endswith('s'):
+        table = table + 's'
 
     # Check if limit is not None, then the user wants a limit
     if limit is not None and kwargs != {}:

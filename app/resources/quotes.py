@@ -1,12 +1,40 @@
-from flask_restplus import Resource
+from flask import request, make_response, g
+
+from flask_restplus import Resource, marshal
+
+from datetime import datetime
+
+from .. import api
+from ..models import Quote
+from ..schemas import QuoteSchema
+from ..util import helpers
+
+
+class QuoteList(Resource):
+    """
+    Lists all the quotes. Has to be defined separately because of how
+    Flask-RESTPlus works.
+    """
+
+    def get(self, **kwargs):
+        response, errors, code = helpers.multi_response(
+            "quote", Quote, {"token": kwargs["token"]})
+
+        return {"data": response, "errors": errors}, code
 
 
 class QuoteResource(Resource):
-    def get(self):
-        return {"quote": "lol!"}
 
-    def post(self):
-        return {"quote": "trololol!", "created": True}
+    def patch(self, **kwargs):
+        # TODO: Implement trust creation/editing
+        pass
+
+    def get(self, **kwargs):
+        return Quote.schema.load({**request.get_json(), **kwargs}), 200
+
+    def delete(self, **kwargs):
+        # TODO: Implement DELETE functionality
+        pass
 
 #
 # @app.route("/api/v1/channel/<channel>/quote", methods=["GET"])
