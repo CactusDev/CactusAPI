@@ -11,6 +11,8 @@ class CommandModel(Model):
 
     def __init__(self, *, name, response, commandId, token, userLevel=0,
                  **kwargs):
+        if "id" in kwargs:
+            self.id = kwargs["id"]
         self.name = name
         self.response = response
         self.commandId = commandId

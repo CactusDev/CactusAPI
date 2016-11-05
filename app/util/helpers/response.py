@@ -28,7 +28,6 @@ def humanize_datetime(to_humanize, args):
         # more human-readable date & time representation
         humanize = to_humanize.get(key, None)
         if humanize is not None:
-            # TODO: Make this less dependant on a specific input datetime
             to_humanize[key] = parser.parse(humanize).strftime("%c")
 
     return to_humanize

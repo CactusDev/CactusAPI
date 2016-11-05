@@ -14,7 +14,5 @@ api = Api(app)
 
 from . import resources
 
-api.add_resource(resources.CommandList,
-                 "/channel/<token>/command")
-api.add_resource(resources.CommandResource,
-                 "/channel/<token>/command/<command>")
+api.add_resource(resources.CommandList, "/user/<token>/command")
+api.add_resource(resources.CommandResource, "/user/<token>/command/<command>")

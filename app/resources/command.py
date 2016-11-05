@@ -21,7 +21,10 @@ class CommandList(Resource):
     """
 
     def get(self, **kwargs):
-        return helpers.get_multiple("commands")
+        response, errors, code = helpers.multi_response(
+            "commands", CommandModel, {"token": kwargs["token"]})
+
+        return {"data": response, "errors": errors}, code
 
 
 class CommandResource(Resource):
@@ -40,29 +43,25 @@ class CommandResource(Resource):
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-        lookup_fields = {"token": token}
+        path_data = {"token": token}
 
         if command.isdigit():
-            lookup_fields["instanceCmdId"] = int(command)
+            path_data["commandId"] = int(command)
+            # TODO: Make this get the associated name from the commands table
+            #       If it doesn't exist then there will have to be a name key
+            #       in the request JSON
+            path_data["name"] = "foo"
         else:
-            lookup_fields["name"] = command.lower()
+            path_data["name"] = command.lower()
+            # TODO: Make this get the associated ID from the commands table
+            #       OR make it get the next ID from the user table if
+            #       the command with the name provided doesn't exist
+            path_data["commandId"] = 1
 
-        response = helpers.get_one("commands", **lookup_fields)
+        response, errors, code = helpers.single_response(
+            "command", CommandModel, path_data)
 
-        if len(response) > 0:
-            response = response[0]
-            return marshal(
-                Command(
-                    name=response["name"],
-                    instance_cmd_id=response["id"],
-                    response=response["response"],
-                    enabled=response["enabled"],
-                    deleted=response["deleted"],
-                    user_level=response["userLevel"],
-                    token=response["token"]
-                ), Command.model), 200
-        else:
-            return {"foo": "bar"}, 500
+        return {"data": [response], "errors": errors}, code
 
     def patch(self, **kwargs):
         token = kwargs["token"]
@@ -91,10 +90,15 @@ class CommandResource(Resource):
             #       the command with the name provided doesn't exist
             path_data["commandId"] = 1
 
-        data = {**request.get_json(), **path_data}
+        json_data = request.get_json()
+
+        if json_data is None:
+            return {"errors": ["Bro...no data"]}, 400
+
+        data = {**json_data, **path_data}
 
         response, errors, code = helpers.create_or_update(
             "command", CommandModel, data, ["commandId", "token"]
         )
 
-        return {"data": [response], "errors": errors}, code
+        return {"data": response, "errors": errors}, code

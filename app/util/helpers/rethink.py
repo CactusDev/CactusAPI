@@ -69,7 +69,9 @@ def create_record(table, data):
 
     try:
         record = rethink.table(table).insert(data).run(g.rdb_conn)
-        return record.get("generated_keys")[0]
+
+        return rethink.table(table).get(
+            record.get("generated_keys")[0]).run(g.rdb_conn)
     except rethink.ReqlOpFailedError as e:
         return e
 
@@ -98,7 +100,7 @@ def get_one(table, uid=None, **kwargs):
             return None
 
         # It's either type str or uuid.UUID, so we can continue on
-        query = rethink.table(table).filter({"id": uid}).limit(1)
+        query = rethink.table(table).get(uid).limit(1)
 
     elif kwargs == {}:
         # uid was not included and neither were any kwargs
