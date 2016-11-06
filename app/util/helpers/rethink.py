@@ -22,6 +22,16 @@ META_EDITED = {
 }
 
 
+def increment_counter(table, sort_by, key):
+    current = get_one(table, **sort_by)
+    if current is None:
+        return None
+
+    current[key] += 1
+
+    return update_record(table, current)
+
+
 def retrieve_user(username):
     """
     Get and return a user
@@ -38,7 +48,7 @@ def retrieve_user(username):
 
 def exists(table, **kwargs):
     if not table.endswith('s'):
-        table = table + 's'
+        table += 's'
 
     try:
         exists = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
@@ -50,7 +60,7 @@ def exists(table, **kwargs):
 def update_record(table, data):
     """Update a record in the DB"""
     if not table.endswith('s'):
-        table = table + 's'
+        table += 's'
 
     try:
         rethink.table(table).get(data["id"]).update(data).run(g.rdb_conn)
@@ -63,7 +73,7 @@ def update_record(table, data):
 def create_record(table, data):
     """Create a single record in the RethinkDB DB"""
     if not table.endswith('s'):
-        table = table + 's'
+        table += 's'
 
     try:
         record = rethink.table(table).insert(data).run(g.rdb_conn)
@@ -72,6 +82,31 @@ def create_record(table, data):
             record.get("generated_keys")[0]).run(g.rdb_conn)
     except rethink.ReqlOpFailedError as e:
         return e
+
+
+def delete_record(table, **kwargs):
+    """
+    Delete a record in the DB
+    Returns the UUID of the record deleted, or None if it fails
+    """
+    if not table.endswith('s'):
+        table += 's'
+
+    try:
+        record = list(
+            rethink.table(table).filter(kwargs).limit(1).run(g.rdb_conn))
+
+        if len(record) > 0:
+            deleted = rethink.table(table).get(
+                record[0]["id"]).delete().run(g.rdb_conn)
+
+            if deleted["deleted"] > 0:
+                return record[0]["id"]
+
+    except rethink.ReqlOpFailedError as e:
+        return e
+
+    return None
 
 
 def get_one(table, uid=None, **kwargs):

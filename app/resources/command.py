@@ -5,7 +5,7 @@ from flask_restplus import Resource, marshal
 from datetime import datetime
 
 from .. import api
-from ..models import Command
+from ..models import Command, User
 from ..schemas import CommandSchema
 from ..util import helpers
 
@@ -24,14 +24,12 @@ class CommandList(Resource):
 
 
 class CommandResource(Resource):
+    # TODO: Move repetitive kwargs parsing into function/decorator
 
     def get(self, **kwargs):
         """/api/v1/:token/command/:command -> [int ID | str Name]"""
 
-        token = kwargs["token"]
-        command = kwargs["command"]
-
-        if not helpers.exists("commands", token=token):
+        if not helpers.exists("commands", token=kwargs["token"]):
             return {"errors": ["doom and stuff. Probably some death too"]}, 400
 
         # TODO:210 Implement cross-platform regex for checking valid tokens.
@@ -39,20 +37,24 @@ class CommandResource(Resource):
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-        path_data = {"token": token}
+        path_data = {"token": kwargs["token"]}
 
-        if command.isdigit():
-            path_data["commandId"] = int(command)
-            # TODO:290 Make this get the associated name from the commands table
-            #       If it doesn't exist then there will have to be a name key
-            #       in the request JSON
-            path_data["name"] = "foo"
+        if kwargs["command"].isdigit():
+            path_data["commandId"] = int(kwargs["command"])
+
+            # If a command for this user (via token) matches the numeric ID
+            # given, then retrieve the name of that command
+            if helpers.exists("command", **path_data):
+                path_data["name"] = helpers.get_one(
+                    "command", **path_data)["name"]
         else:
-            path_data["name"] = command.lower()
-            # TODO:270 Make this get the associated ID from the commands table
-            #       OR make it get the next ID from the user table if
-            #       the command with the name provided doesn't exist
-            path_data["commandId"] = 1
+            path_data["name"] = kwargs["command"].lower()
+
+            # If a command exists for this user (via token) that matches
+            # the name given, retrieve the numeric ID for it
+            if helpers.exists("command", **path_data):
+                path_data["commandId"] = helpers.get_one(
+                    "command", **path_data)["commandId"]
 
         response, errors, code = helpers.single_response(
             "command", Command, path_data)
@@ -60,9 +62,6 @@ class CommandResource(Resource):
         return {"data": [response], "errors": errors}, code
 
     def patch(self, **kwargs):
-        token = kwargs["token"]
-        command = kwargs["command"]
-
         # if not helpers.exists("commands", token=token):
         # return {"errors": ["doom and stuff. Probably some death too"]}, 400
 
@@ -71,20 +70,29 @@ class CommandResource(Resource):
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-        path_data = {"token": token}
+        path_data = {"token": kwargs["token"]}
 
-        if command.isdigit():
-            path_data["commandId"] = int(command)
-            # TODO:300 Make this get the associated name from the commands table
-            #       If it doesn't exist then there will have to be a name key
-            #       in the request JSON
-            path_data["name"] = "foo"
+        if kwargs["command"].isdigit():
+            path_data["commandId"] = int(kwargs["command"])
+
+            # If a command for this user (via token) matches the numeric ID
+            # given, then retrieve the name of that command
+            if helpers.exists("command", **path_data):
+                path_data["name"] = helpers.get_one(
+                    "command", **path_data)["name"]
         else:
-            path_data["name"] = command.lower()
-            # TODO:280 Make this get the associated ID from the commands table
-            #       OR make it get the next ID from the user table if
-            #       the command with the name provided doesn't exist
-            path_data["commandId"] = 1
+            path_data["name"] = kwargs["command"].lower()
+
+            # If a command exists for this user (via token) that matches
+            # the name given, retrieve the numeric ID for it
+            if helpers.exists("command", **path_data):
+                path_data["commandId"] = helpers.get_one(
+                    "command", **path_data)["commandId"]
+            else:
+                # OR, since the command doesn't exist yet, retrieve the next
+                # numeric ID for that user
+                path_data["commandId"] = helpers.get_one(
+                    "user", token=kwargs["token"])["newCommandId"]
 
         json_data = request.get_json()
 
@@ -97,8 +105,36 @@ class CommandResource(Resource):
             "command", Command, data, ["commandId", "token"]
         )
 
+        if code == 201:
+            # Increase the newCommandId for this user since a commmand was
+            # succesfully completed
+            helpers.increment_counter("user", {"token": kwargs["token"]},
+                                      "newCommandId")
+
         return {"data": response, "errors": errors}, code
 
     def delete(self, **kwargs):
-        # TODO: Implement DELETE functionality
-        pass
+        data = {"token": kwargs["token"]}
+        if kwargs["command"].isdigit():
+            data["commandId"] = int(kwargs["command"])
+
+            # If a command for this user (via token) matches the numeric ID
+            # given, then retrieve the name of that command
+            if helpers.exists("command", **data):
+                data["name"] = helpers.get_one(
+                    "command", **data)["name"]
+        else:
+            data["name"] = kwargs["command"].lower()
+
+            # If a command exists for this user (via token) that matches
+            # the name given, retrieve the numeric ID for it
+            if helpers.exists("command", **data):
+                data["commandId"] = helpers.get_one(
+                    "command", **data)["commandId"]
+
+        deleted = helpers.delete_record("command", **data)
+
+        if deleted is not None:
+            return {"meta": {"deleted": deleted}}, 200
+        else:
+            return None, 404

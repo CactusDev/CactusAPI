@@ -41,7 +41,12 @@ def multi_response(table_name, model, filter_data, limit=None):
 
 
 def single_response(table_name, model, filter_data):
-    parsed, errors, code = parse(model, get_one(table_name, **filter_data))
+    data = get_one(table_name, **filter_data)
+
+    if data is None:
+        return {}, {}, 404
+
+    parsed, errors, code = parse(model, data)
 
     response = humanize_datetime(parsed, ["createdAt"])
 

@@ -1,4 +1,6 @@
 from .command import CommandResource, CommandList
-from .trust import TrustList, TrustResource
+from .trust import TrustResource, TrustList
+# from .user import UserResource
 
-__all__ = ["CommandResource", "CommandList", "TrustList", "TrustResource"]
+__all__ = ["CommandResource", "CommandList",
+           "TrustResource", "TrustList"]

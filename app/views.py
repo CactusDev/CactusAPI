@@ -24,7 +24,9 @@ def before_request():
 from . import api
 from . import resources
 
-api.add_resource(resources.CommandList, "/user/<token>/command")
-api.add_resource(resources.CommandResource, "/user/<token>/command/<command>")
-api.add_resource(resources.TrustList, "/user/<token>/trust")
-api.add_resource(resources.TrustResource, "/user/<token>/trust/<userName>")
+api.add_resource(resources.CommandList, "/user/<string:token>/command")
+api.add_resource(resources.CommandResource,
+                 "/user/<string:token>/command/<command>")
+api.add_resource(resources.TrustList, "/user/<string:token>/trust")
+api.add_resource(resources.TrustResource,
+                 "/user/<string:token>/trust/<string:userName>")
