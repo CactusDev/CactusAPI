@@ -110,9 +110,9 @@ Regular HTTP codes are in use. If the request completes successfully and is able
 
      A `GET` request to this endpoint will return a list of all trusts associated with the channel supplied.
 
-    **Optional Parameters**:
+    **Optional JSON**:
 
-    * `service` - A comma-separated string representing the platform(s) you want to limit the trusts returned to
+    - `service` - A list of strings representing the platform(s) you want to limit the returned trust(s) to.
 
 * ### Get an individual trust
 
@@ -120,28 +120,30 @@ Regular HTTP codes are in use. If the request completes successfully and is able
 
     A `GET` request to this endpoint will return a single trust object in response if the trust requested exists. If not, or if the user requested does not exist, the API will return no content with the HTTP response code set to `204`.
 
-    **Optional Parameters**:
+    **Optional JSON**:
 
-    - `service` - A comma-separated string representing the platform(s) you want to limit the trusts returned to.
+    - `service` - A list of strings representing the platform(s) you want to limit the trust returned to.
 
 * ### Creating and editing a trust
 
     `PATCH` `/api/v1/user/:token/trust/:username`
 
-    ***INFO ABOUT PERMIT REQUEST PARAMETERS FOR SHORTER THAN FOREVER PERMITS***
-
     This endpoint will return the newly created resource with HTTP status code `201` if the creation is successful.
 
     When editing via this endpoint, simply supply any changes wished to be made. If successful, the endpoint will return the newly changed resource with status code `200`.
+    
+    **Optional JSON**:
+
+    - `service` - A list of strings representing the platform(s) you want to limit the trust to.
 
 * ### Remove a trust
 
     `DELETE` `/api/v1/channel/:token/trust/:username`
 
-    A `DELETE` request to this endpoint will return nothing with the HTTP status code `204` if the deletion was successful.
+    A `DELETE` request to this endpoint will return a meta key with the ID of the deleted record if the deletion was successful.
 
-    If it fails due to a channel being supplied that does not exist, then an error will be returned with what was missing.
+    If it fails due to a channel being supplied that does not exist, then nothing will be returned with the HTTP status code `400`
 
-    **Optional Parameters**:
+    **Optional JSON**:
 
-    - `service` - A comma-separated string representing the platform(s) you want to remove the trusts from.
+    - `service` - A list of strings representing the platform(s) you want to remove the trust for.
