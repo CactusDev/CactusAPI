@@ -26,94 +26,36 @@ class QuoteList(Resource):
 class QuoteResource(Resource):
 
     def patch(self, **kwargs):
-        # TODO: Implement trust creation/editing
-        pass
+        path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
+
+        json_data = request.get_json()
+
+        # TODO: Make this an actual error/let Marshmallow handle it
+        if json_data is None:
+            return {"errors": ["Bro ... no data"]}, 400
+
+        data = {**json_data, **path_data}
+        response, errors, code = helpers.create_or_update(
+            "quote", Quote, data, ["token", "quoteId"]
+        )
+
+        return {"data": response, "errors": errors}, code
 
     def get(self, **kwargs):
-        return Quote.schema.load({**request.get_json(), **kwargs}), 200
+        path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
+
+        response, errors, code = helpers.single_response(
+            "quote", Quote, path_data
+        )
+
+        return {"data": response, "errors": errors}, code
 
     def delete(self, **kwargs):
-        # TODO: Implement DELETE functionality
-        pass
+        path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
 
-#
-# @app.route("/api/v1/channel/<channel>/quote", methods=["GET"])
-# def user_quotes(channel):
-#     """
-#     If you GET this endpoint, go to /api/v1/channel/<channel>/quote
-#     with <channel> replaced for the channel you want to get quotes for
-#     """
-#     model = "quote"
-#
-#     if channel.isdigit():
-#         fields = {"channelId": int(channel), "deleted": False}
-#     else:
-#         fields = {"owner": channel.lower(), "deleted": False}
-#
-#     packet, code = generate_response(
-#         model,
-#         request.path,
-#         request.method,
-#         request.values,
-#         fields=fields
-#     )
-#
-#     return make_response(jsonify(packet), code)
-#
-#
-# @app.route("/api/v1/channel/<channel>/quote/<int:quoteId>",
-#            methods=["GET", "PATCH", "DELETE"])
-# def chan_quote(channel, quoteId):
-#     """
-#     If you GET this endpoint:
-#         Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
-#         for the channel you want and <quote> replaced with the quote ID you
-#         wish to look up
-#
-#     If you PATCH this endpoint:
-#         Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
-#         for the channel wanted & <quote> replaced for the ID of the quote you
-#         want to look up
-#
-#         Parameters needed:
-#             - quote:        The new contents of the quote
-#             - messageId:    The ID of the quote's message
-#             - userId:       The ID of the message's sender
-#
-#     If you DELETE this endpoint:
-#         Go to /api/v1/channel/<channel>/quote/<quote> with <channel> replaced
-#         for the channel you want and <quote> replaced with the quote ID you
-#         want to remove
-#     """
-#     model = "Quote"
-#
-#     channel = int(channel) if channel.isdigit() else channel
-#
-#     fields = {
-#         "channelId": channel,
-#         "quoteId": quoteId
-#     }
-#
-#     data = {
-#         key: request.values.get(key) for key in request.values
-#     }
-#     data.update(**fields)
-#
-#     for key in data:
-#         if isinstance(data[key], str):
-#             data[key] = unescape(data[key])
-#
-#     data = {key: data[key] for key in data if data[key] is not None}
-#
-#     response = generate_response(
-#         model,
-#         request.path,
-#         request.method,
-#         request.values,
-#         data=data,
-#         fields=fields
-#     )
-#
-#     packet = response[0]
-#
-#     return make_response(jsonify(response[0]), response[1])
+        deleted = helpers.delete_record("quote", **path_data)
+
+        if deleted is not None:
+            return {"meta": {"deleted": deleted}}, 200
+        else:
+            return None, 404

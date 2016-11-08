@@ -24,9 +24,17 @@ def before_request():
 from . import api
 from . import resources
 
-api.add_resource(resources.CommandList, "/user/<string:token>/command")
+prefix = app.config["API_PREFIX"]
+
+api.add_resource(resources.CommandList,
+                 "{}/user/<string:token>/command".format(prefix))
 api.add_resource(resources.CommandResource,
-                 "/user/<string:token>/command/<command>")
-api.add_resource(resources.TrustList, "/user/<string:token>/trust")
+                 "{}/user/<string:token>/command/<command>".format(prefix))
+api.add_resource(resources.TrustList,
+                 "{}/user/<string:token>/trust".format(prefix))
 api.add_resource(resources.TrustResource,
-                 "/user/<string:token>/trust/<string:userName>")
+                 "{}/user/<string:token>/trust/<userName>".format(prefix))
+api.add_resource(resources.QuoteList,
+                 "{}/user/<string:token>/quote".format(prefix))
+api.add_resource(resources.QuoteResource,
+                 "{}/user/<string:token>/quote/<int:quoteId>".format(prefix))

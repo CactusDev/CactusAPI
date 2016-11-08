@@ -6,7 +6,8 @@ from marshmallow import Schema
 
 from ... import models
 
-from . import get_one, create_record, update_record, humanize_datetime, exists, get_all, get_multiple
+from . import (get_one, create_record, update_record,
+               humanize_datetime, exists, get_all, get_multiple)
 
 
 def parse(model, data):

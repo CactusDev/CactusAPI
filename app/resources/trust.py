@@ -53,5 +53,11 @@ class TrustResource(Resource):
         return {"data": response, "errors": errors}, code
 
     def delete(self, **kwargs):
-        # TODO: Implement DELETE functionality
-        pass
+        path_data = {"token": kwargs["token"], "userName": kwargs["userName"]}
+
+        deleted = helpers.delete_record("trust", **path_data)
+
+        if deleted is not None:
+            return {"meta": {"deleted": deleted}}, 200
+        else:
+            return None, 404
