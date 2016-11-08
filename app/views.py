@@ -2,13 +2,9 @@
 
 import rethinkdb as rethink
 import redis
-import remodel
 from . import app
 from flask import g
 
-remodel.connection.pool.configure(db=app.config["RDB_DB"],
-                                  host=app.config["RDB_HOST"],
-                                  port=app.config["RDB_PORT"])
 REDIS_CONN = redis.Redis()
 
 

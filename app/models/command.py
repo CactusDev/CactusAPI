@@ -1,11 +1,8 @@
 from datetime import datetime
-
-from remodel.models import Model
-
 from ..schemas import CommandSchema
 
 
-class Command(Model):
+class Command:
 
     schema = CommandSchema()
 

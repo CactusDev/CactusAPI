@@ -1,11 +1,8 @@
 from datetime import datetime
-
-from remodel.models import Model
-
 from ..schemas import TicketSchema
 
 
-class Ticket(Model):
+class Ticket:
     schema = TicketSchema()
 
     def __init__(self, *, title, contents, flags, mentions, **kwargs):

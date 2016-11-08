@@ -1,9 +1,7 @@
-from remodel.models import Model
-
 from ..schemas import UserSchema
 
 
-class User(Model):
+class User:
 
     schema = UserSchema()
 

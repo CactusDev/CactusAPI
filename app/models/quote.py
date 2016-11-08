@@ -1,11 +1,9 @@
 from datetime import datetime
 
-from remodel.models import Model
-
 from ..schemas import QuoteSchema
 
 
-class Quote(Model):
+class Quote:
     schema = QuoteSchema()
 
     def __init__(self, *, quote, quoteId, token, enabled=True, **kwargs):

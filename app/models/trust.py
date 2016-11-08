@@ -1,11 +1,8 @@
 from datetime import datetime
-
-from remodel.models import Model
-
 from ..schemas import TrustSchema
 
 
-class Trust(Model):
+class Trust:
 
     schema = TrustSchema()
 

@@ -47,11 +47,11 @@ if __name__ == "__main__":
                           "config-example.py to config.py and complete it!")
             raise SystemExit(-1)
 
-        import remodel.helpers
-        import remodel.connection
         import rethinkdb as rethink
         from rethinkdb.errors import ReqlDriverError
-        from app.models import *
+        from app import models
+
+        changes_made = False
 
         try:
             conn = rethink.connect(RDB_HOST, RDB_PORT)
@@ -63,16 +63,24 @@ if __name__ == "__main__":
 
         if not rethink.db_list().contains(RDB_DB).run(conn):
             rethink.db_create(RDB_DB).run(conn)
-            logging.info("Database {} successfully created!".format(RDB_DB))
+            logging.info("Database '{}' successfully created!".format(RDB_DB))
+            changes_made = True
 
-        remodel.connection.pool.configure(db=RDB_DB,
-                                          host=RDB_HOST,
-                                          port=RDB_PORT)
+        for db in dir(models):
+            if not db[0] == "_" and db[0].isupper():
+                db = db.lower() + 's'
+                if not rethink.db(RDB_DB).table_list().contains(db).run(conn):
+                    rethink.db(RDB_DB).table_create(db).run(conn)
+                    logging.info("Table '{}' successfully created in DB "
+                                 "'{}'".format(
+                                     db, RDB_DB
+                                 ))
+                    changes_made = True
 
-        remodel.helpers.create_tables()
-        remodel.helpers.create_indexes()
-
-        logging.info("Database and tables successfully created!")
+        if changes_made:
+            logging.warn("Database and tables successfully created!")
+        else:
+            logging.warn("No changes made!")
 
         raise SystemExit
 
