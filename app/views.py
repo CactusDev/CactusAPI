@@ -38,3 +38,7 @@ api.add_resource(resources.QuoteList,
                  "{}/user/<string:token>/quote".format(prefix))
 api.add_resource(resources.QuoteResource,
                  "{}/user/<string:token>/quote/<int:quoteId>".format(prefix))
+api.add_resource(resources.QuoteList,
+                 "{}/ticket".format(prefix))
+api.add_resource(resources.QuoteResource,
+                 "{}/ticket/<int:ticketId>".format(prefix))
