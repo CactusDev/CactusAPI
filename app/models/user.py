@@ -11,4 +11,4 @@ class User:
         if "newCommandId" in kwargs:
             self.newCommandId = kwargs["newCommandId"]
 
-        self.token = token
+        self.token = token.lower()

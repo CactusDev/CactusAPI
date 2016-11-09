@@ -13,7 +13,7 @@ class Command:
         self.name = name
         self.response = response
         self.commandId = commandId
-        self.token = token
+        self.token = token.lower()
         self.createdAt = datetime.utcnow()
         self.enabled = True
         self.deleted = False

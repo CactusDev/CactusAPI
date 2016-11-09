@@ -11,6 +11,6 @@ class Quote:
             self.id = kwargs["id"]
         self.quote = quote
         self.quoteId = quoteId
-        self.token = token
+        self.token = token.lower()
         self.enabled = enabled
         self.createdAt = datetime.utcnow()
