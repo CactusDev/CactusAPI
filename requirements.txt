@@ -9,6 +9,7 @@ itsdangerous==0.24
 Jinja2==2.8
 jsonschema==2.5.1
 MarkupSafe==0.23
+marshmallow==2.10.3
 python-dateutil==2.5.3
 pytz==2016.7
 redis==2.10.5

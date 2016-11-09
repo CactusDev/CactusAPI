@@ -18,7 +18,7 @@ class CommandList(Resource):
 
     def get(self, **kwargs):
         response, errors, code = helpers.multi_response(
-            "command", Command, {"token": kwargs["token"]})
+            "command", Command, {"token": kwargs["token"].lower()})
 
         return {"data": response, "errors": errors}, code
 
@@ -29,7 +29,7 @@ class CommandResource(Resource):
     def get(self, **kwargs):
         """/api/v1/:token/command/:command -> [int ID | str Name]"""
 
-        if not helpers.exists("commands", token=kwargs["token"]):
+        if not helpers.exists("commands", token=kwargs["token"].lower()):
             return {"errors": ["doom and stuff. Probably some death too"]}, 400
 
         # TODO:210 Implement cross-platform regex for checking valid tokens.
@@ -37,7 +37,7 @@ class CommandResource(Resource):
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-        path_data = {"token": kwargs["token"]}
+        path_data = {"token": kwargs["token"].lower()}
 
         if kwargs["command"].isdigit():
             path_data["commandId"] = int(kwargs["command"])
@@ -70,7 +70,7 @@ class CommandResource(Resource):
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-        path_data = {"token": kwargs["token"]}
+        path_data = {"token": kwargs["token"].lower()}
 
         if kwargs["command"].isdigit():
             path_data["commandId"] = int(kwargs["command"])
@@ -92,7 +92,7 @@ class CommandResource(Resource):
                 # OR, since the command doesn't exist yet, retrieve the next
                 # numeric ID for that user
                 path_data["commandId"] = helpers.get_one(
-                    "user", token=kwargs["token"])["newCommandId"]
+                    "user", token=kwargs["token"].lower())["newCommandId"]
 
         json_data = request.get_json()
 
@@ -108,13 +108,14 @@ class CommandResource(Resource):
         if code == 201:
             # Increase the newCommandId for this user since a commmand was
             # succesfully completed
-            helpers.increment_counter("user", {"token": kwargs["token"]},
+            helpers.increment_counter("user",
+                                      {"token": kwargs["token"].lower()},
                                       "newCommandId")
 
         return {"data": response, "errors": errors}, code
 
     def delete(self, **kwargs):
-        data = {"token": kwargs["token"]}
+        data = {"token": kwargs["token"].lower()}
         if kwargs["command"].isdigit():
             data["commandId"] = int(kwargs["command"])
 
