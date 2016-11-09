@@ -31,9 +31,6 @@ class CommandResource(Resource):
 
         token = kwargs["token"].lower()
 
-        if not helpers.exists("commands", token=token):
-            return {"errors": ["doom and stuff. Probably some death too"]}, 400
-
         # TODO:210 Implement cross-platform regex for checking valid tokens.
         # Currently just looking to see if anything exists with that token
         # if not helpers.is_valid_token(token):
