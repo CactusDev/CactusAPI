@@ -58,7 +58,7 @@ class CommandResource(Resource):
         response, errors, code = helpers.single_response(
             "command", Command, path_data)
 
-        return {"data": [response], "errors": errors}, code
+        return {"data": response, "errors": errors}, code
 
     def patch(self, **kwargs):
         token = kwargs["token"].lower()
