@@ -17,10 +17,15 @@ class TrustList(Resource):
     """
 
     def get(self, **kwargs):
-        response, errors, code = helpers.multi_response(
+        attributes, errors, code = helpers.multi_response(
             "trust", Trust, {"token": kwargs["token"]})
 
-        return {"data": response, "errors": errors}, code
+        if errors is None:
+            response["errors"] = errors
+        else:
+            response["data"] = attributes
+
+        return response, code
 
 
 class TrustResource(Resource):
@@ -33,11 +38,23 @@ class TrustResource(Resource):
             return {"errors": ["Bro ... no data"]}, 400
 
         data = {**json_data, **path_data}
-        response, errors, code = helpers.create_or_update(
+        attributes, errors, code = helpers.create_or_update(
             "trust", Trust, data, ["token", "userName"]
         )
 
-        return {"data": response, "errors": errors}, code
+        response = {}
+
+        if code == 201:
+            response["meta"] = {"created": True}
+        elif code == 200:
+            response["meta"] = {"edited": True}
+
+        if errors is None:
+            response["attributes"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
 
     def get(self, **kwargs):
         """

@@ -17,10 +17,15 @@ class QuoteList(Resource):
     """
 
     def get(self, **kwargs):
-        response, errors, code = helpers.multi_response(
+        attributes, errors, code = helpers.multi_response(
             "quote", Quote, {"token": kwargs["token"]})
 
-        return {"data": response, "errors": errors}, code
+        if errors is None:
+            response["errors"] = errors
+        else:
+            response["data"] = attributes
+
+        return response, code
 
 
 class QuoteResource(Resource):
@@ -35,11 +40,23 @@ class QuoteResource(Resource):
             return {"errors": ["Bro ... no data"]}, 400
 
         data = {**json_data, **path_data}
-        response, errors, code = helpers.create_or_update(
+        attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data, ["token", "quoteId"]
         )
 
-        return {"data": response, "errors": errors}, code
+        response = {}
+
+        if code == 201:
+            response["meta"] = {"created": True}
+        elif code == 200:
+            response["meta"] = {"edited": True}
+
+        if errors is None:
+            response["attributes"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
 
     def get(self, **kwargs):
         path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
