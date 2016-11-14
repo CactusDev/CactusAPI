@@ -12,13 +12,11 @@ from . import (get_one, create_record, update_record,
 
 def parse(model, data):
 
-    errors = model.schema.validate(data)
-    if errors:
-        return {}, errors, 400
+    dumped, errors = model.schema.dump(model(**data))
 
-    response, errors = model.schema.dump(model(**data))
+    code = 200 if errors == {} else 400
 
-    return response, errors, 200
+    return dumped, errors, code
 
 
 def multi_response(table_name, model, filter_data, limit=None):
@@ -32,7 +30,11 @@ def multi_response(table_name, model, filter_data, limit=None):
 
     for result in results:
         parsed, err, code = parse(model, result)
-        response.append(humanize_datetime(parsed, ["createdAt"]))
+        response.append({
+            "attributes": humanize_datetime(parsed, ["createdAt"]),
+            "type": table_name,
+            "id": result.pop("id")
+        })
         errors.append(err if err != {} else None)
 
     if errors == {}:
@@ -94,11 +96,11 @@ def create_or_update(table_name, model, data, filter_keys, **kwargs):
     if isinstance(changed, Exception):
         return {"errors": changed.args}, 500
 
-    response = humanize_datetime(changed, ["createdAt"])
+    changed = humanize_datetime(changed, ["createdAt"])
 
     response = {
-        "id": response.pop("id"),
-        "attributes": response,
+        "attributes": changed,
+        "id": changed.pop("id"),
         "type": table_name
     }
 

@@ -39,8 +39,6 @@ api.add_resource(resources.QuoteList,
 api.add_resource(resources.QuoteResource,
                  "{}/ticket/<int:ticketId>".format(prefix))
 
-api.add_
-
 
 from .util.auth import OAuthSignIn
 

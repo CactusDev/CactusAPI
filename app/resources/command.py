@@ -123,8 +123,8 @@ class CommandResource(Resource):
         elif code == 200:
             response["meta"] = {"edited": True}
 
-        if errors is None:
-            response["attributes"] = attributes
+        if errors == {}:
+            response["data"] = attributes
         else:
             response["errors"] = errors
 
