@@ -3,7 +3,7 @@
 import rethinkdb as rethink
 import redis
 from . import app
-from flask import g
+from flask import g, jsonify
 
 REDIS_CONN = redis.Redis()
 
@@ -20,7 +20,7 @@ def before_request():
 from . import api
 from . import resources
 
-prefix = app.config["API_PREFIX"]
+prefix = app.config.get("API_PREFIX", "")
 
 api.add_resource(resources.CommandList,
                  "{}/user/<string:token>/command".format(prefix))
@@ -38,3 +38,26 @@ api.add_resource(resources.QuoteList,
                  "{}/ticket".format(prefix))
 api.add_resource(resources.QuoteResource,
                  "{}/ticket/<int:ticketId>".format(prefix))
+
+api.add_
+
+
+from .util.auth import OAuthSignIn
+
+
+@app.route("/authorize/<provider>")
+def oauth_authorize(provider):
+    """Authorize using oauth from the provided provider."""
+
+    oauth = OAuthSignIn.get_provider(provider)
+    return oauth.authorize()
+
+
+@app.route("/callback/<provider>")
+def oauth_callback(provider):
+    """Callback for the provided provider."""
+
+    oauth = OAuthSignIn.get_provider(provider)
+    oauth_data = oauth.callback()
+
+    return jsonify(oauth_data)
