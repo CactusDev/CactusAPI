@@ -20,10 +20,25 @@ class QuoteList(Resource):
         attributes, errors, code = helpers.multi_response(
             "quote", Quote, {"token": kwargs["token"]})
 
-        if errors is None:
-            response["errors"] = errors
-        else:
+        response = {}
+
+        if errors == {}:
             response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
+
+    def post(self, **kwargs):
+        attributes, errors, code = helpers.create_or_none(
+            "quote", Quote, {"token": kwargs["token"]})
+
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
 
         return response, code
 
@@ -51,8 +66,8 @@ class QuoteResource(Resource):
         elif code == 200:
             response["meta"] = {"edited": True}
 
-        if errors is None:
-            response["attributes"] = attributes
+        if errors == {}:
+            response["data"] = attributes
         else:
             response["errors"] = errors
 
@@ -61,11 +76,18 @@ class QuoteResource(Resource):
     def get(self, **kwargs):
         path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
 
-        response, errors, code = helpers.single_response(
+        attributes, errors, code = helpers.single_response(
             "quote", Quote, path_data
         )
 
-        return {"data": response, "errors": errors}, code
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
 
     def delete(self, **kwargs):
         path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}

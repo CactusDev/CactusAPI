@@ -20,10 +20,12 @@ class TicketList(Resource):
         attributes, errors, code = helpers.multi_response(
             "quote", Ticket, {"token": kwargs["token"]})
 
-        if errors is None:
-            response["errors"] = errors
-        else:
+        response = {}
+
+        if errors == {}:
             response["data"] = attributes
+        else:
+            response["errors"] = errors
 
         return response, code
 
@@ -51,7 +53,7 @@ class TicketResource(Resource):
         elif code == 200:
             response["meta"] = {"edited": True}
 
-        if errors is None:
+        if errors == {}:
             response["attributes"] = attributes
         else:
             response["errors"] = errors
@@ -61,11 +63,18 @@ class TicketResource(Resource):
     def get(self, **kwargs):
         path_data = {"ticketId": kwargs["ticketId"]}
 
-        response, errors, code = helpers.single_response(
+        attributes, errors, code = helpers.single_response(
             "ticket", Ticket, path_data
         )
 
-        return {"data": response, "errors": errors}, code
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
 
     def delete(self, **kwargs):
         path_data = {"ticketId": kwargs["ticketId"]}

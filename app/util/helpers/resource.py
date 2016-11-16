@@ -31,9 +31,9 @@ def multi_response(table_name, model, filter_data, limit=None):
     for result in results:
         parsed, err, code = parse(model, result)
         response.append({
+            "id": result.pop("id"),
             "attributes": humanize_datetime(parsed, ["createdAt"]),
-            "type": table_name,
-            "id": result.pop("id")
+            "type": table_name
         })
         errors.append(err if err != {} else None)
 
@@ -56,6 +56,43 @@ def single_response(table_name, model, filter_data):
     response = {
         "id": response.pop("id"),
         "attributes": response,
+        "type": table_name
+    }
+
+    return response, errors, code
+
+
+def create_or_none(table_name, model, data, filter_keys, **kwargs):
+    # Validate the data from the route code and serialize it into dict form
+    parsed, errors, code = parse(model, data)
+
+    if not isinstance(filter_keys, list):
+        raise TypeError("filter_keys must be a list of strings")
+
+    # Not needed currently, but may be later in development
+    # filter_keys += [kwarg for kwarg in kwargs.keys()]
+
+    for key in filter_keys:
+        if not isinstance(key, str):
+            raise TypeError("Each key in filter_keys must be a string")
+
+    filter_data = {key: parsed[key] for key in filter_keys}
+
+    # Check if anything exists that exactly copies that
+    exists = get_one(table_name, **filter_data)
+
+    if exists is not None:
+        changed = exists
+        code = 409
+    else:
+        changed = create_record(table_name, parsed)
+        code = 201
+
+    changed = humanize_datetime(changed, ["createdAt"])
+
+    response = {
+        "id": changed.pop("id"),
+        "attributes": changed,
         "type": table_name
     }
 
@@ -99,8 +136,8 @@ def create_or_update(table_name, model, data, filter_keys, **kwargs):
     changed = humanize_datetime(changed, ["createdAt"])
 
     response = {
-        "attributes": changed,
         "id": changed.pop("id"),
+        "attributes": changed,
         "type": table_name
     }
 

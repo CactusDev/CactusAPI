@@ -22,7 +22,7 @@ class CommandList(Resource):
 
         response = {}
 
-        if errors is None:
+        if errors == {}:
             response["errors"] = errors
         else:
             response["data"] = attributes
@@ -62,10 +62,17 @@ class CommandResource(Resource):
                 path_data["commandId"] = helpers.get_one(
                     "command", **path_data)["commandId"]
 
-        response, errors, code = helpers.single_response(
+        attributes, errors, code = helpers.single_response(
             "command", Command, path_data)
 
-        return {"data": response, "errors": errors}, code
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
 
     def patch(self, **kwargs):
         token = kwargs["token"].lower()
