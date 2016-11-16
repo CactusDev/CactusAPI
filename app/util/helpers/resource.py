@@ -12,11 +12,20 @@ from . import (get_one, create_record, update_record,
 
 def parse(model, data):
 
+    errors = model.schema.validate(data)
+
+    # HACK: Need to figure out how to fix _schema: ["Invalid type"] error to
+    # actually be more useful
+    if errors != {} and "_schema" in errors["response"]:
+        del errors["response"]["_schema"]
+        errors["response"]["response"] = "Missing data for required field"
+
+    if errors != {}:
+        return None, errors, 400
+
     dumped, errors = model.schema.dump(model(**data))
 
-    code = 200 if errors == {} else 400
-
-    return dumped, errors, code
+    return dumped, errors, 200
 
 
 def multi_response(table_name, model, filter_data, limit=None):
@@ -102,6 +111,9 @@ def create_or_none(table_name, model, data, filter_keys, **kwargs):
 def create_or_update(table_name, model, data, filter_keys, **kwargs):
     # Validate the data from the route code and serialize it into dict form
     parsed, errors, code = parse(model, data)
+
+    if errors != {}:
+        return {}, errors, code
 
     if not isinstance(filter_keys, list):
         raise TypeError("filter_keys must be a list of strings")
