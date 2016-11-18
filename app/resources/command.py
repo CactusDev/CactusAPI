@@ -87,6 +87,8 @@ class CommandResource(Resource):
 
         path_data = {"token": token}
 
+        # TODO: Remove this whole section. Will only allow command lookup via
+        # name from now on, not numeric ID - need to update spec first
         if kwargs["command"].isdigit():
             path_data["commandId"] = int(kwargs["command"])
 
@@ -106,8 +108,9 @@ class CommandResource(Resource):
             else:
                 # OR, since the command doesn't exist yet, retrieve the next
                 # numeric ID for that user
-                path_data["commandId"] = helpers.get_one(
-                    "user", token=token.lower())["newCommandId"]
+                commandId = helpers.get_length("user", token=token.lower())
+                if isinstance(commandId, Exception):
+                    return {"Errors!!!!!11!!": commandId}
 
         json_data = request.get_json()
 
@@ -123,9 +126,6 @@ class CommandResource(Resource):
         response = {}
 
         if code == 201:
-            # Increase the newCommandId for this user since a commmand was
-            # succesfully completed
-            helpers.increment_counter("user", {"token": token}, "newCommandId")
             response["meta"] = {"created": True}
         elif code == 200:
             response["meta"] = {"edited": True}

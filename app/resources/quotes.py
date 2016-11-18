@@ -30,8 +30,23 @@ class QuoteList(Resource):
         return response, code
 
     def post(self, **kwargs):
+        path_data = {"token": kwargs["token"]}
+
+        json_data = request.get_json()
+
+        # TODO: Make this an actual error/let Marshmallow handle it
+        if json_data is None:
+            return {"errors": ["Bro ... no data"]}, 400
+
+        data = {**json_data,
+                **path_data,
+                "quoteId": helpers.get_length(
+                    "quote",
+                    **path_data
+                )}
+
         attributes, errors, code = helpers.create_or_none(
-            "quote", Quote, {"token": kwargs["token"]})
+            "quote", Quote, data, [])
 
         response = {}
 

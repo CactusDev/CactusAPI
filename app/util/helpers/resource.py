@@ -1,13 +1,5 @@
-from datetime import datetime
-from flask import g, request
-
-from flask_restplus import marshal
-from marshmallow import Schema
-
-from ... import models
-
 from . import (get_one, create_record, update_record,
-               humanize_datetime, exists, get_all, get_multiple)
+               humanize_datetime, get_all, get_multiple)
 
 
 def parse(model, data):
@@ -16,11 +8,13 @@ def parse(model, data):
 
     # HACK: Need to figure out how to fix _schema: ["Invalid type"] error to
     # actually be more useful
-    if errors != {} and "_schema" in errors["response"]:
-        del errors["response"]["_schema"]
-        errors["response"]["response"] = "Missing data for required field"
+    if errors != {}:
+        if "_schema" in errors.get("response", {}):
+            del errors["response"]["_schema"]
+            errors["response"]["response"] = "Missing data for required field"
 
     if errors != {}:
+        # TODO: Make this return proper HTTP error codes
         return None, errors, 400
 
     dumped, errors = model.schema.dump(model(**data))
@@ -71,44 +65,7 @@ def single_response(table_name, model, filter_data):
     return response, errors, code
 
 
-def create_or_none(table_name, model, data, filter_keys, **kwargs):
-    # Validate the data from the route code and serialize it into dict form
-    parsed, errors, code = parse(model, data)
-
-    if not isinstance(filter_keys, list):
-        raise TypeError("filter_keys must be a list of strings")
-
-    # Not needed currently, but may be later in development
-    # filter_keys += [kwarg for kwarg in kwargs.keys()]
-
-    for key in filter_keys:
-        if not isinstance(key, str):
-            raise TypeError("Each key in filter_keys must be a string")
-
-    filter_data = {key: parsed[key] for key in filter_keys}
-
-    # Check if anything exists that exactly copies that
-    exists = get_one(table_name, **filter_data)
-
-    if exists is not None:
-        changed = exists
-        code = 409
-    else:
-        changed = create_record(table_name, parsed)
-        code = 201
-
-    changed = humanize_datetime(changed, ["createdAt"])
-
-    response = {
-        "id": changed.pop("id"),
-        "attributes": changed,
-        "type": table_name
-    }
-
-    return response, errors, code
-
-
-def create_or_update(table_name, model, data, filter_keys, **kwargs):
+def _pre_parse(table_name, model, data, filter_keys):
     # Validate the data from the route code and serialize it into dict form
     parsed, errors, code = parse(model, data)
 
@@ -129,6 +86,42 @@ def create_or_update(table_name, model, data, filter_keys, **kwargs):
 
     # Check if anything exists that exactly copies that
     exists = get_one(table_name, **filter_data)
+
+    return parsed, exists, None
+
+
+def create_or_none(table_name, model, data, filter_keys, **kwargs):
+
+    parsed, data, code = _pre_parse(table_name, model, data, filter_keys)
+
+    # There was an error during pre-parsing, return that
+    if code is not None:
+        return {}, data, code
+
+    if data is not None:
+        changed = data
+        code = 409
+    else:
+        changed = create_record(table_name, parsed)
+        code = 201
+
+    changed = humanize_datetime(changed, ["createdAt"])
+
+    response = {
+        "id": changed.pop("id"),
+        "attributes": changed,
+        "type": table_name
+    }
+
+    return response, {}, code
+
+
+def create_or_update(table_name, model, data, filter_keys, **kwargs):
+    parsed, errors, code = _pre_parse(table_name, model, data, filter_keys)
+
+    # There was an error during pre-parsing, return that
+    if errors != {}:
+        return exists[0], exists[1], exists[2]
 
     if exists is not None:
         # Don't change the createdAt

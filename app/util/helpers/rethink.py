@@ -22,28 +22,14 @@ META_EDITED = {
 }
 
 
-def increment_counter(table, sort_by, key):
-    current = get_one(table, **sort_by)
-    if current is None:
-        return None
+def get_length(table, **kwargs):
+    if not table.endswith('s'):
+        table += 's'
 
-    current[key] += 1
-
-    return update_record(table, current)
-
-
-def retrieve_user(username):
-    """
-    Get and return a user
-
-    Searches the 'users' table case-insensitive
-    """
-    user = rethink.table("users").filter(
-        lambda user:
-        user["userName"].match("(?i){}".format(str(username)))
-    ).limit(1).run(g.rdb_conn)
-
-    return list(user)
+    try:
+        return rethink.table(table).filter(kwargs).count().run(g.rdb_conn)
+    except rethink.ReqlOpFailedError as e:
+        return e
 
 
 def exists(table, **kwargs):
