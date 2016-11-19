@@ -117,19 +117,19 @@ def create_or_none(table_name, model, data, filter_keys, **kwargs):
 
 
 def create_or_update(table_name, model, data, filter_keys, **kwargs):
-    parsed, errors, code = _pre_parse(table_name, model, data, filter_keys)
+    parsed, data, code = _pre_parse(table_name, model, data, filter_keys)
 
     # There was an error during pre-parsing, return that
-    if errors != {}:
-        return exists[0], exists[1], exists[2]
+    if code is not None:
+        return {}, data, code
 
-    if exists is not None:
+    if data is not None:
         # Don't change the createdAt
         if parsed.get("createdAt", None) is not None:
             del parsed["createdAt"]
 
         changed = update_record(
-            table_name, {**parsed, "id": exists["id"]})
+            table_name, {**parsed, "id": data["id"]})
         code = 200
     else:
         changed = create_record(table_name, parsed)
@@ -146,4 +146,4 @@ def create_or_update(table_name, model, data, filter_keys, **kwargs):
         "type": table_name
     }
 
-    return response, errors, code
+    return response, {}, code

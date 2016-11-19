@@ -46,7 +46,7 @@ class QuoteList(Resource):
                 )}
 
         attributes, errors, code = helpers.create_or_none(
-            "quote", Quote, data, [])
+            "quote", Quote, data, ["quote", "token"])
 
         response = {}
 
