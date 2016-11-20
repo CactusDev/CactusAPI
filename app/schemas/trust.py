@@ -9,3 +9,4 @@ class TrustSchema(Schema):
     userId = fields.String(required=True)
     active = fields.Boolean()
     token = fields.String(required=True)
+    createdAt = fields.DateTime()

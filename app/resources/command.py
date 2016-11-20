@@ -22,7 +22,11 @@ class CommandList(Resource):
 
         response = {}
 
-        if errors == {}:
+        print(errors)
+
+        print(errors != {})
+
+        if errors != []:
             response["errors"] = errors
         else:
             response["data"] = attributes
@@ -34,7 +38,7 @@ class CommandResource(Resource):
     # TODO: Move repetitive kwargs parsing into function/decorator
 
     def get(self, **kwargs):
-        """/api/v1/:token/command/:command -> [int ID | str Name]"""
+        """/api/v1/:token/command/:command -> [str Command name]"""
 
         token = kwargs["token"].lower()
 
@@ -43,24 +47,7 @@ class CommandResource(Resource):
         # if not helpers.is_valid_token(token):
         # return {"errors": "doom and stuff. Probably some death too."}, 400
 
-        path_data = {"token": token}
-
-        if kwargs["command"].isdigit():
-            path_data["commandId"] = int(kwargs["command"])
-
-            # If a command for this user (via token) matches the numeric ID
-            # given, then retrieve the name of that command
-            if helpers.exists("command", **path_data):
-                path_data["name"] = helpers.get_one(
-                    "command", **path_data)["name"]
-        else:
-            path_data["name"] = kwargs["command"].lower()
-
-            # If a command exists for this user (via token) that matches
-            # the name given, retrieve the numeric ID for it
-            if helpers.exists("command", **path_data):
-                path_data["commandId"] = helpers.get_one(
-                    "command", **path_data)["commandId"]
+        path_data = {"token": token, "name": kwargs["command"].lower()}
 
         attributes, errors, code = helpers.single_response(
             "command", Command, path_data)
@@ -77,9 +64,6 @@ class CommandResource(Resource):
     def patch(self, **kwargs):
         token = kwargs["token"].lower()
 
-        # if not helpers.exists("commands", token=token):
-        # return {"errors": ["doom and stuff. Probably some death too"]}, 400
-
         # TODO:220 Implement cross-platform regex for checking valid tokens.
         # Currently just looking to see if anything exists with that token
         # if not helpers.is_valid_token(token):
@@ -87,30 +71,7 @@ class CommandResource(Resource):
 
         path_data = {"token": token}
 
-        # TODO: Remove this whole section. Will only allow command lookup via
-        # name from now on, not numeric ID - need to update spec first
-        if kwargs["command"].isdigit():
-            path_data["commandId"] = int(kwargs["command"])
-
-            # If a command for this user (via token) matches the numeric ID
-            # given, then retrieve the name of that command
-            if helpers.exists("command", **path_data):
-                path_data["name"] = helpers.get_one(
-                    "command", **path_data)["name"]
-        else:
-            path_data["name"] = kwargs["command"].lower()
-
-            # If a command exists for this user (via token) that matches
-            # the name given, retrieve the numeric ID for it
-            if helpers.exists("command", **path_data):
-                path_data["commandId"] = helpers.get_one(
-                    "command", **path_data)["commandId"]
-            else:
-                # OR, since the command doesn't exist yet, retrieve the next
-                # numeric ID for that user
-                commandId = helpers.get_length("user", token=token.lower())
-                if isinstance(commandId, Exception):
-                    return {"Errors!!!!!11!!": commandId}
+        path_data["name"] = kwargs["command"].lower()
 
         json_data = request.get_json()
 
@@ -120,7 +81,7 @@ class CommandResource(Resource):
         data = {**json_data, **path_data}
 
         attributes, errors, code = helpers.create_or_update(
-            "command", Command, data, ["commandId", "token"]
+            "command", Command, data, ["token", "name"]
         )
 
         response = {}
@@ -140,23 +101,7 @@ class CommandResource(Resource):
     def delete(self, **kwargs):
         token = kwargs["token"].lower()
 
-        data = {"token": token}
-        if kwargs["command"].isdigit():
-            data["commandId"] = int(kwargs["command"])
-
-            # If a command for this user (via token) matches the numeric ID
-            # given, then retrieve the name of that command
-            if helpers.exists("command", **data):
-                data["name"] = helpers.get_one(
-                    "command", **data)["name"]
-        else:
-            data["name"] = kwargs["command"].lower()
-
-            # If a command exists for this user (via token) that matches
-            # the name given, retrieve the numeric ID for it
-            if helpers.exists("command", **data):
-                data["commandId"] = helpers.get_one(
-                    "command", **data)["commandId"]
+        data = {"token": token, "name": kwargs["command"].lower()}
 
         deleted = helpers.delete_record("command", **data)
 

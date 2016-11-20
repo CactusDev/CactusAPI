@@ -22,10 +22,12 @@ class TrustList(Resource):
 
         response = {}
 
-        if errors == {}:
-            response["data"] = attributes
-        else:
+        print(errors)
+
+        if errors != []:
             response["errors"] = errors
+        else:
+            response["data"] = attributes
 
         return response, code
 
@@ -33,7 +35,7 @@ class TrustList(Resource):
 class TrustResource(Resource):
 
     def patch(self, **kwargs):
-        path_data = {"token": kwargs["token"], "userName": kwargs["userName"]}
+        path_data = {"token": kwargs["token"], "userId": kwargs["userId"]}
         json_data = request.get_json()
 
         if json_data is None:
@@ -41,7 +43,7 @@ class TrustResource(Resource):
 
         data = {**json_data, **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "trust", Trust, data, ["token", "userName"]
+            "trust", Trust, data, ["token", "userId"]
         )
 
         response = {}
@@ -63,7 +65,12 @@ class TrustResource(Resource):
         /api/v1/channel/:token/trust/:trust -> str username
         """
         # TODO: Implement token validity checking
-        path_data = {"token": kwargs["token"], "userName": kwargs["userName"]}
+        path_data = {"token": kwargs["token"]}
+
+        if kwargs["userId"].isdigit():
+            path_data["userId"] = kwargs["userId"]
+        else:
+            path_data["userName"] = kwargs["userId"]
 
         attributes, errors, code = helpers.single_response(
             "trust", Trust, path_data
@@ -79,7 +86,7 @@ class TrustResource(Resource):
         return response, code
 
     def delete(self, **kwargs):
-        path_data = {"token": kwargs["token"], "userName": kwargs["userName"]}
+        path_data = {"token": kwargs["token"], "userId": kwargs["userId"]}
 
         deleted = helpers.delete_record("trust", **path_data)
 

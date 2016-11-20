@@ -13,3 +13,4 @@ class Trust:
         self.userName = userName
         self.userId = userId
         self.active = active
+        self.createdAt = datetime.utcnow()

@@ -21,7 +21,6 @@ class CommandSchema(Schema):
     id = fields.String()
     name = fields.String(required=True)
     response = fields.String(required=True)
-    commandId = fields.Integer()
     createdAt = fields.DateTime()
     userLevel = fields.Integer(required=True)
     token = fields.String(required=True)

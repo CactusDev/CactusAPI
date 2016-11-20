@@ -29,7 +29,7 @@ api.add_resource(resources.CommandResource,
 api.add_resource(resources.TrustList,
                  "{}/user/<string:token>/trust".format(prefix))
 api.add_resource(resources.TrustResource,
-                 "{}/user/<string:token>/trust/<userName>".format(prefix))
+                 "{}/user/<string:token>/trust/<userId>".format(prefix))
 api.add_resource(resources.QuoteList,
                  "{}/user/<string:token>/quote".format(prefix))
 api.add_resource(resources.QuoteResource,
@@ -37,7 +37,7 @@ api.add_resource(resources.QuoteResource,
 api.add_resource(resources.QuoteList,
                  "{}/ticket".format(prefix))
 api.add_resource(resources.QuoteResource,
-                 "{}/ticket/<int:ticketId>".format(prefix))
+                 "{}/ticket/<string:ticketId>".format(prefix))
 
 
 from .util.auth import OAuthSignIn

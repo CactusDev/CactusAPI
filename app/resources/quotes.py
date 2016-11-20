@@ -22,10 +22,10 @@ class QuoteList(Resource):
 
         response = {}
 
-        if errors == {}:
-            response["data"] = attributes
-        else:
+        if errors != []:
             response["errors"] = errors
+        else:
+            response["data"] = attributes
 
         return response, code
 
@@ -50,10 +50,11 @@ class QuoteList(Resource):
 
         response = {}
 
-        if errors == {}:
-            response["data"] = attributes
-        else:
+        # TODO: Make this standardized to [] instead of {}
+        if errors != {}:
             response["errors"] = errors
+        else:
+            response["data"] = attributes
 
         return response, code
 
@@ -81,10 +82,11 @@ class QuoteResource(Resource):
         elif code == 200:
             response["meta"] = {"edited": True}
 
-        if errors == {}:
-            response["data"] = attributes
-        else:
+        # TODO: Make this standardized to [] instead of {}
+        if errors != {}:
             response["errors"] = errors
+        else:
+            response["data"] = attributes
 
         return response, code
 
@@ -97,6 +99,7 @@ class QuoteResource(Resource):
 
         response = {}
 
+        # TODO: Make this standardized to [] instead of {}
         if errors == {}:
             response["data"] = attributes
         else:

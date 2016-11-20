@@ -33,12 +33,14 @@ def multi_response(table_name, model, filter_data, limit=None):
 
     for result in results:
         parsed, err, code = parse(model, result)
+        parsed = humanize_datetime(parsed, ["createdAt"])
         response.append({
-            "id": result.pop("id"),
-            "attributes": humanize_datetime(parsed, ["createdAt"]),
+            "id": parsed.pop("id"),
+            "attributes": parsed,
             "type": table_name
         })
-        errors.append(err if err != {} else None)
+        if err != {}:
+            errors.append(err)
 
     if errors == {}:
         errors = None
@@ -47,6 +49,7 @@ def multi_response(table_name, model, filter_data, limit=None):
 
 
 def single_response(table_name, model, filter_data):
+
     data = get_one(table_name, **filter_data)
 
     if data is None:
