@@ -22,10 +22,6 @@ class CommandList(Resource):
 
         response = {}
 
-        print(errors)
-
-        print(errors != {})
-
         if errors != []:
             response["errors"] = errors
         else:
