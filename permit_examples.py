@@ -35,12 +35,12 @@ def chan_permit(channel, user):
             No infinite permits, should friend the user instead
             Permit period must be longer than 5 seconds
             """
-            # TODO: Return an error explaining should friend the user
+            # TODO:380 Return an error explaining should friend the user
             return make_response(jsonify(None), 406)
 
         # If it's None, then the channel doesn't exist, we'll need to add it
         if not REDIS_CONN.exists(redis_key):
-            # TODO: Add error catching on redis return code
+            # TODO:10 Add error catching on redis return code
             REDIS_CONN.setex(redis_key, True, expires_at)
 
             return make_response(
@@ -70,7 +70,7 @@ def chan_permit(channel, user):
         # Check if the key even exists
         if REDIS_CONN.exists(redis_key):
             # It does, let's continue
-            # TODO: Redis error catching
+            # TODO:310 Redis error catching
             REDIS_CONN.delete(redis_key)
 
             return make_response(jsonify(None), 200)
