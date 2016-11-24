@@ -1,8 +1,8 @@
-from flask import request, make_response, g
+"""Handles all of the API endpoints related to quotes"""
+
+from flask import request
 
 from flask_restplus import Resource, marshal
-
-from datetime import datetime
 
 from .. import api
 from ..models import Quote
@@ -16,9 +16,17 @@ class QuoteList(Resource):
     Flask-RESTPlus works.
     """
 
+    @helpers.check_limit
     def get(self, **kwargs):
-        attributes, errors, code = helpers.multi_response(
-            "quote", Quote, {"token": kwargs["token"]})
+        if request.args.get("random", "").lower() in ["true", '1']:
+            if "limit" not in kwargs:
+                kwargs["limit"] = 1
+            attributes, errors, code = helpers.random_response(
+                "quote", Quote, **kwargs
+            )
+        else:
+            attributes, errors, code = helpers.multi_response(
+                "quote", Quote, **kwargs)
 
         response = {}
 

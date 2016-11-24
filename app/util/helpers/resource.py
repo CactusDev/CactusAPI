@@ -1,4 +1,4 @@
-from . import (get_one, create_record, update_record,
+from . import (get_one, create_record, update_record, get_random,
                humanize_datetime, get_all, get_multiple)
 
 
@@ -22,14 +22,39 @@ def parse(model, data):
     return dumped, errors, 200
 
 
-def multi_response(table_name, model, filter_data, limit=None):
+def random_response(table_name, model, limit=1, **kwargs):
     response = []
     errors = []
     code = 200
-    if limit is not None:
-        results = get_all(table_name, **filter_data)
+
+    results = get_random(table_name, limit=limit, **kwargs)
+
+    for result in results:
+        parsed, err, code = parse(model, result)
+        parsed = humanize_datetime(parsed, ["createdAt"])
+        if err != {}:
+            errors.append(err)
+            # Don't waste memory on adding a response object
+            continue
+
+        response.append({
+            "id": parsed.pop("id"),
+            "attributes": parsed,
+            "type": table_name
+        })
+
+    return response, errors, code
+
+
+def multi_response(table_name, model, **kwargs):
+    response = []
+    errors = []
+    code = 200
+
+    if "limit" not in kwargs:
+        results = get_all(table_name, **kwargs)
     else:
-        results = get_multiple(table_name, limit=limit, **filter_data)
+        results = get_multiple(table_name, **kwargs)
 
     for result in results:
         parsed, err, code = parse(model, result)

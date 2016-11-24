@@ -22,6 +22,17 @@ META_EDITED = {
 }
 
 
+def get_random(table, *, limit, **kwargs):
+    if not table.endswith('s'):
+        table += 's'
+
+    try:
+        return rethink.table(
+            table).filter(kwargs).sample(limit).run(g.rdb_conn)
+    except rethink.ReqlOpFailedError as e:
+        return e
+
+
 def get_length(table, **kwargs):
     if not table.endswith('s'):
         table += 's'
