@@ -18,7 +18,7 @@ class CommandList(Resource):
 
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "command", Command, {"token": kwargs["token"].lower()})
+            "command", Command, **{"token": kwargs["token"].lower()})
 
         response = {}
 

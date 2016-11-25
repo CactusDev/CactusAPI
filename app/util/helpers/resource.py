@@ -1,6 +1,8 @@
 from . import (get_one, create_record, update_record, get_random,
                humanize_datetime, get_all, get_multiple)
 
+from dateutil import parser
+
 
 def parse(model, data):
 
@@ -16,6 +18,8 @@ def parse(model, data):
     if errors != {}:
         # TODO: Make this return proper HTTP error codes
         return None, errors, 400
+
+    data["createdAt"] = parser.parse(data["createdAt"])
 
     dumped, errors = model.schema.dump(model(**data))
 
