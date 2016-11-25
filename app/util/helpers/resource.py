@@ -67,9 +67,6 @@ def multi_response(table_name, model, **kwargs):
         if err != {}:
             errors.append(err)
 
-    if errors == {}:
-        errors = None
-
     return response, errors, code
 
 
@@ -82,13 +79,16 @@ def single_response(table_name, model, filter_data):
 
     parsed, errors, code = parse(model, data)
 
-    response = humanize_datetime(parsed, ["createdAt"])
+    response = {}
 
-    response = {
-        "id": response.pop("id"),
-        "attributes": response,
-        "type": table_name
-    }
+    if parsed is not None:
+        response = humanize_datetime(parsed, ["createdAt"])
+
+        response = {
+            "id": response.pop("id"),
+            "attributes": response,
+            "type": table_name
+        }
 
     return response, errors, code
 
