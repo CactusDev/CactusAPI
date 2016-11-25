@@ -70,9 +70,9 @@ def multi_response(table_name, model, **kwargs):
     return response, errors, code
 
 
-def single_response(table_name, model, filter_data):
+def single_response(table_name, model, **kwargs):
 
-    data = get_one(table_name, **filter_data)
+    data = get_one(table_name, **kwargs)
 
     if data is None:
         return {}, {}, 404

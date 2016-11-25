@@ -1,8 +1,8 @@
-from flask import request, make_response, g
+"""Command resource"""
+
+from flask import request
 
 from flask_restplus import Resource, marshal
-
-from datetime import datetime
 
 from .. import api
 from ..models import Command, User
@@ -18,7 +18,7 @@ class CommandList(Resource):
 
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "command", Command, {"token": kwargs["token"].lower()})
+            "command", Command, **{"token": kwargs["token"].lower()})
 
         response = {}
 
@@ -46,7 +46,7 @@ class CommandResource(Resource):
         path_data = {"token": token, "name": kwargs["command"].lower()}
 
         attributes, errors, code = helpers.single_response(
-            "command", Command, path_data)
+            "command", Command, **path_data)
 
         response = {}
 

@@ -48,8 +48,9 @@ class QuoteList(Resource):
 
         data = {**json_data,
                 **path_data,
-                "quoteId": helpers.get_length(
+                "quoteId": helpers.next_numeric_id(
                     "quote",
+                    id_field="quoteId",
                     **path_data
                 )}
 

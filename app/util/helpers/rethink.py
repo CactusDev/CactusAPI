@@ -33,12 +33,19 @@ def get_random(table, *, limit, **kwargs):
         return e
 
 
-def get_length(table, **kwargs):
+def next_numeric_id(table, *, id_field, **kwargs):
+    # TODO: Fix this to get the next incremental ID
     if not table.endswith('s'):
         table += 's'
 
     try:
-        return rethink.table(table).filter(kwargs).count().run(g.rdb_conn)
+        count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
+        new_id = 0
+        for record in count:
+            if id_field in record and record[id_field] >= new_id:
+                new_id = record[id_field] + 1
+
+        return new_id
     except rethink.ReqlOpFailedError as e:
         return e
 
