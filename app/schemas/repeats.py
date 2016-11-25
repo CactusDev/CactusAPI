@@ -6,6 +6,6 @@ class RepeatSchema(Schema):
     # dump_to="newName" works, but it's got all sorts of issues
     id = fields.String()
     text = fields.String(required=True)
-    duration = fields.Integer(required=True, default=900)
+    period = fields.Integer(required=True, default=900)
     token = fields.String(required=True)
     repeatId = fields.Integer(required=True)

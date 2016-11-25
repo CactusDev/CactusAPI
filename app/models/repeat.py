@@ -6,10 +6,10 @@ class Repeat:
 
     schema = RepeatSchema()
 
-    def __init__(self, *, text, token, repeatId, duration=900, **kwargs):
+    def __init__(self, *, text, token, repeatId, period=900, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
         self.text = text
-        self.duration = duration    # In seconds
+        self.period = period    # In seconds
         self.token = token
         self.repeatId = repeatId
