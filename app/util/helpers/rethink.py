@@ -131,26 +131,35 @@ def get_one(table, uid=None, **kwargs):
     if not table.endswith('s'):
         table = table + 's'
 
+    is_uid = False
+
     # uid, if included, must be type string or uuid.UUID
     if uid is not None:
         if not isinstance(uid, str) and not isinstance(uid, UUID):
             raise TypeError("uid must be type {} or {}".format(str, UUID))
 
         # It's either type str or uuid.UUID, so we can continue on
-        query = rethink.table(table).get(uid).limit(1)
+        query = rethink.table(table).get(uid)
+        is_uid = True
 
-    elif kwargs == {}:
+    elif kwargs == {} and uid is None:
         # uid was not included and neither were any kwargs
         # Select the first row in the table
         query = rethink.table(table).limit(1)
 
-    elif kwargs != {}:
+    elif kwargs != {} and uid is None:
         # uid was not included, but there are kwargs
         query = rethink.table(table).filter(kwargs).limit(1)
 
-    response = list(query.run(g.rdb_conn))
-    if len(response) > 0:
-        return response[0]
+    response = query.run(g.rdb_conn)
+
+    if response is not None:
+        if not is_uid:
+            response = list(response)
+            if len(response) > 0:
+                return response[0]
+        else:
+            return dict(response)
 
     return None
 

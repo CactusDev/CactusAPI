@@ -16,9 +16,10 @@ class RepeatList(Resource):
     Flask-RESTPlus works.
     """
 
-    def get(self, **kwargs):
+    @helpers.lower_kwargs(["token"])
+    def get(self, path_data={}, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "repeat", Repeat, **{"token": kwargs["token"].lower()})
+            "repeat", Repeat, **path_data)
 
         response = {}
 
@@ -47,7 +48,7 @@ class RepeatList(Resource):
                 )}
 
         attributes, errors, code = helpers.create_or_none(
-            "repeat", Repeat, data, ["token", "text"])
+            "repeat", Repeat, data, ["token"])
 
         response = {}
 
