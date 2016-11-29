@@ -16,10 +16,19 @@ class RepeatList(Resource):
     Flask-RESTPlus works.
     """
 
-    @helpers.lower_kwargs(["token"])
-    def get(self, path_data={}, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "repeat", Repeat, **path_data)
+
+        # TODO: Make this nice. Because this is positively repulsive
+        if code == 200:
+            for result in attributes:
+                # Take attributes, convert "command" to obj
+                cmd_id = result["attributes"]["command"]
+                cmd = helpers.get_one("command", uid=cmd_id)
+                del cmd["createdAt"], cmd["id"]
+                result["attributes"]["command"] = cmd
 
         response = {}
 
@@ -30,8 +39,8 @@ class RepeatList(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs(["token"])
-    def post(self, path_data={}, **kwargs):
+    @helpers.lower_kwargs("token")
+    def post(self, path_data, **kwargs):
         # TODO:220 Implement cross-platform regex for checking valid tokens
         # TODO Make endpoint 400 if the command provided doesn't exist
         json_data = request.get_json()
@@ -50,6 +59,14 @@ class RepeatList(Resource):
         attributes, errors, code = helpers.create_or_none(
             "repeat", Repeat, data, ["token"])
 
+        # TODO: Make this nice. Because this is positively repulsive
+        if code == 200:
+            # Take attributes, convert "command" to obj
+            cmd_id = attributes["attributes"]["command"]
+            cmd = helpers.get_one("command", uid=cmd_id)
+            del cmd["createdAt"], cmd["id"]
+            attributes["attributes"]["command"] = cmd
+
         response = {}
 
         if errors == {}:
@@ -62,10 +79,20 @@ class RepeatList(Resource):
 
 class RepeatResource(Resource):
 
-    @helpers.lower_kwargs(["token", "repeatId"])
-    def get(self, path_data={}, **kwargs):
+    # TODO: Finish moving all @helpers.lower_kwargs to new version
+    @helpers.lower_kwargs("token", "repeatId")
+    # TODO: Remove all path_data={} and use just path_data
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
             "repeat", Repeat, **path_data)
+
+        # TODO: Make this nice. Because this is positively repulsive
+        if code == 200:
+            # Take attributes, convert "command" to obj
+            cmd_id = attributes["attributes"]["command"]
+            cmd = helpers.get_one("command", uid=cmd_id)
+            del cmd["createdAt"], cmd["id"]
+            attributes["attributes"]["command"] = cmd
 
         response = {}
 
@@ -76,8 +103,8 @@ class RepeatResource(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs(["token", "repeatId"])
-    def delete(self, path_data={}, **kwargs):
+    @helpers.lower_kwargs("token", "repeatId")
+    def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("repeat", **path_data)
 
         if deleted is not None:

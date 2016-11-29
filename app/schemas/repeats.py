@@ -1,6 +1,8 @@
-from marshmallow import Schema, fields, pre_load, pre_dump, post_load
+from marshmallow import Schema, fields
 from . import CommandSchema
 from ..util import helpers
+
+from .helpers import CommandUUID
 
 
 class RepeatSchema(Schema):
@@ -10,29 +12,4 @@ class RepeatSchema(Schema):
     period = fields.Integer(required=True, default=900)
     token = fields.String(required=True)
     repeatId = fields.Integer(required=True)
-    commandName = fields.String(required=True)
-    command = fields.Nested(CommandSchema, dump_only=True)
-
-    @pre_load
-    def get_command_id(self, data):
-        """Gets the command UUID for the repeat's command"""
-        data["command"] = helpers.get_one(
-            "command",
-            **{
-                "token": data["token"],
-                "name": data["commandName"]
-            }
-        )["id"]
-
-        return data
-
-    @pre_dump
-    def id_to_obj(self, obj):
-        """Gets the command object associated with the stored command ID"""
-        cmd = helpers.get_one("command", uid=obj.command)
-        # Remove createdAt and id keys from command because they're not needed
-        del cmd["createdAt"], cmd["id"]
-
-        obj.command = cmd
-
-        return obj
+    command = CommandUUID()

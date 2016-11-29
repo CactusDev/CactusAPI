@@ -13,16 +13,18 @@ from ..util import helpers
 class AliasResource(Resource):
 
     @helpers.lower_kwargs("token", "aliasName")
-    # TODO: Don't use path_data={}
     def get(self, path_data, **kwargs):
         # TODO: Fix the table generation so it doesn't require second 's'
         attributes, errors, code = helpers.single_response(
             "aliass", Alias, **path_data)
 
+        # TODO: Make this nice. Because this is positively repulsive
         # Take attributes, convert "command" to obj
         cmd_id = attributes["attributes"]["command"]
-        attributes["attributes"]["command"] = helpers.get_one("command",
-                                                              uid=cmd_id)
+        cmd = helpers.get_one("command", uid=cmd_id)
+        del cmd["createdAt"], cmd["id"]
+        attributes["attributes"]["command"] = cmd
+
         response = {}
 
         if errors == {}:
@@ -48,10 +50,12 @@ class AliasResource(Resource):
             "aliass", Alias, data, ["token", "aliasName"]
         )
 
+        # TODO: Make this nice. Because this is positively repulsive
         # Take attributes, convert "command" to obj
         cmd_id = attributes["attributes"]["command"]
-        attributes["attributes"]["command"] = helpers.get_one("command",
-                                                              uid=cmd_id)
+        cmd = helpers.get_one("command", uid=cmd_id)
+        del cmd["createdAt"], cmd["id"]
+        attributes["attributes"]["command"] = cmd
 
         response = {}
 

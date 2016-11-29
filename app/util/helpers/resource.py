@@ -1,7 +1,8 @@
 from uuid import UUID
 
 from . import (get_one, create_record, update_record, get_random,
-               humanize_datetime, get_all, get_multiple)
+               humanize_datetime, get_all, get_multiple,
+               humanize_datetime_single)
 
 
 def validate_uuid4(uuid_string):
@@ -117,14 +118,14 @@ def single_response(table_name, model, **kwargs):
 
     parsed, errors, code = parse(model, data)
 
-    response = {}
-
     if parsed is not None:
-        response = humanize_datetime(parsed, ["createdAt"])
+        # TODO: Make this be handled by Marshmallow pre/post_load/dump
+        if "createdAt" in parsed:
+            parsed["createdAt"] = humanize_datetime_single(parsed["createdAt"])
 
         response = {
-            "id": response.pop("id"),
-            "attributes": response,
+            "id": parsed.pop("id"),
+            "attributes": parsed,
             "type": table_name
         }
 
