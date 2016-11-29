@@ -12,7 +12,7 @@ def check_limit(func):
     return wrapper
 
 
-def lower_kwargs(to_lower):
+def lower_kwargs(*to_lower):
     """
     Takes a list of variables and if they exist in the request kwargs and
     they are strings, converts them to lowercase

@@ -2,7 +2,7 @@
 
 from flask import request
 
-from flask_restplus import Resource, marshal
+from flask_restplus import Resource
 
 from .. import api
 from ..models import Repeat, User
@@ -32,8 +32,8 @@ class RepeatList(Resource):
 
     @helpers.lower_kwargs(["token"])
     def post(self, path_data={}, **kwargs):
-        # TODO:220 Implement cross-platform regex for checking valid
-        # tokens.
+        # TODO:220 Implement cross-platform regex for checking valid tokens
+        # TODO Make endpoint 400 if the command provided doesn't exist
         json_data = request.get_json()
 
         if json_data is None:

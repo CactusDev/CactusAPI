@@ -11,7 +11,7 @@ class RepeatSchema(Schema):
     token = fields.String(required=True)
     repeatId = fields.Integer(required=True)
     commandName = fields.String(required=True)
-    command = fields.Nested(CommandSchema, dump_only=True, required=True)
+    command = fields.Nested(CommandSchema, dump_only=True)
 
     @pre_load
     def get_command_id(self, data):

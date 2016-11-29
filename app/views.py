@@ -25,7 +25,7 @@ prefix = app.config.get("API_PREFIX", "")
 api.add_resource(resources.CommandList,
                  "{}/user/<string:token>/command".format(prefix))
 api.add_resource(resources.CommandResource,
-                 "{}/user/<string:token>/command/<command>".format(prefix))
+                 "{}/user/<string:token>/command/<name>".format(prefix))
 
 api.add_resource(resources.TrustList,
                  "{}/user/<string:token>/trust".format(prefix))
@@ -42,6 +42,8 @@ api.add_resource(resources.RepeatList,
 api.add_resource(resources.RepeatResource,
                  "{}/user/<string:token>/repeat/<int:repeatId>".format(prefix))
 
+api.add_resource(resources.AliasResource,
+                 "{}/user/<string:token>/alias/<aliasName>".format(prefix))
 
 from .util.auth import OAuthSignIn
 

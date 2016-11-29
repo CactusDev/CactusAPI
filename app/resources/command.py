@@ -33,17 +33,10 @@ class CommandList(Resource):
 class CommandResource(Resource):
     # TODO: Move repetitive kwargs parsing into function/decorator
 
+    @helpers.lower_kwargs(["token", "name"])
     def get(self, **kwargs):
         """/api/v1/:token/command/:command -> [str Command name]"""
-
-        token = kwargs["token"].lower()
-
         # TODO:210 Implement cross-platform regex for checking valid tokens.
-        # Currently just looking to see if anything exists with that token
-        # if not helpers.is_valid_token(token):
-        # return {"errors": "doom and stuff. Probably some death too."}, 400
-
-        path_data = {"token": token, "name": kwargs["command"].lower()}
 
         attributes, errors, code = helpers.single_response(
             "command", Command, **path_data)
@@ -57,17 +50,9 @@ class CommandResource(Resource):
 
         return response, code
 
-    def patch(self, **kwargs):
-        token = kwargs["token"].lower()
-
+    @helpers.lower_kwargs(["token", "name"])
+    def patch(self, path_data={}, **kwargs):
         # TODO:220 Implement cross-platform regex for checking valid tokens.
-        # Currently just looking to see if anything exists with that token
-        # if not helpers.is_valid_token(token):
-        # return {"errors": "doom and stuff. Probably some death too."}, 400
-
-        path_data = {"token": token}
-
-        path_data["name"] = kwargs["command"].lower()
 
         json_data = request.get_json()
 
@@ -94,11 +79,8 @@ class CommandResource(Resource):
 
         return response, code
 
-    def delete(self, **kwargs):
-        token = kwargs["token"].lower()
-
-        data = {"token": token, "name": kwargs["command"].lower()}
-
+    @helpers.lower_kwargs(["token", "name"])
+    def delete(self, path_data={}, **kwargs):
         deleted = helpers.delete_record("command", **data)
 
         if deleted is not None:

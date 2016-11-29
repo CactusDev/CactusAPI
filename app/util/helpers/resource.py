@@ -1,5 +1,43 @@
+from uuid import UUID
+
 from . import (get_one, create_record, update_record, get_random,
                humanize_datetime, get_all, get_multiple)
+
+
+def validate_uuid4(uuid_string):
+    """Takes a string and checks if it's a valid UUID v4"""
+    try:
+        val = UUID(uuid_string, version=4)
+    except ValueError:
+        # It's not a valid UUID
+        return False
+
+    return val.hex == uuid_string.replace('-', '')
+
+
+def _pre_parse(table_name, model, data, filter_keys):
+    # Validate the data from the route code and serialize it into dict form
+    parsed, errors, code = parse(model, data)
+
+    if errors != {}:
+        return {}, errors, code
+
+    if not isinstance(filter_keys, list):
+        raise TypeError("filter_keys must be a list of strings")
+
+    # Not needed currently, but may be later in development
+    # filter_keys += [kwarg for kwarg in kwargs.keys()]
+
+    for key in filter_keys:
+        if not isinstance(key, str):
+            raise TypeError("Each key in filter_keys must be a string")
+
+    filter_data = {key: parsed[key] for key in filter_keys}
+
+    # Check if anything exists that exactly copies that
+    exists = get_one(table_name, **filter_data)
+
+    return parsed, exists, None
 
 
 def parse(model, data):
@@ -93,31 +131,6 @@ def single_response(table_name, model, **kwargs):
     return response, errors, code
 
 
-def _pre_parse(table_name, model, data, filter_keys):
-    # Validate the data from the route code and serialize it into dict form
-    parsed, errors, code = parse(model, data)
-
-    if errors != {}:
-        return {}, errors, code
-
-    if not isinstance(filter_keys, list):
-        raise TypeError("filter_keys must be a list of strings")
-
-    # Not needed currently, but may be later in development
-    # filter_keys += [kwarg for kwarg in kwargs.keys()]
-
-    for key in filter_keys:
-        if not isinstance(key, str):
-            raise TypeError("Each key in filter_keys must be a string")
-
-    filter_data = {key: parsed[key] for key in filter_keys}
-
-    # Check if anything exists that exactly copies that
-    exists = get_one(table_name, **filter_data)
-
-    return parsed, exists, None
-
-
 def create_or_none(table_name, model, data, filter_keys, **kwargs):
 
     parsed, data, code = _pre_parse(table_name, model, data, filter_keys)
@@ -158,6 +171,7 @@ def create_or_update(table_name, model, data, filter_keys, **kwargs):
 
         changed = update_record(
             table_name, {**parsed, "id": data["id"]})
+
         code = 200
     else:
         changed = create_record(table_name, parsed)
