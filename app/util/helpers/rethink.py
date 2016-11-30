@@ -34,7 +34,6 @@ def get_random(table, *, limit, **kwargs):
 
 
 def next_numeric_id(table, *, id_field, **kwargs):
-    # TODO: Fix this to get the next incremental ID
     if not table.endswith('s'):
         table += 's'
 

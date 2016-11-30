@@ -16,8 +16,8 @@ class RepeatList(Resource):
     Flask-RESTPlus works.
     """
 
-    @helpers.lower_kwargs(["token"])
-    def get(self, path_data={}, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "repeat", Repeat, **path_data)
 
@@ -30,9 +30,8 @@ class RepeatList(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs(["token"])
-    def post(self, path_data={}, **kwargs):
-        # TODO:220 Implement cross-platform regex for checking valid tokens
+    @helpers.lower_kwargs("token")
+    def post(self, path_data, **kwargs):
         # TODO Make endpoint 400 if the command provided doesn't exist
         json_data = request.get_json()
 
@@ -62,8 +61,8 @@ class RepeatList(Resource):
 
 class RepeatResource(Resource):
 
-    @helpers.lower_kwargs(["token", "repeatId"])
-    def get(self, path_data={}, **kwargs):
+    @helpers.lower_kwargs("token", "repeatId")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
             "repeat", Repeat, **path_data)
 
@@ -76,8 +75,8 @@ class RepeatResource(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs(["token", "repeatId"])
-    def delete(self, path_data={}, **kwargs):
+    @helpers.lower_kwargs("token", "repeatId")
+    def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("repeat", **path_data)
 
         if deleted is not None:

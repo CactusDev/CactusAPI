@@ -13,7 +13,6 @@ from ..util import helpers
 class AliasResource(Resource):
 
     @helpers.lower_kwargs("token", "aliasName")
-    # TODO: Don't use path_data={}
     def get(self, path_data, **kwargs):
         # TODO: Fix the table generation so it doesn't require second 's'
         attributes, errors, code = helpers.single_response(
@@ -34,8 +33,6 @@ class AliasResource(Resource):
 
     @helpers.lower_kwargs("token", "aliasName")
     def patch(self, path_data, **kwargs):
-        # TODO:220 Implement cross-platform regex for checking valid tokens.
-
         json_data = request.get_json()
 
         if json_data is None:

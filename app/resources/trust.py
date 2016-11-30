@@ -34,6 +34,7 @@ class TrustList(Resource):
 
 class TrustResource(Resource):
 
+    @helpers.lower_kwargs("token", "userIdW")
     def patch(self, **kwargs):
         path_data = {"token": kwargs["token"], "userId": kwargs["userId"]}
         json_data = request.get_json()
@@ -60,13 +61,11 @@ class TrustResource(Resource):
 
         return response, code
 
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         """
         /api/v1/channel/:token/trust/:trust -> str username
         """
-        # TODO: Implement token validity checking
-        path_data = {"token": kwargs["token"]}
-
         if kwargs["userId"].isdigit():
             path_data["userId"] = kwargs["userId"]
         else:
@@ -85,9 +84,8 @@ class TrustResource(Resource):
 
         return response, code
 
-    def delete(self, **kwargs):
-        path_data = {"token": kwargs["token"], "userId": kwargs["userId"]}
-
+    @helpers.lower_kwargs("token", "userId")
+    def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("trust", **path_data)
 
         if deleted is not None:

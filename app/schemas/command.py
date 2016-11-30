@@ -16,8 +16,6 @@ class ResponseSchema(Schema):
 
 
 class CommandSchema(Schema):
-    # TODO: 150 Figure out how to use underscore_case for fields
-    # dump_to="newName" works, but it's got all sorts of issues
     id = fields.String()
     name = fields.String(required=True)
     response = fields.Nested(ResponseSchema, required=True)

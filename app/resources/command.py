@@ -9,6 +9,8 @@ from ..models import Command, User
 from ..schemas import CommandSchema
 from ..util import helpers
 
+# TODO: Solve createdAt cannot be formatted as datetime bug
+
 
 class CommandList(Resource):
     """
@@ -31,12 +33,10 @@ class CommandList(Resource):
 
 
 class CommandResource(Resource):
-    # TODO: Move repetitive kwargs parsing into function/decorator
 
-    @helpers.lower_kwargs(["token", "name"])
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token", "name")
+    def get(self, path_data, **kwargs):
         """/api/v1/:token/command/:command -> [str Command name]"""
-        # TODO:210 Implement cross-platform regex for checking valid tokens.
 
         attributes, errors, code = helpers.single_response(
             "command", Command, **path_data)
@@ -50,10 +50,8 @@ class CommandResource(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs(["token", "name"])
-    def patch(self, path_data={}, **kwargs):
-        # TODO:220 Implement cross-platform regex for checking valid tokens.
-
+    @helpers.lower_kwargs("token", "name")
+    def patch(self, path_data, **kwargs):
         json_data = request.get_json()
 
         if json_data is None:
@@ -79,9 +77,9 @@ class CommandResource(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs(["token", "name"])
-    def delete(self, path_data={}, **kwargs):
-        deleted = helpers.delete_record("command", **data)
+    @helpers.lower_kwargs("token", "name")
+    def delete(self, path_data, **kwargs):
+        deleted = helpers.delete_record("command", **path_data)
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
