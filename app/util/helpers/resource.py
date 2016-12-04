@@ -132,6 +132,7 @@ def single_response(table_name, model, **kwargs):
 
 
 def create_or_none(table_name, model, data, filter_keys, **kwargs):
+    # TODO Move filter_keys list to *args
 
     parsed, data, code = _pre_parse(table_name, model, data, filter_keys)
 

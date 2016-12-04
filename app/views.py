@@ -45,6 +45,11 @@ api.add_resource(resources.RepeatResource,
 api.add_resource(resources.AliasResource,
                  "{}/user/<string:token>/alias/<aliasName>".format(prefix))
 
+api.add_resource(resources.SocialList,
+                 "{}/user/<string:token>/social".format(prefix))
+api.add_resource(resources.SocialResource,
+                 "{}/user/<string:token>/social/<service>".format(prefix))
+
 from .util.auth import OAuthSignIn
 
 
