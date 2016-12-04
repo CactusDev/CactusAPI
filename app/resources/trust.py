@@ -34,7 +34,7 @@ class TrustList(Resource):
 
 class TrustResource(Resource):
 
-    @helpers.lower_kwargs("token", "userIdW")
+    @helpers.lower_kwargs("token", "userId")
     def patch(self, **kwargs):
         path_data = {"token": kwargs["token"], "userId": kwargs["userId"]}
         json_data = request.get_json()
