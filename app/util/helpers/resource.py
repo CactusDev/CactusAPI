@@ -1,4 +1,5 @@
 from uuid import UUID
+from dateutil import parser
 
 from . import (get_one, create_record, update_record, get_random,
                humanize_datetime, get_all, get_multiple)
@@ -60,31 +61,7 @@ def parse(model, data):
     return dumped, errors, 200
 
 
-def random_response(table_name, model, limit=1, **kwargs):
-    response = []
-    errors = []
-    code = 200
-
-    results = get_random(table_name, limit=limit, **kwargs)
-
-    for result in results:
-        parsed, err, code = parse(model, result)
-        parsed = humanize_datetime(parsed, ["createdAt"])
-        if err != {}:
-            errors.append(err)
-            # Don't waste memory on adding a response object
-            continue
-
-        response.append({
-            "id": parsed.pop("id"),
-            "attributes": parsed,
-            "type": table_name
-        })
-
-    return response, errors, code
-
-
-def multi_response(table_name, model, **kwargs):
+def multi_response(table_name, model, random=False, **kwargs):
     response = []
     errors = []
     code = 200
@@ -92,18 +69,22 @@ def multi_response(table_name, model, **kwargs):
     if "limit" not in kwargs:
         results = get_all(table_name, **kwargs)
     else:
-        results = get_multiple(table_name, **kwargs)
+        if random:
+            results = get_random(table_name, limit=kwargs["limit"], **kwargs)
+        else:
+            results = get_multiple(table_name, **kwargs)
 
     for result in results:
         parsed, err, code = parse(model, result)
-        parsed = humanize_datetime(parsed, ["createdAt"])
+        if err != {}:
+            errors.append(err)
+            # Don't waste memory on adding a response object
+            continue
         response.append({
             "id": parsed.pop("id"),
             "attributes": parsed,
             "type": table_name
         })
-        if err != {}:
-            errors.append(err)
 
     return response, errors, code
 
@@ -120,11 +101,9 @@ def single_response(table_name, model, **kwargs):
     response = {}
 
     if parsed is not None:
-        response = humanize_datetime(parsed, ["createdAt"])
-
         response = {
-            "id": response.pop("id"),
-            "attributes": response,
+            "id": parsed.pop("id"),
+            "attributes": parsed,
             "type": table_name
         }
 
@@ -145,8 +124,6 @@ def create_or_none(table_name, model, data, filter_keys, **kwargs):
     else:
         changed = create_record(table_name, parsed)
         code = 201
-
-    changed = humanize_datetime(changed, ["createdAt"])
 
     response = {
         "id": changed.pop("id"),
@@ -179,8 +156,6 @@ def create_or_update(table_name, model, data, filter_keys, **kwargs):
 
     if isinstance(changed, Exception):
         return {"errors": changed.args}, 500
-
-    changed = humanize_datetime(changed, ["createdAt"])
 
     response = {
         "id": changed.pop("id"),
