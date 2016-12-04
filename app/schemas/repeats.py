@@ -1,5 +1,7 @@
-from marshmallow import Schema, fields, pre_load, pre_dump, post_load
+from marshmallow import Schema, fields, pre_dump, post_dump
 from . import CommandSchema
+from dateutil import parser
+
 from ..util import helpers
 
 
@@ -11,26 +13,16 @@ class RepeatSchema(Schema):
     commandName = fields.String(required=True)
     command = fields.Nested(CommandSchema, dump_only=True)
 
-    @pre_load
-    def get_command_id(self, data):
-        """Gets the command UUID for the repeat's command"""
-        data["command"] = helpers.get_one(
-            "command",
-            **{
-                "token": data["token"],
-                "name": data["commandName"]
-            }
-        )["id"]
-
-        return data
-
     @pre_dump
-    def id_to_obj(self, obj):
-        """Gets the command object associated with the stored command ID"""
-        cmd = helpers.get_one("command", uid=obj.command)
-        # Remove createdAt and id keys from command because they're not needed
-        del cmd["createdAt"], cmd["id"]
-
-        obj.command = cmd
+    def rethink_to_dt_obj(self, obj):
+        if hasattr(obj, "createdAt"):
+            obj.createdAt = parser.parse(obj.createdAt)
 
         return obj
+
+    @post_dump
+    def humanize_datetime(self, data):
+        if "createdAt" in data:
+            data["createdAt"] = helpers.humanize_datetime(data["createdAt"])
+
+        return data

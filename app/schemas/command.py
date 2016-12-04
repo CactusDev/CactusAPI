@@ -1,4 +1,7 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_dump, pre_dump
+from dateutil import parser
+
+from ..util import helpers
 
 
 class MessagePacketSchema(Schema):
@@ -22,3 +25,17 @@ class CommandSchema(Schema):
     createdAt = fields.DateTime()
     token = fields.String(required=True)
     userLevel = fields.Integer(required=True)
+
+    @pre_dump
+    def rethink_to_dt_obj(self, obj):
+        if hasattr(obj, "createdAt"):
+            obj.createdAt = parser.parse(obj.createdAt)
+
+        return obj
+
+    @post_dump
+    def humanize_datetime(self, data):
+        if "createdAt" in data:
+            data["createdAt"] = helpers.humanize_datetime(data["createdAt"])
+
+        return data

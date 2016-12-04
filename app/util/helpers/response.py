@@ -13,14 +13,20 @@ def json_serialize(obj):
     return None
 
 
-def humanize_datetime(to_humanize, args):
+def humanize_datetime(to_humanize, *args):
     """
     Takes a marshalled JSON dict and a list of args to check and converts
     those keys into human-readable datetimes
     """
-    if not isinstance(args, list):
-        raise TypeError("args must be a list of strings")
+    # It's just a single string
+    if args == ():
+        return parser.parse(to_humanize).strftime("%c")
 
+    # It's not just a single string
+    if not isinstance(to_humanize, dict):
+        raise TypeError("First argument MUST be a dict")
+
+    # It's a dict
     for key in args:
         if not isinstance(key, str):
             raise TypeError("args must be a list of strings")
