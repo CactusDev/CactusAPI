@@ -50,6 +50,12 @@ api.add_resource(resources.SocialList,
 api.add_resource(resources.SocialResource,
                  "{}/user/<string:token>/social/<service>".format(prefix))
 
+# Disabled because of security reasons, don't necessarilly need it
+# api.add_resource(resources.UserList,
+#                  "{}/user".format(prefix))
+api.add_resource(resources.UserResource,
+                 "{}/user/<string:userName>".format(prefix))
+
 from .util.auth import OAuthSignIn
 
 

@@ -8,6 +8,7 @@ TODO 7 Implement cross-platform regex for checking valid tokens.
 TODO 8 Move repetitive kwargs parsing into function/decorator
 TODO 9 Implement allowing URL args OR JSON, not forcing JSON (decorator)
 TODO 10 Implement %COUNT%
+TODO 11 Rewrite specification to match style throughout
 
 Unit tests:
     Commands
