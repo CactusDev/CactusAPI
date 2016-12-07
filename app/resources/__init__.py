@@ -5,6 +5,7 @@ from .quotes import QuoteResource, QuoteList
 from .repeats import RepeatResource, RepeatList
 from .alias import AliasResource
 from .social import SocialList, SocialResource
+from .config import ConfigResource
 
 __all__ = ["CommandResource", "CommandList",
            "TrustResource", "TrustList",
@@ -12,4 +13,5 @@ __all__ = ["CommandResource", "CommandList",
            "QuoteResource", "QuoteList",
            "RepeatResource", "RepeatList",
            "AliasResource",
-           "SocialList", "SocialResource"]
+           "SocialList", "SocialResource",
+           "ConfigResource"]

@@ -4,12 +4,12 @@ Provides various helper functions for accessing RethinkDB
 Beginnings of a super simple ORM of sorts
 """
 
-import inspect
-from html import unescape
 from uuid import UUID, uuid4
 import rethinkdb as rethink
 from flask import g
 from flask_restplus import fields
+
+from .decorators import pluralize_arg
 
 META_CREATED = {
     "created": True,
@@ -22,10 +22,8 @@ META_EDITED = {
 }
 
 
+@pluralize_arg
 def get_random(table, *, limit, **kwargs):
-    if not table.endswith('s'):
-        table += 's'
-
     try:
         return rethink.table(
             table).filter(kwargs).sample(limit).run(g.rdb_conn)
@@ -33,10 +31,8 @@ def get_random(table, *, limit, **kwargs):
         return e
 
 
+@pluralize_arg
 def next_numeric_id(table, *, id_field, **kwargs):
-    if not table.endswith('s'):
-        table += 's'
-
     try:
         count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
         new_id = 0
@@ -49,10 +45,8 @@ def next_numeric_id(table, *, id_field, **kwargs):
         return e
 
 
+@pluralize_arg
 def exists(table, **kwargs):
-    if not table.endswith('s'):
-        table += 's'
-
     try:
         exists = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
         return len(exists) > 0
@@ -60,24 +54,17 @@ def exists(table, **kwargs):
         return e
 
 
+@pluralize_arg
 def update_record(table, data):
     """Update a record in the DB"""
-    if not table.endswith('s'):
-        table += 's'
+    rethink.table(table).get(data["id"]).update(data).run(g.rdb_conn)
 
-    try:
-        rethink.table(table).get(data["id"]).update(data).run(g.rdb_conn)
-
-        return rethink.table(table).get(data["id"]).run(g.rdb_conn)
-    except rethink.ReqlOpFailedError as e:
-        return e
+    return rethink.table(table).get(data["id"]).run(g.rdb_conn)
 
 
+@pluralize_arg
 def create_record(table, data):
     """Create a single record in the RethinkDB DB"""
-    if not table.endswith('s'):
-        table += 's'
-
     try:
         record = rethink.table(table).insert(data).run(g.rdb_conn)
 
@@ -87,14 +74,12 @@ def create_record(table, data):
         return e
 
 
+@pluralize_arg
 def delete_record(table, **kwargs):
     """
     Delete a record in the DB
     Returns the UUID of the record deleted, or None if it fails
     """
-    if not table.endswith('s'):
-        table += 's'
-
     try:
         record = list(
             rethink.table(table).filter(kwargs).limit(1).run(g.rdb_conn))
@@ -112,6 +97,7 @@ def delete_record(table, **kwargs):
     return None
 
 
+@pluralize_arg
 def get_one(table, uid=None, **kwargs):
     """ Get and return a single object from the given table via the UUID
 
@@ -123,13 +109,6 @@ def get_one(table, uid=None, **kwargs):
                     Supplying this will ignore any keyword arguments given
         Other keyword arguments may be included filter the request by
     """
-
-    if not isinstance(table, str):
-        raise TypeError("table must be type str")
-
-    if not table.endswith('s'):
-        table = table + 's'
-
     is_uid = False
 
     # uid, if included, must be type string or uuid.UUID
@@ -163,6 +142,7 @@ def get_one(table, uid=None, **kwargs):
     return None
 
 
+@pluralize_arg
 def get_all(table, **kwargs):
     """ Get and retrieve all rows in the provided table
 
@@ -180,6 +160,7 @@ def get_all(table, **kwargs):
     return get_multiple(table, **kwargs)
 
 
+@pluralize_arg
 def get_multiple(table, limit=None, **kwargs):
     """ Get and return multiple rows in the provided table in list form
 
@@ -190,12 +171,6 @@ def get_multiple(table, limit=None, **kwargs):
         limit:  Int of the total number of objects wished to be returned
         Other keyword arguments may be included filter the request by
     """
-
-    if not isinstance(table, str):
-        return None
-
-    if not table.endswith('s'):
-        table = table + 's'
 
     # Check if limit is not None, then the user wants a limit
     if limit is not None and kwargs != {}:

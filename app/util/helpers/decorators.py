@@ -30,3 +30,19 @@ def lower_kwargs(*to_lower):
             return func(*args, path_data=path_data, **kwargs)
         return wrapper
     return decorator
+
+
+def pluralize_arg(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not isinstance(args[0], str):
+            raise TypeError("table must be type {}".format(str))
+
+        if not args[0].endswith('s'):
+            args = (args[0] + 's', *args[1:])
+
+        print(args)
+        print(kwargs)
+        return func(*args, **kwargs)
+
+    return wrapper
