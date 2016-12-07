@@ -21,8 +21,8 @@ class QuoteList(Resource):
         if request.args.get("random", "").lower() in ["true", '1']:
             if "limit" not in kwargs:
                 kwargs["limit"] = 1
-            attributes, errors, code = helpers.random_response(
-                "quote", Quote, **kwargs
+            attributes, errors, code = helpers.multi_response(
+                "quote", Quote, random=True, **kwargs
             )
         else:
             attributes, errors, code = helpers.multi_response(
