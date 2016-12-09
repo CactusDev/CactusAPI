@@ -60,7 +60,7 @@ class CommandResource(Resource):
         data = {**json_data, **path_data}
 
         attributes, errors, code = helpers.create_or_update(
-            "command", Command, data, ["token", "name"]
+            "command", Command, data, "token", "name"
         )
 
         response = {}

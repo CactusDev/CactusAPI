@@ -1,57 +1,9 @@
 import rethinkdb as rethink
 
-from . import (get_one, create_record, update_record, get_random,
-               humanize_datetime, get_all, get_multiple, parse,
-               resource_exists, json_api_response, validate_data)
-
-
-def multi_response(table_name, model, random=False, **kwargs):
-    response = []
-    errors = []
-    code = 200
-
-    if "limit" not in kwargs:
-        results = get_all(table_name, **kwargs)
-    else:
-        if random:
-            results = get_random(table_name, limit=kwargs["limit"], **kwargs)
-        else:
-            results = get_multiple(table_name, **kwargs)
-
-    for result in results:
-        parsed, err, code = parse(model, result)
-        if err != {}:
-            errors.append(err)
-            # Don't waste memory on adding a response object
-            continue
-        response.append({
-            "id": parsed.pop("id"),
-            "attributes": parsed,
-            "type": table_name
-        })
-
-    return response, errors, code
-
-
-def single_response(table_name, model, **kwargs):
-
-    data = get_one(table_name, **kwargs)
-
-    if data is None:
-        return {}, {}, 404
-
-    parsed, errors, code = parse(model, data)
-
-    response = {}
-
-    if parsed is not None:
-        response = {
-            "id": parsed.pop("id"),
-            "attributes": parsed,
-            "type": table_name
-        }
-
-    return response, errors, code
+from .rethink import (get_one, get_all, get_multiple, get_random, create_record,
+                      update_record)
+from .parse import parse, validate_data, resource_exists
+from .response import humanize_datetime, json_api_response
 
 
 def create_resource(table_name, model, data, *args, **kwargs):
@@ -73,44 +25,55 @@ def create_resource(table_name, model, data, *args, **kwargs):
         changed = create_record(table_name, parsed)
         code = 201
 
-    response = json_api_response(changed, table_name)
-
+    # Try-except because json_api_response throws errors if stuff is bad
     try:
-        return response, {}, code
+        return json_api_response(changed, table_name), {}, code
     except TypeError as e:
         return {}, {"errors": e.args}, 400
 
 
 def create_or_update(table_name, model, data, *args, **kwargs):
+    """
+    Takes the provided data and creates or edits the resource
 
-    errors = validate_data(model, data)
-    if errors is not None:
-        return {}, errors, 400
-
-    parsed, data, code = resource_exists(table_name, model, data, *args)
+    Use if you don't know whether the resource exists or not
+    """
+    # Check if the resource exists based on the string args given
+    exist_check = {key: data[key] for key in args if isinstance(key, str)}
+    exists_or_error, code = resource_exists(table_name, model, **exist_check)
 
     # There was an error during pre-parsing, return that
-    if code is not None:
-        return {}, data, code
+    if code == 400:
+        return {}, exists_or_error, code
 
-    if data is not None:
-        # Don't change the createdAt
-        if parsed.get("createdAt", None) is not None:
-            del parsed["createdAt"]
+    if exists_or_error != {}:
+        update_id = exists_or_error["id"]
+        parsed, errors, code = parse(model, data, partial=True)
+        if errors != {}:
+            return {}, errors, code
+        else:
+            # Don't change the createdAt
+            if parsed.get("createdAt", None) is not None:
+                del parsed["createdAt"]
 
-        changed = update_record(table_name, {**parsed, "id": data["id"]})
-        code = 200
-
+            changed = update_record(table_name, {**parsed, "id": update_id})
+            code = 200
     else:
-        changed = create_record(table_name, parsed)
-        code = 201
+        parsed, errors, code = parse(model, data)
+        if errors != {}:
+            return {}, errors, code
+        else:
+            changed = create_record(table_name, parsed)
+            code = 201
 
     if isinstance(changed, Exception):
         return {}, {"errors": changed.args}, 500
 
-    response = json_api_response(changed, table_name)
-
-    return response, {}, code
+    # Try-except because json_api_response throws errors if stuff is bad
+    try:
+        return json_api_response(changed, table_name), {}, code
+    except TypeError as e:
+        return {}, {"errors": e.args}, 400
 
 
 def update_resource(table_name, model, data, *args, **kwargs):
@@ -135,6 +98,8 @@ def update_resource(table_name, model, data, *args, **kwargs):
     except rethink.ReqlOpFailedError as e:
         return {}, {"errors": e.args}, 500
 
-    response = json_api_response(changed, table_name)
-
-    return response, {}, code
+    # Try-except because json_api_response throws errors if stuff is bad
+    try:
+        return json_api_response(changed, table_name), {}, code
+    except TypeError as e:
+        return {}, {"errors": e.args}, 400

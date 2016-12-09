@@ -1,17 +1,15 @@
-from .response import humanize_datetime, validate_uuid4
-from .rethink import (create_record, get_all, get_one, get_multiple,
-                      next_numeric_id, update_record, exists, delete_record,
-                      get_random)
-from .resource import (create_or_update, single_response,
-                       multi_response, create_or_none, update_resource)
-from .decorators import check_limit, lower_kwargs
+from .response import (multi_response, single_response,
+                       humanize_datetime, validate_uuid4)
+from .resource import create_resource, create_or_update, update_resource
+from .decorators import check_limit, lower_kwargs, pluralize_arg
+from .rethink import (get_random, get_one, get_all, get_multiple,
+                      next_numeric_id, exists, update_record,
+                      create_record, delete_record)
 
 __all__ = [
-    "humanize_datetime",
-    "create_record", "get_all", "get_one", "get_multiple", "exists",
-    "validate_uuid4", "delete_record", "next_numeric_id", "update_record",
-    "get_random",
-    "create_or_update", "single_response", "multi_response", "create_or_none",
-    "update_resource",
-    "check_limit", "lower_kwargs"
+    "multi_response", "single_response", "humanize_datetime", "validate_uuid4",
+    "create_resource", "create_or_update", "update_resource",
+    "check_limit", "lower_kwargs", "pluralize_arg",
+    "get_one", "get_all", "get_multiple", "get_random", "next_numeric_id",
+    "exists", "update_record", "create_record", "delete_record"
 ]

@@ -23,15 +23,6 @@ META_EDITED = {
 
 
 @pluralize_arg
-def get_random(table, *, limit, **kwargs):
-    try:
-        return rethink.table(
-            table).filter(kwargs).sample(limit).run(g.rdb_conn)
-    except rethink.ReqlOpFailedError as e:
-        return e
-
-
-@pluralize_arg
 def next_numeric_id(table, *, id_field, **kwargs):
     try:
         count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
@@ -47,6 +38,9 @@ def next_numeric_id(table, *, id_field, **kwargs):
 
 @pluralize_arg
 def exists(table, **kwargs):
+    """
+    Checks if the number of results returned for the query is 1 or greater.
+    """
     try:
         exists = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
         return len(exists) > 0
@@ -57,9 +51,13 @@ def exists(table, **kwargs):
 @pluralize_arg
 def update_record(table, data):
     """Update a record in the DB"""
-    rethink.table(table).get(data["id"]).update(data).run(g.rdb_conn)
+    record_id = data.pop("id")
+    try:
+        rethink.table(table).get(record_id).update(data).run(g.rdb_conn)
 
-    return rethink.table(table).get(data["id"]).run(g.rdb_conn)
+        return rethink.table(table).get(record_id).run(g.rdb_conn)
+    except rethink.ReqlOpFailedError as e:
+        return e
 
 
 @pluralize_arg
@@ -113,8 +111,11 @@ def get_one(table, uid=None, **kwargs):
 
     # uid, if included, must be type string or uuid.UUID
     if uid is not None:
-        if not isinstance(uid, str) and not isinstance(uid, UUID):
-            raise TypeError("uid must be type {} or {}".format(str, UUID))
+        if not isinstance(uid, str):
+            if not isinstance(uid, UUID):
+                raise TypeError("uid must be type {} or {}".format(str, UUID))
+            else:
+                uid = uid.hex
 
         # It's either type str or uuid.UUID, so we can continue on
         query = rethink.table(table).get(uid)
@@ -139,7 +140,17 @@ def get_one(table, uid=None, **kwargs):
         else:
             return dict(response)
 
-    return None
+    # No results!
+    return {}
+
+
+@pluralize_arg
+def get_random(table, *, limit, **kwargs):
+    try:
+        return rethink.table(
+            table).filter(kwargs).sample(limit).run(g.rdb_conn)
+    except rethink.ReqlOpFailedError as e:
+        return e
 
 
 @pluralize_arg
@@ -154,9 +165,6 @@ def get_all(table, **kwargs):
         table:  String of the table objects are to be retrieved from
         Other keyword arguments may be included to filter the request by
     """
-    if not isinstance(table, str):
-        raise TypeError("table must be type {}".format(str))
-
     return get_multiple(table, **kwargs)
 
 

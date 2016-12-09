@@ -3,6 +3,10 @@ from flask import request
 
 
 def check_limit(func):
+    """
+    Checks if limit is an argument past in the request and if so, set's
+    the 'limit' kwarg to equal it
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         limit = request.args.get("limit", None)
@@ -33,16 +37,18 @@ def lower_kwargs(*to_lower):
 
 
 def pluralize_arg(func):
+    """
+    Checks if the first argument is a string and if so, pluralizes it in a
+    simple way by tacking 's' on the end
+    """
     @wraps(func)
     def wrapper(*args, **kwargs):
         if not isinstance(args[0], str):
-            raise TypeError("table must be type {}".format(str))
-
+            raise TypeError("first argument must be type {} to use"
+                            "pluralize_arg".format(str))
         if not args[0].endswith('s'):
             args = (args[0] + 's', *args[1:])
 
-        print(args)
-        print(kwargs)
         return func(*args, **kwargs)
 
     return wrapper

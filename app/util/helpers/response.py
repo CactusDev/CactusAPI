@@ -2,6 +2,57 @@ from datetime import datetime
 from dateutil import parser
 from uuid import UUID
 
+from .rethink import get_one, get_all, get_random, get_multiple
+from .parse import parse
+
+
+def multi_response(table_name, model, random=False, **kwargs):
+    response = []
+    errors = []
+    code = 200
+
+    if "limit" not in kwargs:
+        results = get_all(table_name, **kwargs)
+    else:
+        if random:
+            results = get_random(table_name, limit=kwargs["limit"], **kwargs)
+        else:
+            results = get_multiple(table_name, **kwargs)
+
+    for result in results:
+        parsed, err, code = parse(model, result)
+        if err != {}:
+            errors.append(err)
+            # Don't waste memory on adding a response object
+            continue
+        try:
+            response.append(json_api_response(parsed, table_name))
+        except TypeError as e:
+            errors.append(e.args)
+
+    return response, errors, code
+
+
+def single_response(table_name, model, **kwargs):
+
+    data = get_one(table_name, **kwargs)
+
+    if data == {}:
+        return {}, {}, 404
+
+    parsed, errors, code = parse(model, data)
+
+    response = {}
+
+    if parsed is not None:
+        # Try-except because json_api_response throws errors if stuff is bad
+        try:
+            return json_api_response(parsed, table_name), errors, code
+        except TypeError as e:
+            return {}, {"errors": e.args, **errors}, 400
+
+    return response, errors, code
+
 
 def json_api_response(data, resource):
     if not isinstance(resource, str):
