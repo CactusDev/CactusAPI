@@ -5,6 +5,7 @@ from ..schemas import CommandSchema
 class Command:
 
     schema = CommandSchema()
+    force_validate = [{"response": "message"}]
 
     def __init__(self, *, name, response, token, userLevel=0,
                  createdAt=datetime.utcnow(), enabled=True, **kwargs):

@@ -8,6 +8,15 @@ def validate_data(model, data, partial):
     """
     errors = model.schema.validate(data, partial=partial)
 
+    for item in model.force_validate:
+        print("item:\t", item)
+        if isinstance(item, dict):
+            for key in item.items():
+                print("data:\t", data)
+                if key[0] in data:
+                    print(data[key[0]][key[1]])
+                    print(model.schema.validate(data[key[0]][key[1]]))
+
     if errors != {}:
         return errors
 
@@ -30,8 +39,8 @@ def resource_exists(table_name, model, **kwargs):
 
 def parse(model, data, partial=False):
     """Validates and dumps data into dict form"""
+
     data, errors = model.schema.load(data, partial=partial)
-    print(errors)
 
     if errors != {}:
         return {}, errors, 400

@@ -37,8 +37,8 @@ class ConfigResource(Resource):
 
         # TODO: Need to add ability to just edit because EXPLOSIONS probs
         # for sure gonna happen
-        attributes, errors, code = helpers.create_or_update(
-            "config", Config, data, ["token", *json_data.keys()]
+        attributes, errors, code = helpers.update_resource(
+            "config", Config, data, "token"
         )
 
         response = {}

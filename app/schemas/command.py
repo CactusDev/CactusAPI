@@ -20,7 +20,7 @@ class ResponseSchema(Schema):
 
 class CommandSchema(Schema):
     id = fields.String()
-    name = fields.String(required=True)
+    name = fields.String(required=True, test=True)
     response = fields.Nested(ResponseSchema, required=True)
     createdAt = fields.DateTime()
     token = fields.String(required=True)
