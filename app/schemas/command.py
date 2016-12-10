@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields, post_dump, pre_dump
+from marshmallow import (Schema, fields, post_dump,
+                         pre_dump, validates, ValidationError)
 from dateutil import parser
 
 from ..util import helpers
@@ -11,16 +12,22 @@ class MessagePacketSchema(Schema):
 
 
 class ResponseSchema(Schema):
-    message = fields.Nested(MessagePacketSchema, many=True, required=True)
+    message = fields.Nested(MessagePacketSchema, many=True)
     user = fields.String()
     role = fields.Integer()
     action = fields.Boolean()
     target = fields.String(allow_none=True)
 
+    @validates('message')
+    def validate_message(self, value):
+        if value == []:
+            raise ValidationError("Response's message must have at least one "
+                                  "valid message packet")
+
 
 class CommandSchema(Schema):
     id = fields.String()
-    name = fields.String(required=True, test=True)
+    name = fields.String(required=True)
     response = fields.Nested(ResponseSchema, required=True)
     createdAt = fields.DateTime()
     token = fields.String(required=True)

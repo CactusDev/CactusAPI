@@ -8,15 +8,6 @@ def validate_data(model, data, partial):
     """
     errors = model.schema.validate(data, partial=partial)
 
-    for item in model.force_validate:
-        print("item:\t", item)
-        if isinstance(item, dict):
-            for key in item.items():
-                print("data:\t", data)
-                if key[0] in data:
-                    print(data[key[0]][key[1]])
-                    print(model.schema.validate(data[key[0]][key[1]]))
-
     if errors != {}:
         return errors
 
