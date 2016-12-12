@@ -3,8 +3,8 @@
 * TODO **1** Unit tests
 * TODO **2** Implement token-based authentication/limited scope access
 * TODO **3** Check for duplicate userId on trust endpoint
-* TODO **4** Fix PATCH implementation to allow for partial editing
-* TODO **5** Fix createdAt "cannot be formatted as datetime" - hopefully fixed in develop?
+* ~~TODO **4** Fix PATCH implementation to allow for partial editing~~ Done 12/12/16 in b59737b
+* ~~TODO **5** Fix createdAt "cannot be formatted as datetime"~~ - tenatively fixed as of 12/?/16 in f88616c
 * TODO **6** Figure out how to use underscore_case for fields - dump_to="newName" works, but it's got all sorts of issues
 * TODO **7** Implement cross-platform regex for checking valid tokens.
 * ~~TODO **8** Move repetitive kwargs parsing into function/decorator~~ Done 12/12/16
