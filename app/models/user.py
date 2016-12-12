@@ -5,10 +5,11 @@ class User:
 
     schema = UserSchema()
 
-    def __init__(self, *, token, **kwargs):
+    def __init__(self, *, token, userName, userId, service="beam", **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
-        if "newCommandId" in kwargs:
-            self.newCommandId = kwargs["newCommandId"]
 
-        self.token = token.lower()
+        self.token = token.lower()  # token used to link data across tables
+        self.userName = userName    # user name on service
+        self.service = service      # Default (acct. creation) service
+        self.userId = userId        # user ID on default service

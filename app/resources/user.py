@@ -1,51 +1,83 @@
-class UserResource:
-    pass
+"""User resource"""
+
+from flask import request
+
+from flask_restplus import Resource, marshal
+
+from .. import api
+from ..models import User
+from ..schemas import UserSchema
+from ..util import helpers
+
+# TODO: Solve createdAt cannot be formatted as datetime bug
 
 
-@app.route("/api/v1/user/<string:username>",
-           methods=["GET", "PATCH", "DELETE"])
-def beam_user(username):
-
+class UserList(Resource):
     """
-    If you GET this endpoint, simply go to /api/v1/user/<username> with
-    <username> replaced for the user you want
-
-    If you PATCH this endpoint:
-        Go to /api/v1/user/<username> with <username> replaced for the user
-            wanted
-        Parameters needed:
-            - email:    User's email address
-            - provider: OAuth provider
-            - pid:      User ID from OAuth provider
+    Lists all the Users. Has to be defined separately because of how
+    Flask-RESTPlus works.
     """
-    model = "User"
 
-    fields = {"channelId": channel,
-              "quoteId": quote}
+    def get(self, **kwargs):
+        attributes, errors, code = helpers.multi_response(
+            "user", User)
 
-    data = {
-        "email": request.values.get("email"),
-        "providerId": "{}${}".format(request.values.get("provider", ""),
-                                     request.values.get("pid", "")),
-        "roles": ["user"],
-        "userName": username
-    }
+        response = {}
 
-    for key in data:
-        if isinstance(data[key], str):
-            data[key] = unescape(data[key])
+        if errors != []:
+            response["errors"] = errors
+        else:
+            response["data"] = attributes
 
-    data = {key: data[key] for key in data if data[key] is not None}
+        return response, code
 
-    response = generate_response(
-        model,
-        request.path,
-        request.method,
-        request.values,
-        data=data,
-        fields=fields
-    )
 
-    packet = response[0]
+class UserResource(Resource):
 
-    return make_response(jsonify(response[0]), response[1])
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
+        attributes, errors, code = helpers.single_response(
+            "user", User, **path_data)
+
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
+
+    @helpers.lower_kwargs("token")
+    def post(self, path_data, **kwargs):
+        json_data = request.get_json()
+
+        if json_data is None:
+            return {"errors": ["Bro...no data"]}, 400
+
+        data = {**path_data, **json_data}
+
+        # TODO: Have to check if that token exists already, can't allow
+        # duplicates
+        attributes, errors, code = helpers.create_or_update(
+            "user", User, data, "service", "userId", post=True
+        )
+
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
+
+    @helpers.lower_kwargs("token")
+    def delete(self, path_data, **kwargs):
+        deleted = helpers.delete_record(
+            "user", **path_data)
+
+        if deleted is not None:
+            return {"meta": {"deleted": deleted}}, 200
+        else:
+            return None, 404

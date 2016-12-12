@@ -37,9 +37,8 @@ class QuoteList(Resource):
 
         return response, code
 
-    def post(self, **kwargs):
-        path_data = {"token": kwargs["token"]}
-
+    @helpers.lower_kwargs("token")
+    def post(self, path_data, **kwargs):
         json_data = request.get_json()
 
         # TODO: Make this an actual error/let Marshmallow handle it
@@ -54,12 +53,11 @@ class QuoteList(Resource):
                     **path_data
                 )}
 
-        attributes, errors, code = helpers.create_or_none(
-            "quote", Quote, data, ["quote", "token"])
+        attributes, errors, code = helpers.create_or_update(
+            "quote", Quote, data, "quote", "token", post=True)
 
         response = {}
 
-        # TODO: Make this standardized to [] instead of {}
         if errors != {}:
             response["errors"] = errors
         else:
@@ -70,9 +68,9 @@ class QuoteList(Resource):
 
 class QuoteResource(Resource):
 
-    def patch(self, **kwargs):
-        path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
-
+    @helpers.lower_kwargs("token", "quoteId")
+    def patch(self, path_data, **kwargs):
+        """Create or edit a quote resource"""
         json_data = request.get_json()
 
         # TODO: Make this an actual error/let Marshmallow handle it
@@ -81,7 +79,7 @@ class QuoteResource(Resource):
 
         data = {**json_data, **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "quote", Quote, data, ["token", "quoteId"]
+            "quote", Quote, data, "token", "quoteId"
         )
 
         response = {}
@@ -91,7 +89,6 @@ class QuoteResource(Resource):
         elif code == 200:
             response["meta"] = {"edited": True}
 
-        # TODO: Make this standardized to [] instead of {}
         if errors != {}:
             response["errors"] = errors
         else:
@@ -99,16 +96,15 @@ class QuoteResource(Resource):
 
         return response, code
 
-    def get(self, **kwargs):
-        path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
-
+    @helpers.lower_kwargs("token", "quoteId")
+    def get(self, path_data, **kwargs):
+        """Get a single quote"""
         attributes, errors, code = helpers.single_response(
-            "quote", Quote, path_data
+            "quote", Quote, **path_data
         )
 
         response = {}
 
-        # TODO: Make this standardized to [] instead of {}
         if errors == {}:
             response["data"] = attributes
         else:
@@ -116,9 +112,9 @@ class QuoteResource(Resource):
 
         return response, code
 
-    def delete(self, **kwargs):
-        path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
-
+    @helpers.lower_kwargs("token", "quoteId")
+    def delete(self, path_data, **kwargs):
+        """Delete a quote resource"""
         deleted = helpers.delete_record("quote", **path_data)
 
         if deleted is not None:

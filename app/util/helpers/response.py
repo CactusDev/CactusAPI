@@ -1,22 +1,93 @@
 from datetime import datetime
 from dateutil import parser
+from uuid import UUID
+
+from .rethink import get_one, get_all, get_random, get_multiple
+from .parse import parse
 
 
-def json_serialize(obj):
-    """
-    Takes a datetime.datetime object and makes it serializable by converting
-    it to an ISO-8601 string.
-    """
-    if isinstance(obj, datetime):
-        return obj.isoformat()
+def multi_response(table_name, model, random=False, **kwargs):
+    response = []
+    errors = []
+    code = 200
 
-    return None
+    if "limit" not in kwargs:
+        results = get_all(table_name, **kwargs)
+    else:
+        if random:
+            results = get_random(table_name, **kwargs)
+        else:
+            results = get_multiple(table_name, **kwargs)
+
+    for result in results:
+        parsed, err, code = parse(model, result)
+        if err != {}:
+            errors.append(err)
+            # Don't waste memory on adding a response object
+            continue
+        try:
+            response.append(json_api_response(parsed, table_name))
+        except TypeError as e:
+            errors.append(e.args)
+
+    return response, errors, code
+
+
+def single_response(table_name, model, **kwargs):
+
+    data = get_one(table_name, **kwargs)
+
+    if data == {}:
+        return {}, {}, 404
+
+    parsed, errors, code = parse(model, data)
+
+    response = {}
+
+    if parsed is not None:
+        # Try-except because json_api_response throws errors if stuff is bad
+        try:
+            return json_api_response(parsed, table_name), errors, code
+        except TypeError as e:
+            return {}, {"errors": e.args, **errors}, 400
+
+    return response, errors, code
+
+
+def json_api_response(data, resource):
+    if not isinstance(resource, str):
+        raise TypeError("resource argument must be type {}".format(str))
+
+    if not isinstance(data, (list, dict)):
+        raise TypeError(
+            "data argument must be either type {} or {}".format(dict, list))
+
+    if isinstance(data, dict):
+        return {
+            "id": data.pop("id"),
+            "attributes": data,
+            "type": resource
+        }
+    elif isinstance(data, list):
+        return [{"id": obj.pop("id"), "attributes": obj, "type": resource}
+                for obj in data]
+
+
+def validate_uuid4(uuid_string):
+    """Takes a string and checks if it's a valid UUID v4"""
+    try:
+        val = UUID(uuid_string, version=4)
+    except ValueError:
+        # It's not a valid UUID
+        return False
+
+    return val.hex == uuid_string.replace('-', '')
 
 
 def humanize_datetime(to_humanize, *args):
     """
-    Takes a marshalled JSON dict and a list of args to check and converts
-    those keys into human-readable datetimes
+    Takes a marshalled JSON dict and a list of args to check OR a single string
+    and converts that data into human-readable datetimes
     """
     # It's just a single string
     if args == ():

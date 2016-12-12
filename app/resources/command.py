@@ -18,9 +18,10 @@ class CommandList(Resource):
     Flask-RESTPlus works.
     """
 
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "command", Command, **{"token": kwargs["token"].lower()})
+            "command", Command, **path_data)
 
         response = {}
 
@@ -60,7 +61,7 @@ class CommandResource(Resource):
         data = {**json_data, **path_data}
 
         attributes, errors, code = helpers.create_or_update(
-            "command", Command, data, ["token", "name"]
+            "command", Command, data, "token", "name"
         )
 
         response = {}

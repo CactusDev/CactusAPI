@@ -18,16 +18,18 @@ class AliasResource(Resource):
         attributes, errors, code = helpers.single_response(
             "aliass", Alias, **path_data)
 
-        # Take attributes, convert "command" to obj
-        cmd_id = attributes["attributes"]["command"]
-        attributes["attributes"]["command"] = helpers.get_one("command",
-                                                              uid=cmd_id)
         response = {}
 
         if errors == {}:
             response["data"] = attributes
         else:
             response["errors"] = errors
+
+        if attributes != {} and isinstance(attributes, dict):
+            # Take attributes, convert "command" to obj
+            cmd_id = attributes["attributes"]["command"]
+            attributes["attributes"]["command"] = helpers.get_one("command",
+                                                                  uid=cmd_id)
 
         return response, code
 

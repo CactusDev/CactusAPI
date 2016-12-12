@@ -1,25 +1,25 @@
-"""Repeat resource"""
-
 from flask import request
 
-from flask_restplus import Resource
+from flask_restplus import Resource, marshal
+
+from datetime import datetime
 
 from .. import api
-from ..models import Repeat, User
-from ..schemas import RepeatSchema
+from ..models import Social
+from ..schemas import SocialSchema
 from ..util import helpers
 
 
-class RepeatList(Resource):
+class SocialList(Resource):
     """
-    Lists all the repeats. Has to be defined separately because of how
+    Lists all the trusts. Has to be defined separately because of how
     Flask-RESTPlus works.
     """
 
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "repeat", Repeat, **path_data)
+            "social", Social, **path_data)
 
         response = {}
 
@@ -30,41 +30,40 @@ class RepeatList(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs("token")
-    def post(self, path_data, **kwargs):
-        # TODO Make endpoint 400 if the command provided doesn't exist
+
+class SocialResource(Resource):
+
+    @helpers.lower_kwargs("token", "service")
+    def patch(self, path_data, **kwargs):
         json_data = request.get_json()
 
         if json_data is None:
-            return {"errors": ["Bro...no data"]}, 400
+            return {"errors": ["No JSON data"]}, 400
 
-        data = {**json_data,
-                **path_data,
-                "repeatId": helpers.next_numeric_id(
-                    "repeat",
-                    id_field="repeatId",
-                    **path_data
-                )}
-
+        data = {**json_data, **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "repeat", Repeat, data, "token", "commandName", post=True)
+            "social", Social, data, "token", "service"
+        )
 
         response = {}
 
+        if code == 201:
+            response["meta"] = {"created": True}
+        elif code == 200:
+            response["meta"] = {"edited": True}
+
         if errors == {}:
-            response["data"] = attributes
+            response["attributes"] = attributes
         else:
             response["errors"] = errors
 
         return response, code
 
-
-class RepeatResource(Resource):
-
-    @helpers.lower_kwargs("token", "repeatId")
+    @helpers.lower_kwargs("token", "service")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "repeat", Repeat, **path_data)
+            "social", Social, **path_data
+        )
 
         response = {}
 
@@ -75,9 +74,9 @@ class RepeatResource(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs("token", "repeatId")
+    @helpers.lower_kwargs("token", "service")
     def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("repeat", **path_data)
+        deleted = helpers.delete_record("social", **path_data)
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
