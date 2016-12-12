@@ -32,9 +32,8 @@ class TicketList(Resource):
 
 class TicketResource(Resource):
 
-    def patch(self, **kwargs):
-        path_data = {"ticketId": kwargs["ticketId"]}
-
+    @helpers.lower_kwargs("ticketId")
+    def patch(self, path_data, **kwargs):
         json_data = request.get_json()
 
         # TODO: Make this an actual error/let Marshmallow handle it
@@ -60,9 +59,8 @@ class TicketResource(Resource):
 
         return response, code
 
-    def get(self, **kwargs):
-        path_data = {"ticketId": kwargs["ticketId"]}
-
+    @helpers.lower_kwargs("ticketId")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
             "ticket", Ticket, path_data
         )
@@ -76,9 +74,8 @@ class TicketResource(Resource):
 
         return response, code
 
-    def delete(self, **kwargs):
-        path_data = {"ticketId": kwargs["ticketId"]}
-
+    @helpers.lower_kwargs("ticketId")
+    def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("ticket", **path_data)
 
         if deleted is not None:

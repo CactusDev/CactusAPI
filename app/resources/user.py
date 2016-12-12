@@ -34,9 +34,10 @@ class UserList(Resource):
 
 class UserResource(Resource):
 
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "user", User, token=kwargs["userName"].lower())
+            "user", User, **path_data)
 
         response = {}
 
@@ -47,13 +48,14 @@ class UserResource(Resource):
 
         return response, code
 
-    def post(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def post(self, path_data, **kwargs):
         json_data = request.get_json()
 
         if json_data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {"userName": kwargs["userName"], **json_data}
+        data = {**path_data, **json_data}
 
         # TODO: Have to check if that token exists already, can't allow
         # duplicates
@@ -70,9 +72,10 @@ class UserResource(Resource):
 
         return response, code
 
-    def delete(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record(
-            "user", token=kwargs["userName"].lower())
+            "user", **path_data)
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
