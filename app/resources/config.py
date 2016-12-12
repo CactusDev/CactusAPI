@@ -13,10 +13,10 @@ from ..util import helpers
 
 class ConfigResource(Resource):
 
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "config", Config, token=kwargs["token"].lower()
-        )
+            "config", Config, **path_data)
 
         response = {}
 
@@ -27,13 +27,14 @@ class ConfigResource(Resource):
 
         return response, code
 
-    def patch(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def patch(self, path_data, **kwargs):
         json_data = request.get_json()
 
         if json_data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**json_data, "token": kwargs["token"].lower()}
+        data = {**json_data, **path_data}
 
         # TODO: Need to add ability to just edit because EXPLOSIONS probs
         # for sure gonna happen

@@ -16,9 +16,10 @@ class SocialList(Resource):
     Flask-RESTPlus works.
     """
 
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "social", Social, **{"token": kwargs["token"]})
+            "social", Social, **path_data)
 
         response = {}
 
