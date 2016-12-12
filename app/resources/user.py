@@ -36,7 +36,7 @@ class UserResource(Resource):
 
     def get(self, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "user", User, userName=kwargs["userName"])
+            "user", User, token=kwargs["userName"].lower())
 
         response = {}
 
@@ -57,8 +57,8 @@ class UserResource(Resource):
 
         # TODO: Have to check if that token exists already, can't allow
         # duplicates
-        attributes, errors, code = helpers.create_or_none(
-            "user", User, data, ["service", "userId"]
+        attributes, errors, code = helpers.create_or_update(
+            "user", User, data, "service", "userId", post=True
         )
 
         response = {}

@@ -46,8 +46,8 @@ class RepeatList(Resource):
                     **path_data
                 )}
 
-        attributes, errors, code = helpers.create_or_none(
-            "repeat", Repeat, data, ["token"])
+        attributes, errors, code = helpers.create_or_update(
+            "repeat", Repeat, data, "token", "commandName", post=True)
 
         response = {}
 

@@ -41,7 +41,7 @@ class SocialResource(Resource):
 
         data = {**json_data, **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "social", Social, data, ["token", "service"]
+            "social", Social, data, "token", "service"
         )
 
         response = {}

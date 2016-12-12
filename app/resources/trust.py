@@ -22,8 +22,6 @@ class TrustList(Resource):
 
         response = {}
 
-        print(errors)
-
         if errors != []:
             response["errors"] = errors
         else:
@@ -35,8 +33,7 @@ class TrustList(Resource):
 class TrustResource(Resource):
 
     @helpers.lower_kwargs("token", "userId")
-    def patch(self, **kwargs):
-        path_data = {"token": kwargs["token"], "userId": kwargs["userId"]}
+    def patch(self, path_data, **kwargs):
         json_data = request.get_json()
 
         if json_data is None:
@@ -44,7 +41,7 @@ class TrustResource(Resource):
 
         data = {**json_data, **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "trust", Trust, data, ["token", "userId"]
+            "trust", Trust, data, "token", "userId"
         )
 
         response = {}
@@ -72,7 +69,7 @@ class TrustResource(Resource):
             path_data["userName"] = kwargs["userId"]
 
         attributes, errors, code = helpers.single_response(
-            "trust", Trust, path_data
+            "trust", Trust, **path_data
         )
 
         response = {}

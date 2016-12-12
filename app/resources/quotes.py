@@ -54,8 +54,8 @@ class QuoteList(Resource):
                     **path_data
                 )}
 
-        attributes, errors, code = helpers.create_or_none(
-            "quote", Quote, data, ["quote", "token"])
+        attributes, errors, code = helpers.create_or_update(
+            "quote", Quote, data, "quote", "token", post=True)
 
         response = {}
 
@@ -103,7 +103,7 @@ class QuoteResource(Resource):
         path_data = {"token": kwargs["token"], "quoteId": kwargs["quoteId"]}
 
         attributes, errors, code = helpers.single_response(
-            "quote", Quote, path_data
+            "quote", Quote, **path_data
         )
 
         response = {}

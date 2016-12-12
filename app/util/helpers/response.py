@@ -15,7 +15,7 @@ def multi_response(table_name, model, random=False, **kwargs):
         results = get_all(table_name, **kwargs)
     else:
         if random:
-            results = get_random(table_name, limit=kwargs["limit"], **kwargs)
+            results = get_random(table_name, **kwargs)
         else:
             results = get_multiple(table_name, **kwargs)
 

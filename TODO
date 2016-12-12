@@ -10,6 +10,7 @@ TODO 9 Implement allowing URL args OR JSON, not forcing JSON (decorator)
 TODO 10 Implement %COUNT%
 TODO 11 Rewrite specification to match style throughout
 TODO 12 Minify logging of request URL to make console easier to read
+TODO 13 Implement response sorting/limiting on all endpoints
 
 Unit tests:
     Commands
