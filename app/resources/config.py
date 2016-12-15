@@ -75,7 +75,7 @@ class ConfigResource(Resource):
         data = {**json_data, **path_data}
 
         attributes, errors, code = helpers.update_resource(
-            "config", Config, data, "token"
+            "config", Config, data, **path_data
         )
 
         response = {}

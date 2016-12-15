@@ -72,12 +72,13 @@ def create_or_update(table_name, model, data, *args, **kwargs):
         return {}, {"errors": e.args}, 400
 
 
-def update_resource(table_name, model, data, *args, **kwargs):
+def update_resource(table_name, model, data, **kwargs):
     errors = validate_data(model, data, partial=True)
     if errors is not None:
         return {}, errors, 400
 
-    exists_or_error, code = resource_exists(table_name, model, **data)
+    exists_or_error, code = resource_exists(table_name, model, **kwargs)
+    data["id"] = exists_or_error["id"]
 
     # There was an error during pre-parsing, return that
     if code is not None:
@@ -90,13 +91,13 @@ def update_resource(table_name, model, data, *args, **kwargs):
 
     try:
         changed = update_record(
-            table_name, {**exists_or_error, "id": data["id"]})
+            table_name, {**data, "id": exists_or_error["id"]})
         code = 200
     except rethink.ReqlOpFailedError as e:
         return {}, {"errors": e.args}, 500
 
     # Try-except because json_api_response throws errors if stuff is bad
     try:
-        return json_api_response(changed, table_name), {}, code
+        return json_api_response(changed, table_name, model), {}, code
     except TypeError as e:
         return {}, {"errors": e.args}, 400
