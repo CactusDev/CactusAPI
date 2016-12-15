@@ -5,7 +5,7 @@ from ..schemas import ConfigSchema
 class Config:
     schema = ConfigSchema()
 
-    ignore = ("password")
+    ignore = ("password", )
 
     def __init__(self, token=None, services=None, announce=None, spam=None,
                  **kwargs):

@@ -54,13 +54,20 @@ def single_response(table_name, model, **kwargs):
     return response, errors, code
 
 
+# Uh...yeah...this works...I guess?
+# 'splosions probs gonna happen, but YOLO
 def recurse_dict(data, model):
     for key, value in data.items():
         if isinstance(value, dict):
-            recurse_dict(data, model)
-        else:
-            for key in getattr(model, "ignore", ()):
-                del data[key]
+            recurse_dict(value, model)
+        elif isinstance(value, list):
+            for sub_val in value:
+                if isinstance(sub_val, dict):
+                    recurse_dict(sub_val, model)
+
+    for key in getattr(model, "ignore", []):
+        if key in data:
+            del data[key]
 
     return data
 
@@ -74,7 +81,7 @@ def json_api_response(data, resource, model):
             "data argument must be either type {} or {}".format(dict, list))
 
     if isinstance(data, dict):
-        recurse_dict(data, model)
+        data = recurse_dict(data, model)
         return {
             "id": data.pop("id"),
             "attributes": data,
@@ -82,6 +89,9 @@ def json_api_response(data, resource, model):
         }
 
     elif isinstance(data, list):
+        for index, item in enumerate(data):
+            data[index] = recurse_dict(item, model)
+
         return [{"id": obj.pop("id"), "attributes": obj, "type": resource}
                 for obj in data]
 

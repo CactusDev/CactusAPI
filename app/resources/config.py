@@ -27,23 +27,33 @@ class ConfigResource(Resource):
             # WARNING - CONFUSIFICATING/UGLY CODE AHEAD. PROCEED WITH CAUTION
             # TODO: Clean this crap up
             # Only return the config options they want
+            json_data = request.get_json()
+            if json_data is None:
+                response["data"] = attributes
+
+                return response, code
+
             for key in request.get_json().get("keys", []):
                 if ':' in key:
                     # Split the key, only take the first two results
                     primary_key, sub_key = key.split(':')[:2]
+                    if primary_key not in to_return:
+                        to_return[primary_key] = {}
+
                     attr = attributes["attributes"]
+
                     if primary_key in attr:
                         if isinstance(attr[primary_key], list):
                             if sub_key.isdigit():
-                                print(len(attr[primary_key]) -
-                                      1 >= int(sub_key))
                                 if len(attr[primary_key]) - 1 >= int(sub_key):
-                                    to_return[primary_key] = attr[
+                                    to_return[primary_key][sub_key] = attr[
                                         primary_key][int(sub_key)]
+
                         if sub_key in attr[primary_key]:
-                            to_return[primary_key] = attr[primary_key][sub_key]
+                            to_return[primary_key][sub_key] = attr[
+                                primary_key][sub_key]
                     else:
-                        to_return[key] = "Config not found"
+                        to_return[primary_key][sub_key] = "Config not found"
                 else:
                     if key not in attributes["attributes"]:
                         to_return[key] = "Config not found"

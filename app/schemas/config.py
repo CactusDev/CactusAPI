@@ -40,6 +40,6 @@ class SpamSchema(Schema):
 class ConfigSchema(Schema):
     id = fields.String()
     token = fields.String(required=True)
-    services = fields.List(fields.Nested(ServiceSchema))
+    services = fields.Nested(ServiceSchema, many=True)
     announce = fields.Nested(AnnouncementsSchema)
     spam = fields.Nested(SpamSchema)

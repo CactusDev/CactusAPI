@@ -32,7 +32,7 @@ class UserList(Resource):
 
 class UserResource(Resource):
 
-    def get(self, path_data, **kwargs):
+    def get(self, **kwargs):
         # Not using lower_kwargs because we have to assign it to diff. key
         path_data = {"token": kwargs["userName"].lower()}
 
