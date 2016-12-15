@@ -5,11 +5,9 @@ from flask import request
 from flask_restplus import Resource, marshal
 
 from .. import api
-from ..models import User
+from ..models import User, Config
 from ..schemas import UserSchema
 from ..util import helpers
-
-# TODO: Solve createdAt cannot be formatted as datetime bug
 
 
 class UserList(Resource):
@@ -34,8 +32,10 @@ class UserList(Resource):
 
 class UserResource(Resource):
 
-    @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
+        # Not using lower_kwargs because we have to assign it to diff. key
+        path_data = {"token": kwargs["userName"].lower()}
+
         attributes, errors, code = helpers.single_response(
             "user", User, **path_data)
 
@@ -48,8 +48,12 @@ class UserResource(Resource):
 
         return response, code
 
-    @helpers.lower_kwargs("token")
+    @helpers.lower_kwargs("userName")
     def post(self, path_data, **kwargs):
+        """
+        Create the new user in the DB and generate the default config
+        in the config table
+        """
         json_data = request.get_json()
 
         if json_data is None:
@@ -63,6 +67,11 @@ class UserResource(Resource):
             "user", User, data, "service", "userId", post=True
         )
 
+        # Failed creating the user record
+        if errors != {}:
+            return {"errors": errors}, code
+
+        # Generate the response now, since we don't need to include the config
         response = {}
 
         if errors == {}:
@@ -70,12 +79,20 @@ class UserResource(Resource):
         else:
             response["errors"] = errors
 
+        _, errors, code = helpers.create_or_update(
+            "config", Config, Config.default_data(json_data["token"]),
+            "token"
+        )
+
+        if errors != {}:
+            return {"errors": errors}, code
+
         return response, code
 
-    @helpers.lower_kwargs("token")
-    def delete(self, path_data, **kwargs):
+    def delete(self, **kwargs):
+        # Not using lower_kwargs because we have to assign it to diff. key
         deleted = helpers.delete_record(
-            "user", **path_data)
+            "user", token=kwargs["userName"].lower())
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

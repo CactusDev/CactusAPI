@@ -26,7 +26,7 @@ def multi_response(table_name, model, random=False, **kwargs):
             # Don't waste memory on adding a response object
             continue
         try:
-            response.append(json_api_response(parsed, table_name))
+            response.append(json_api_response(parsed, table_name, model))
         except TypeError as e:
             errors.append(e.args)
 
@@ -47,14 +47,25 @@ def single_response(table_name, model, **kwargs):
     if parsed is not None:
         # Try-except because json_api_response throws errors if stuff is bad
         try:
-            return json_api_response(parsed, table_name), errors, code
+            return json_api_response(parsed, table_name, model), errors, code
         except TypeError as e:
             return {}, {"errors": e.args, **errors}, 400
 
     return response, errors, code
 
 
-def json_api_response(data, resource):
+def recurse_dict(data, model):
+    for key, value in data.items():
+        if isinstance(value, dict):
+            recurse_dict(data, model)
+        else:
+            for key in getattr(model, "ignore", ()):
+                del data[key]
+
+    return data
+
+
+def json_api_response(data, resource, model):
     if not isinstance(resource, str):
         raise TypeError("resource argument must be type {}".format(str))
 
@@ -63,11 +74,13 @@ def json_api_response(data, resource):
             "data argument must be either type {} or {}".format(dict, list))
 
     if isinstance(data, dict):
+        recurse_dict(data, model)
         return {
             "id": data.pop("id"),
             "attributes": data,
             "type": resource
         }
+
     elif isinstance(data, list):
         return [{"id": obj.pop("id"), "attributes": obj, "type": resource}
                 for obj in data]

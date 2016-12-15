@@ -20,10 +20,38 @@ class ConfigResource(Resource):
 
         response = {}
 
-        if errors != []:
+        if errors != {}:
             response["errors"] = errors
         else:
-            response["data"] = attributes
+            to_return = {}
+            # WARNING - CONFUSIFICATING/UGLY CODE AHEAD. PROCEED WITH CAUTION
+            # TODO: Clean this crap up
+            # Only return the config options they want
+            for key in request.get_json().get("keys", []):
+                if ':' in key:
+                    # Split the key, only take the first two results
+                    primary_key, sub_key = key.split(':')[:2]
+                    attr = attributes["attributes"]
+                    if primary_key in attr:
+                        if isinstance(attr[primary_key], list):
+                            if sub_key.isdigit():
+                                print(len(attr[primary_key]) -
+                                      1 >= int(sub_key))
+                                if len(attr[primary_key]) - 1 >= int(sub_key):
+                                    to_return[primary_key] = attr[
+                                        primary_key][int(sub_key)]
+                        if sub_key in attr[primary_key]:
+                            to_return[primary_key] = attr[primary_key][sub_key]
+                    else:
+                        to_return[key] = "Config not found"
+                else:
+                    if key not in attributes["attributes"]:
+                        to_return[key] = "Config not found"
+                        continue
+
+                    to_return[key] = attributes["attributes"][key]
+
+            response["data"] = to_return
 
         return response, code
 
@@ -36,8 +64,6 @@ class ConfigResource(Resource):
 
         data = {**json_data, **path_data}
 
-        # TODO: Need to add ability to just edit because EXPLOSIONS probs
-        # for sure gonna happen
         attributes, errors, code = helpers.update_resource(
             "config", Config, data, "token"
         )

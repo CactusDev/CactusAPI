@@ -54,7 +54,7 @@ api.add_resource(resources.SocialResource,
 # api.add_resource(resources.UserList,
 #                  "{}/user".format(prefix))
 api.add_resource(resources.UserResource,
-                 "{}/user/<string:token>".format(prefix))
+                 "{}/user/<string:userName>".format(prefix))
 
 api.add_resource(resources.ConfigResource,
                  "{}/user/<string:token>/config".format(prefix))

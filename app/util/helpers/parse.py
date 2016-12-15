@@ -1,7 +1,7 @@
 from .rethink import get_one
 
 
-def validate_data(model, data, partial):
+def validate_data(model, data, partial=False):
     """
     Validates the provided data against the provided model
     Returns None if successful, a dict of errors if otherwise

@@ -48,16 +48,13 @@ def create_or_update(table_name, model, data, *args, **kwargs):
                 return {}, {"errors": e.args}, 400
 
         update_id = exists_or_error["id"]
-        parsed, errors, code = parse(model, data, partial=True)
-        if errors != {}:
-            return {}, errors, code
-        else:
-            # Don't change the createdAt
-            if parsed.get("createdAt", None) is not None:
-                del parsed["createdAt"]
+        # Don't change the createdAt
+        if exists_or_error.get("createdAt", None) is not None:
+            del exists_or_error["createdAt"]
 
-            changed = update_record(table_name, {**parsed, "id": update_id})
-            code = 200
+        changed = update_record(
+            table_name, {**exists_or_error, "id": update_id})
+        code = 200
     else:
         changed, code = _create(table_name, model, data)
 
@@ -76,23 +73,24 @@ def create_or_update(table_name, model, data, *args, **kwargs):
 
 
 def update_resource(table_name, model, data, *args, **kwargs):
-    errors = validate_data(model, data)
+    errors = validate_data(model, data, partial=True)
     if errors is not None:
         return {}, errors, 400
 
-    parsed, data, code = resource_exists(table_name, model, data, *args)
+    exists_or_error, code = resource_exists(table_name, model, **data)
 
     # There was an error during pre-parsing, return that
     if code is not None:
-        return {}, data, code
+        return {}, exists_or_error, code
 
-    if data is not None:
+    if exists_or_error is not None:
         # Don't change the createdAt
-        if parsed.get("createdAt", None) is not None:
-            del parsed["createdAt"]
+        if exists_or_error.get("createdAt", None) is not None:
+            del exists_or_error["createdAt"]
 
     try:
-        changed = update_record(table_name, {**parsed, "id": data["id"]})
+        changed = update_record(
+            table_name, {**exists_or_error, "id": data["id"]})
         code = 200
     except rethink.ReqlOpFailedError as e:
         return {}, {"errors": e.args}, 500

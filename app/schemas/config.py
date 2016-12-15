@@ -18,16 +18,22 @@ class Announcement(Schema):
 
 
 class AnnouncementsSchema(Schema):
+    join = fields.Nested(Announcement)
     follow = fields.Nested(Announcement)
     leave = fields.Nested(Announcement)
-    follow = fields.Nested(Announcement)
     sub = fields.Nested(Announcement)
+    host = fields.Nested(Announcement)
+
+
+class ModNotifier(Schema):
+    notify = fields.Boolean(default=False, required=True)
+    userNames = fields.List(fields.String, required=True)
 
 
 class SpamSchema(Schema):
     maxEmoji = fields.Integer()
     autoTimeout = fields.Boolean(default=False)
-    notifyMod = fields.Boolean(default=False)
+    notifyMod = fields.Nested(ModNotifier)
     allowLinks = fields.Boolean(default=True)
 
 
