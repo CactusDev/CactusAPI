@@ -53,7 +53,7 @@ def create_or_update(table_name, model, data, *args, **kwargs):
             del exists_or_error["createdAt"]
 
         changed = update_record(
-            table_name, {**exists_or_error, "id": update_id})
+            table_name, {**data, "id": update_id})
         code = 200
     else:
         changed, code = _create(table_name, model, data)

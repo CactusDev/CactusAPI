@@ -32,6 +32,7 @@ class CommandSchema(Schema):
     createdAt = fields.DateTime()
     token = fields.String(required=True)
     userLevel = fields.Integer(required=True)
+    enabled = fields.Boolean(default=True)
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):
