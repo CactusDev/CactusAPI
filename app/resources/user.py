@@ -79,13 +79,13 @@ class UserResource(Resource):
         else:
             response["errors"] = errors
 
-        _, errors, code = helpers.create_or_update(
+        _, errors, config_code = helpers.create_or_update(
             "config", Config, Config.default_data(json_data["token"]),
             "token"
         )
 
         if errors != {}:
-            return {"errors": errors}, code
+            return {"errors": errors}, config_code
 
         return response, code
 

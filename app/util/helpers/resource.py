@@ -43,7 +43,7 @@ def create_or_update(table_name, model, data, *args, **kwargs):
             # Try-except because json_api_response throws errors if stuff is
             # bad
             try:
-                return json_api_response(exists_or_error, table_name), {}, 409
+                return json_api_response(exists_or_error, table_name, model), {}, 409
             except TypeError as e:
                 return {}, {"errors": e.args}, 400
 
