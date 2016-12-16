@@ -7,3 +7,4 @@ class UserSchema(Schema):
     userName = fields.String(required=True)
     userId = fields.Integer(required=True)
     service = fields.String(required=True, default="beam")
+    password = fields.String(default=None)

@@ -5,7 +5,10 @@ class User:
 
     schema = UserSchema()
 
-    def __init__(self, *, token, userName, userId, service="beam", **kwargs):
+    ignore = ("password", )
+
+    def __init__(self, *, token, userName, userId, service="beam",
+                 password=None, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
 
@@ -13,3 +16,4 @@ class User:
         self.userName = userName    # user name on service
         self.service = service      # Default (acct. creation) service
         self.userId = userId        # user ID on default service
+        self.password = password    # API access password

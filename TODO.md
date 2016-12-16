@@ -13,7 +13,7 @@
 * TODO **11** Rewrite specification to match style throughout
 * TODO **12** Minify logging of request URL to make console easier to read
 * TODO **13** Implement response sorting/limiting on all endpoints
-* TODO **14** Implement user creation because that's required for configs
+~~* TODO **14** Implement user creation because that's required for configs~~ Confirmed done. Unknown date/commit
 
 # Grouped TODOs
 
