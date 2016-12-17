@@ -8,6 +8,7 @@ from .. import api
 from ..models import Command, User
 from ..schemas import CommandSchema
 from ..util import helpers
+from ..util import auth
 
 # TODO: Solve createdAt cannot be formatted as datetime bug
 
@@ -51,6 +52,7 @@ class CommandResource(Resource):
 
         return response, code
 
+    @auth.scopes_required({"command:details", "command:create"})
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
         json_data = request.get_json()

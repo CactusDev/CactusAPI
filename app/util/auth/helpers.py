@@ -8,18 +8,25 @@ def scopes_required(scopes):
     def wrapper(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            data = request.headers.get('X-Token-Auth', []).split('-')
             # The endpoint is decorated, meaning it requires *some* form of
             # authentication token in the X-Token-Auth header, return Forbidden
-            # Format: <JWT token>-<username token>
+            # X-Auth-JWT - JWT token
+            # X-Auth-Token - Account token
 
-            if len(data) < 2:
-                return {}, {"errors": ["X-Token-Auth header is incorrect "
-                                       "format. Must be of format "
-                                       " <JWT token>-<account token>"]
+            jw_token = request.headers.get("X-Auth-JWT", None)
+            acct_token = request.headers.get("X-Auth-Token", None)
+
+            if jw_token is None:
+                missing = "X-Auth-JWT"
+                if acct_token is None:
+                    missing += " and X-Auth-Token"
+
+                return {}, {"errors": ["X-Token-Auth header is incorrect. "
+                                       "Missing required {} "
+                                       "header(s)".format(missing)]
                             }, 403
 
-            user = get_one("users", token=data[1])
+            user = get_one("users", token=acct_token)
             password = user.get("password")
 
             if user == {} or password is None:
@@ -28,17 +35,18 @@ def scopes_required(scopes):
                 }, 403
 
             try:
-                jwt_token = jwt.decode(data, password, algorithims="RS512")
+                decoded = jwt.decode(jw_token, password, algorithms="HS512")
+                print(decoded)
             except JWTError as e:
                 return {}, {"errors": e.args}, 403
 
-            if data[1] != jwt_token.get("token", ""):
+            if acct_token != decoded.get("token", ""):
                 return {}, {
                     "errors": [
                         "Provided user token and JWT token do not match!"]
                 }, 403
 
-            allowed = set(jwt_token.get("scopes", [])).issuperset(scopes)
+            allowed = set(decoded.get("scopes", [])).issuperset(scopes)
 
             # The scopes allowed for this JWT do not contain all of the
             # required scopes for this endpoint
