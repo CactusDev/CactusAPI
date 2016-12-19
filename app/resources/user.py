@@ -62,6 +62,7 @@ class UserResource(Resource):
 
         data = {**path_data, **json_data}
 
+        # TODO: Does this need to be changed/improved at all?
         if "password" in data:
             data["password"] = argon_hash(data["password"])
 
