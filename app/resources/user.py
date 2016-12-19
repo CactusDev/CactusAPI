@@ -8,6 +8,7 @@ from .. import api
 from ..models import User, Config
 from ..schemas import UserSchema
 from ..util import helpers
+from ..util.auth import argon_hash
 
 
 class UserList(Resource):
@@ -60,6 +61,9 @@ class UserResource(Resource):
             return {"errors": ["Bro...no data"]}, 400
 
         data = {**path_data, **json_data}
+
+        if "password" in data:
+            data["password"] = argon_hash(data["password"])
 
         # TODO: Have to check if that token exists already, can't allow
         # duplicates

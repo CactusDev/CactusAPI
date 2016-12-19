@@ -2,13 +2,12 @@
 
 from flask import request
 
-from flask_restplus import Resource, marshal
+from flask_restplus import Resource
 
 from .. import api
 from ..models import Command, User
 from ..schemas import CommandSchema
-from ..util import helpers
-from ..util import auth
+from ..util import helpers, auth
 
 # TODO: Solve createdAt cannot be formatted as datetime bug
 
