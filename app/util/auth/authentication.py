@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 ph = PasswordHasher()
 
 
-def create_expires(days=0, hours=0, minutes=0, seconds=0):
+def create_expires(days=0, hours=0, minutes=0, seconds=0, **kwargs):
     return int(datetime.timestamp(datetime.utcnow() + timedelta(
         days=days,
         hours=hours,
