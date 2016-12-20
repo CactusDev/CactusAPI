@@ -55,12 +55,12 @@ class UserResource(Resource):
         Create the new user in the DB and generate the default config
         in the config table
         """
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**path_data, **json_data}
+        data = {**data, **path_data}
 
         # TODO: Does this need to be changed/improved at all?
         if "password" in data:
@@ -85,7 +85,7 @@ class UserResource(Resource):
             response["errors"] = errors
 
         _, errors, config_code = helpers.create_or_update(
-            "config", Config, Config.default_data(json_data["token"]),
+            "config", Config, Config.default_data(data["token"]),
             "token"
         )
 

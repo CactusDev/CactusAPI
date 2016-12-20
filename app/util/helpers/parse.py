@@ -1,4 +1,20 @@
+from flask import request
+
 from .rethink import get_one
+
+
+def get_mixed_args(*args):
+    request_args = request.values
+    request_json = request.get_json()
+
+    if request_json is None:
+        data = request_args
+    else:
+        data = {**request_args, **request_json}
+
+    data = {key: data for key, data in data.items() if key not in args}
+
+    return data
 
 
 def validate_data(model, data, partial=False):

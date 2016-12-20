@@ -14,6 +14,8 @@
 * TODO **12** Minify logging of request URL to make console easier to read
 * TODO **13** Implement response sorting/limiting on all endpoints
 ~~* TODO **14** Implement user creation because that's required for configs~~ Confirmed done. Unknown date/commit
+* TODO **15** Don't allow aliases to be created if the aliased command doesn't exists
+* TODO **16** Aliases should be removed when the aliased command gets removed
 
 # Grouped TODOs
 
