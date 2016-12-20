@@ -4,12 +4,17 @@ from flask_restplus import Resource
 
 from jose import jwt
 
-from .. import api
+from .. import api, app
 from ..models import User
 from ..util import helpers, auth
 
 
 class Login(Resource):
+
+    # Will be implemented later if need be for token revocation, but not used
+    @helpers.lower_kwargs("token")
+    def delete(self, path_data, **kwargs):
+        pass
 
     # TODO: Refactor after feature-freeze
     def post(self, **kwargs):
@@ -44,7 +49,7 @@ class Login(Resource):
 
         data = {"token": json_data["token"],
                 "scopes": scopes,
-                "expires": auth.create_expires(seconds=45)}
+                "expires": auth.create_expires(**app.config["AUTH_EXPIRATION"])}
 
         jw_token = jwt.encode(data, hashed_password, algorithm="HS512")
 
