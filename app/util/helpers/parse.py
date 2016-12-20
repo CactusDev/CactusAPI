@@ -12,7 +12,7 @@ def get_mixed_args(*args):
     else:
         data = {**request_args, **request_json}
 
-    data = {key: data for key, data in data.items() if key not in args}
+    data = {key: value for key, value in data.items() if key not in args}
 
     return data
 
