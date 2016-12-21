@@ -27,6 +27,13 @@ def _create(table_name, model, data):
 
 
 def _check_exist(table_name, model, data, *args):
+    if not set(args).issubset(set(data.keys())):
+        return {
+            "errors": [
+                "Missing required key {}".format(key)
+                for key in args if key not in data.keys()]
+        }, 400
+
     # Check if the resource exists based on the string args given
     exist_check = {key: data[key] for key in args if isinstance(key, str)}
     exists_or_error, code = resource_exists(table_name, model, **exist_check)
@@ -38,7 +45,10 @@ def create_or_update(table_name, model, data, *args, **kwargs):
     """Takes the provided data and creates or edits the resource"""
     exists_or_error, code = _check_exist(table_name, model, data, *args)
 
-    if exists_or_error != {}:
+    if code == 400:
+        return {}, exists_or_error, code
+
+    if code is None:
         if kwargs.get("post", False):
             # Try-except because json_api_response throws errors if stuff is
             # bad
@@ -55,7 +65,8 @@ def create_or_update(table_name, model, data, *args, **kwargs):
         changed = update_record(
             table_name, {**data, "id": update_id})
         code = 200
-    else:
+
+    elif code == 404:
         changed, code = _create(table_name, model, data)
 
         # Creation didn't succesfully complete!
