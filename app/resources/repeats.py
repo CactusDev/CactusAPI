@@ -33,12 +33,12 @@ class RepeatList(Resource):
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
         # TODO Make endpoint 400 if the command provided doesn't exist
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**json_data,
+        data = {**data,
                 **path_data,
                 "repeatId": helpers.next_numeric_id(
                     "repeat",

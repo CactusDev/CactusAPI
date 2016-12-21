@@ -54,12 +54,12 @@ class CommandResource(Resource):
     @auth.scopes_required({"command:details", "command:create"})
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
 
         attributes, errors, code = helpers.create_or_update(
             "command", Command, data, "token", "name"

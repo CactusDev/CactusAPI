@@ -56,6 +56,8 @@ def scopes_required(scopes):
                         "endpoint requirements"]
                 }, 403
 
+            # TODO: Check token expiration key to see if still valid
+
             # Passed the scopes requirements, return the endpoint's response
             return f(*args, **kwargs)
 

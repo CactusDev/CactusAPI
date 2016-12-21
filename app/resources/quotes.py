@@ -39,13 +39,13 @@ class QuoteList(Resource):
 
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data,
+        data = {**data,
                 **path_data,
                 "quoteId": helpers.next_numeric_id(
                     "quote",
@@ -71,13 +71,13 @@ class QuoteResource(Resource):
     @helpers.lower_kwargs("token", "quoteId")
     def patch(self, path_data, **kwargs):
         """Create or edit a quote resource"""
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data, "token", "quoteId"
         )

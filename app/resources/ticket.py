@@ -34,13 +34,13 @@ class TicketResource(Resource):
 
     @helpers.lower_kwargs("ticketId")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "ticket", Ticket, data, ["ticketId"]
         )
