@@ -14,9 +14,8 @@ class AliasResource(Resource):
 
     @helpers.lower_kwargs("token", "aliasName")
     def get(self, path_data, **kwargs):
-        # TODO: Fix the table generation so it doesn't require second 's'
         attributes, errors, code = helpers.single_response(
-            "aliass", Alias, **path_data)
+            "aliases", Alias, **path_data)
 
         response = {}
 
@@ -42,11 +41,21 @@ class AliasResource(Resource):
 
         data = {**data, **path_data}
 
-        # TODO: Fix the table generation so it doesn't require second 's'
+        cmd = helpers.get_one("command",
+                              token=data["token"],
+                              name=data["command"]
+                              )
+
+        # The command to be aliased doesn't actually exist
+        if cmd == {}:
+            return {"errors": ["Command to be aliased does not exist!"]}, 404
+
+        # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
-            "aliass", Alias, data, ["token", "aliasName"]
+            "aliases", Alias, data, "token", "aliasName"
         )
 
+        # TODO: Find out if this can be refactored to require 1 less DB request
         # Take attributes, convert "command" to obj
         cmd_id = attributes["attributes"]["command"]
         attributes["attributes"]["command"] = helpers.get_one("command",
@@ -68,7 +77,7 @@ class AliasResource(Resource):
 
     @helpers.lower_kwargs("token", "aliasName")
     def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("aliass", **path_data)
+        deleted = helpers.delete_record("aliases", **path_data)
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

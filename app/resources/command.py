@@ -100,7 +100,14 @@ class CommandResource(Resource):
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("command", **path_data)
 
-        # Delete connected aliases
+        if deleted is not None:
+            aliases = helpers.delete_record("aliases",
+                                            limit=None,
+                                            token=path_data["token"],
+                                            command=deleted[0]
+                                            )
+
+            deleted = {"command": deleted, "aliases": aliases}
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

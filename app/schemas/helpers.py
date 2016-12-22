@@ -10,10 +10,8 @@ class CommandUUID(fields.Field):
             # Get the command UUID for the alias's command
             value = helpers.get_one(
                 "command",
-                **{
-                    "token": obj["token"],
-                    "name": obj["command"]
-                }
+                token=obj["token"],
+                name=obj["command"]
             )["id"]
 
             obj["command"] = value
