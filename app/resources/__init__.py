@@ -7,6 +7,7 @@ from .alias import AliasResource
 from .social import SocialList, SocialResource
 from .config import ConfigResource
 
+
 __all__ = ["CommandResource", "CommandList",
            "TrustResource", "TrustList",
            "UserResource", "UserList",

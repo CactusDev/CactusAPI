@@ -7,5 +7,10 @@ from .alias import Alias
 from .social import Social
 from .config import Config
 
+# Define the tables to create with the proper table name
+tables = ["commands", "trusts", "users", "quotes", "repeats", "aliases",
+          "socials", "configs", "builtins"]
+
+
 __all__ = ["Command", "Trust", "User", "Quote", "Repeat", "Alias", "Social",
            "Config"]

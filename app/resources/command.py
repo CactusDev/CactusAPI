@@ -9,8 +9,6 @@ from ..models import Command, User
 from ..schemas import CommandSchema
 from ..util import helpers, auth
 
-# TODO: Solve createdAt cannot be formatted as datetime bug
-
 
 class CommandList(Resource):
     """
@@ -22,6 +20,20 @@ class CommandList(Resource):
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "command", Command, **path_data)
+
+        # Handle builtins
+
+        custom_exists = set(obj.get("attributes", {}).get("name")
+                            for obj in attributes)
+
+        builtins, errors, code = helpers.multi_response(
+            "builtins", Command, **path_data
+        )
+
+        for builtin in builtins:
+            b_name = builtin.get("attributes", {}).get("name")
+            if b_name not in custom_exists:
+                attributes.append(builtin)
 
         response = {}
 
@@ -41,6 +53,11 @@ class CommandResource(Resource):
 
         attributes, errors, code = helpers.single_response(
             "command", Command, **path_data)
+
+        if code == 404:
+            attributes, errors, code = helpers.single_response(
+                "builtins", Command, **path_data
+            )
 
         response = {}
 
@@ -82,6 +99,8 @@ class CommandResource(Resource):
     @helpers.lower_kwargs("token", "name")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("command", **path_data)
+
+        # Delete connected aliases
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
