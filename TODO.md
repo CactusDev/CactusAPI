@@ -17,6 +17,8 @@
 ~~* TODO **15** Don't allow aliases to be created if the aliased command doesn't exists~~ Done 12/22/16
 ~~* TODO **16** Aliases should be removed when the aliased command gets removed~~ Done 12/22/16
 
+TODO Finalize TODOs
+
 # Grouped TODOs
 
 * Unit tests
