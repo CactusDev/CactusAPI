@@ -6,7 +6,7 @@
 * ~~TODO **4** Fix PATCH implementation to allow for partial editing~~ Done 12/12/16 in b59737b14e8c419d128d820f0d82673380fa4270
 * ~~TODO **5** Fix createdAt "cannot be formatted as datetime"~~ - tentatively fixed as of 12/?/16 in f88616ccc07840c5e5b593eff4d1103d2f31b034
 * TODO **6** Figure out how to use underscore_case for fields - dump_to="newName" works, but it's got all sorts of issues
-* TODO **7** Implement cross-platform regex for checking valid tokens.
+* ~~TODO **7** Implement cross-platform regex for checking valid tokens.~~ Done 12/23/16 in e4a1c7fea0562c39f1c29431e229a43ced979e0a
 * ~~TODO **8** Move repetitive kwargs parsing into function/decorator~~ Done 12/12/16 in efc24be29eba5543b2a98fe42aa770dc3591dee7
 ~~* TODO **9** Implement allowing URL args OR JSON, not forcing JSON ~~ Done 12/20/16 in 4765bde98de8e5292efa420979c80961fce91283
 * TODO **10** Implement %COUNT%
