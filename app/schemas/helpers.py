@@ -1,4 +1,5 @@
-from marshmallow import fields
+from marshmallow import fields, ValidationError
+import re
 
 from ..util import helpers
 
@@ -15,5 +16,16 @@ class CommandUUID(fields.Field):
             )["id"]
 
             obj["command"] = value
+
+        return value
+
+
+class ValidateToken(fields.Field):
+
+    def _serialize(self, value, attr, obj):
+        valid_token = re.fullmatch(r"\w{1,32}", value)
+
+        if valid_token is None:
+            raise ValidationError("token is not valid")
 
         return value
