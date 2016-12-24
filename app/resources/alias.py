@@ -59,20 +59,19 @@ class AliasResource(Resource):
             "aliases", Alias, data, "token", "aliasName"
         )
 
-        # Convert "command" to obj
-        attributes["attributes"]["command"] = cmd
-
         response = {}
+
+        if errors == {}:
+            # Convert "command" to obj
+            attributes["attributes"]["command"] = cmd
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
 
         if code == 201:
             response["meta"] = {"created": True}
         elif code == 200:
             response["meta"] = {"edited": True}
-
-        if errors == {}:
-            response["data"] = attributes
-        else:
-            response["errors"] = errors
 
         return response, code
 

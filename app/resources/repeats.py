@@ -62,12 +62,11 @@ class RepeatList(Resource):
         attributes, errors, code = helpers.create_or_update(
             "repeat", Repeat, data, "token", "command", post=True)
 
-        # Convert "command" to obj
-        attributes["attributes"]["command"] = cmd
-
         response = {}
 
         if errors == {}:
+            # Convert "command" to obj
+            attributes["attributes"]["command"] = cmd
             response["data"] = attributes
         else:
             response["errors"] = errors

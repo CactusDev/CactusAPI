@@ -12,6 +12,7 @@ class CmdAliasSchema(Schema):
     createdAt = fields.DateTime()
     token = fields.String(required=True)
     command = CommandUUID()
+    arguments = fields.List(fields.String())
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

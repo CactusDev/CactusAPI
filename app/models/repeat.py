@@ -6,7 +6,7 @@ class Repeat:
 
     schema = RepeatSchema()
 
-    def __init__(self, *, token, commandName, command, repeatId,
+    def __init__(self, *, token, commandName, command, repeatId, arguments,
                  period=900, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
@@ -15,3 +15,4 @@ class Repeat:
         self.command = command
         self.commandName = commandName
         self.repeatId = repeatId
+        self.arguments = arguments
