@@ -26,7 +26,7 @@ META_EDITED = {
 def next_numeric_id(table, *, id_field, **kwargs):
     try:
         count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
-        new_id = 0
+        new_id = 1
         for record in count:
             if id_field in record and record[id_field] >= new_id:
                 new_id = record[id_field] + 1
