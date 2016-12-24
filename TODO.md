@@ -16,6 +16,7 @@
 ~~* TODO **14** Implement user creation because that's required for configs~~ Confirmed done. Unknown date/commit
 ~~* TODO **15** Don't allow aliases to be created if the aliased command doesn't exists~~ Done 12/22/16 in aad3d5d4f5025dff4e2a5b7ebe2fe09a4bd981a1
 ~~* TODO **16** Aliases should be removed when the aliased command gets removed~~ Done 12/22/16 in aad3d5d4f5025dff4e2a5b7ebe2fe09a4bd981a1
+
 # Grouped TODOs
 
 * Unit tests

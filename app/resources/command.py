@@ -107,7 +107,13 @@ class CommandResource(Resource):
                                             command=deleted[0]
                                             )
 
-            deleted = {"command": deleted, "aliases": aliases}
+            repeats = helpers.delete_record("repeats",
+                                            limit=None,
+                                            token=path_data["token"],
+                                            command=deleted[0])
+
+            deleted = {"command": deleted,
+                       "aliases": aliases, "repeats": repeats}
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

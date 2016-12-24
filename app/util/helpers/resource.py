@@ -6,6 +6,18 @@ from .parse import parse, validate_data, resource_exists
 from .response import humanize_datetime, json_api_response
 
 
+def _update(table_name, model, data, update_id):
+    parsed, errors, code = parse(model, data, partial=True)
+    if errors != {}:
+        return errors, code
+    else:
+        changed = update_record(
+            table_name, {**parsed, "id": update_id})
+        code = 200
+
+    return changed, code
+
+
 def _create(table_name, model, data):
     if hasattr(model, "force_on_create"):
         for (key, skey) in model.force_on_create.items():
@@ -62,9 +74,11 @@ def create_or_update(table_name, model, data, *args, **kwargs):
         if exists_or_error.get("createdAt", None) is not None:
             del exists_or_error["createdAt"]
 
-        changed = update_record(
-            table_name, {**data, "id": update_id})
-        code = 200
+        changed, code = _update(table_name, model, data, update_id)
+
+        # Update was not succesful
+        if code != 200:
+            return {}, changed, code
 
     elif code == 404:
         changed, code = _create(table_name, model, data)

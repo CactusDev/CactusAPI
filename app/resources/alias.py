@@ -41,9 +41,13 @@ class AliasResource(Resource):
 
         data = {**data, **path_data}
 
+        command_name = data.get("command")
+        if command_name is None:
+            return {"errors": ["Missing required key 'command'"]}
+
         cmd = helpers.get_one("command",
                               token=data["token"],
-                              name=data["command"]
+                              name=command_name
                               )
 
         # The command to be aliased doesn't actually exist
@@ -55,11 +59,8 @@ class AliasResource(Resource):
             "aliases", Alias, data, "token", "aliasName"
         )
 
-        # TODO: Find out if this can be refactored to require 1 less DB request
-        # Take attributes, convert "command" to obj
-        cmd_id = attributes["attributes"]["command"]
-        attributes["attributes"]["command"] = helpers.get_one("command",
-                                                              uid=cmd_id)
+        # Convert "command" to obj
+        attributes["attributes"]["command"] = cmd
 
         response = {}
 

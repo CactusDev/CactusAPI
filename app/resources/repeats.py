@@ -46,8 +46,24 @@ class RepeatList(Resource):
                     **path_data
                 )}
 
+        command_name = data.get("command")
+        if command_name is None:
+            return {"errors": ["Missing required key 'command'"]}
+
+        cmd = helpers.get_one("command",
+                              token=data["token"],
+                              name=command_name
+                              )
+
+        # The command to be aliased doesn't actually exist
+        if cmd == {}:
+            return {"errors": ["Command to be repeated does not exist!"]}, 404
+
         attributes, errors, code = helpers.create_or_update(
-            "repeat", Repeat, data, "token", "commandName", post=True)
+            "repeat", Repeat, data, "token", "command", post=True)
+
+        # Convert "command" to obj
+        attributes["attributes"]["command"] = cmd
 
         response = {}
 
