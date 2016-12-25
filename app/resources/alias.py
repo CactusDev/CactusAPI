@@ -12,6 +12,7 @@ from ..util import helpers
 
 class AliasResource(Resource):
 
+    @helpers.check_limit
     @helpers.lower_kwargs("token", "aliasName")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(

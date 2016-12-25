@@ -16,13 +16,13 @@ class CommandList(Resource):
     Flask-RESTPlus works.
     """
 
+    @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "command", Command, **path_data)
 
         # Handle builtins
-
         custom_exists = set(obj.get("attributes", {}).get("name")
                             for obj in attributes)
 

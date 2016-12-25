@@ -16,6 +16,7 @@ class TrustList(Resource):
     Flask-RESTPlus works.
     """
 
+    @helpers.check_limit
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "trust", Trust, {"token": kwargs["token"]})

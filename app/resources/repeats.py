@@ -16,6 +16,7 @@ class RepeatList(Resource):
     Flask-RESTPlus works.
     """
 
+    @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(

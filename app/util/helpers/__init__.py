@@ -1,7 +1,7 @@
 from .response import (multi_response, single_response,
                        humanize_datetime, validate_uuid4)
 from .resource import create_or_update, update_resource
-from .decorators import check_limit, lower_kwargs, pluralize_arg
+from .decorators import check_limit, lower_kwargs, pluralize_arg, check_random
 from .rethink import (get_random, get_one, get_all, get_multiple,
                       next_numeric_id, exists, update_record,
                       create_record, delete_record)
@@ -10,7 +10,7 @@ from .parse import get_mixed_args
 __all__ = [
     "multi_response", "single_response", "humanize_datetime", "validate_uuid4",
     "create_or_update", "update_resource",
-    "check_limit", "lower_kwargs", "pluralize_arg",
+    "check_limit", "lower_kwargs", "pluralize_arg", "check_random",
     "get_one", "get_all", "get_multiple", "get_random", "next_numeric_id",
     "exists", "update_record", "create_record", "delete_record",
     "get_mixed_args"
