@@ -8,6 +8,7 @@ from .. import api
 from ..models import Ticket
 from ..schemas import TicketSchema
 from ..util import helpers
+from .. import limiter
 
 
 class TicketList(Resource):
@@ -16,6 +17,7 @@ class TicketList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "quote", Ticket, {"token": kwargs["token"]})
@@ -32,6 +34,8 @@ class TicketList(Resource):
 
 class TicketResource(Resource):
 
+
+@limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -59,6 +63,7 @@ class TicketResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -74,6 +79,7 @@ class TicketResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("ticket", **path_data)

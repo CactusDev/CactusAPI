@@ -1,6 +1,8 @@
 from functools import wraps
 from flask import request, jsonify
 from jose import jwt, JWTError
+from datetime import datetime
+
 from ..helpers import get_one
 
 
@@ -46,6 +48,14 @@ def scopes_required(scopes):
                 }, 403
 
             allowed = set(decoded.get("scopes", [])).issuperset(scopes)
+            expiration = decoded.get("expires")
+
+            if datetime.timestamp(datetime.utcnow()) > expiration:
+                return {
+                    "errors": [
+                        "Invalid authentication key - key has expired"
+                    ]
+                }
 
             # The scopes allowed for this JWT do not contain all of the
             # required scopes for this endpoint
@@ -55,8 +65,6 @@ def scopes_required(scopes):
                         "Scopes allowed for that JWT token do not meet "
                         "endpoint requirements"]
                 }, 403
-
-            # TODO: Check token expiration key to see if still valid
 
             # Passed the scopes requirements, return the endpoint's response
             return f(*args, **kwargs)

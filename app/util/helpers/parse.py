@@ -1,6 +1,20 @@
 from flask import request
+from collections import Iterable, Mapping
 
 from .rethink import get_one
+
+
+def convert(data):
+    """Blech Marshmallow/Flask-RESTPlus hacky fix because otherwise death"""
+    if isinstance(data, str) or isinstance(data, int):
+        return str(data)
+    elif isinstance(data, Mapping):
+        return dict(map(convert, data.items()))
+    elif isinstance(data, Iterable):
+        return type(data)(map(convert, data))
+    else:
+        print("other:\t", data)
+        return data
 
 
 def get_mixed_args(*args):

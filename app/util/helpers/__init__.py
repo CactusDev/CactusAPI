@@ -5,7 +5,7 @@ from .decorators import check_limit, lower_kwargs, pluralize_arg, check_random
 from .rethink import (get_random, get_one, get_all, get_multiple,
                       next_numeric_id, exists, update_record,
                       create_record, delete_record)
-from .parse import get_mixed_args
+from .parse import get_mixed_args, convert
 
 __all__ = [
     "multi_response", "single_response", "humanize_datetime", "validate_uuid4",

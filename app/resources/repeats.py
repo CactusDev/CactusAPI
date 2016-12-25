@@ -8,6 +8,7 @@ from .. import api
 from ..models import Repeat, User
 from ..schemas import RepeatSchema
 from ..util import helpers
+from .. import limiter
 
 
 class RepeatList(Resource):
@@ -16,6 +17,7 @@ class RepeatList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -31,6 +33,7 @@ class RepeatList(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
         # TODO Make endpoint 400 if the command provided doesn't exist
@@ -77,6 +80,7 @@ class RepeatList(Resource):
 
 class RepeatResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "repeatId")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -91,6 +95,7 @@ class RepeatResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "repeatId")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("repeat", **path_data)

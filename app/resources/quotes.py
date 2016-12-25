@@ -8,6 +8,7 @@ from .. import api
 from ..models import Quote
 from ..schemas import QuoteSchema
 from ..util import helpers
+from .. import limiter
 
 
 class QuoteList(Resource):
@@ -16,6 +17,7 @@ class QuoteList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_random
     @helpers.check_limit
     def get(self, **kwargs):
@@ -32,6 +34,7 @@ class QuoteList(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -63,6 +66,7 @@ class QuoteList(Resource):
 
 class QuoteResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "quoteId")
     def patch(self, path_data, **kwargs):
         """Create or edit a quote resource"""
@@ -91,6 +95,7 @@ class QuoteResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "quoteId")
     def get(self, path_data, **kwargs):
         """Get a single quote"""

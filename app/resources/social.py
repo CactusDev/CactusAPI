@@ -8,6 +8,7 @@ from .. import api
 from ..models import Social
 from ..schemas import SocialSchema
 from ..util import helpers
+from .. import limiter
 
 
 class SocialList(Resource):
@@ -16,6 +17,7 @@ class SocialList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -34,6 +36,7 @@ class SocialList(Resource):
 
 class SocialResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "service")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -60,6 +63,7 @@ class SocialResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "service")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -75,6 +79,7 @@ class SocialResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "service")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("social", **path_data)

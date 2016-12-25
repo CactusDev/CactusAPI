@@ -7,12 +7,14 @@ from flask_restplus import Resource, marshal
 from ..models import Config
 from ..schemas import ConfigSchema
 from ..util import helpers
+from .. import limiter
 
 # TODO: Solve createdAt cannot be formatted as datetime bug
 
 
 class ConfigResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -28,7 +30,8 @@ class ConfigResource(Resource):
             # TODO: Clean this crap up
             # Only return the config options they want
             data = helpers.get_mixed_args()
-            if data is None:
+
+            if data == {}:
                 response["data"] = attributes
 
                 return response, code
@@ -65,6 +68,7 @@ class ConfigResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()

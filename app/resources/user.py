@@ -9,6 +9,7 @@ from ..models import User, Config
 from ..schemas import UserSchema
 from ..util import helpers
 from ..util.auth import argon_hash
+from .. import limiter
 
 
 class UserList(Resource):
@@ -17,6 +18,7 @@ class UserList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "user", User)
@@ -33,6 +35,7 @@ class UserList(Resource):
 
 class UserResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def get(self, **kwargs):
         # Not using lower_kwargs because we have to assign it to diff. key
         path_data = {"token": kwargs["userName"].lower()}
@@ -49,6 +52,7 @@ class UserResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("userName")
     def post(self, path_data, **kwargs):
         """
@@ -94,6 +98,7 @@ class UserResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def delete(self, **kwargs):
         # Not using lower_kwargs because we have to assign it to diff. key
         deleted = helpers.delete_record(

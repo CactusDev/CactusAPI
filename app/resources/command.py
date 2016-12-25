@@ -8,6 +8,7 @@ from .. import api
 from ..models import Command, User
 from ..schemas import CommandSchema
 from ..util import helpers, auth
+from .. import limiter
 
 
 class CommandList(Resource):
@@ -16,6 +17,7 @@ class CommandList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -47,6 +49,7 @@ class CommandList(Resource):
 
 class CommandResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "name")
     def get(self, path_data, **kwargs):
         """/api/v1/:token/command/:command -> [str Command name]"""
@@ -68,6 +71,7 @@ class CommandResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"command:details", "command:create"})
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
@@ -96,6 +100,7 @@ class CommandResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "name")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("command", **path_data)

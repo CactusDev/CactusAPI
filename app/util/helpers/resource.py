@@ -2,7 +2,7 @@ import rethinkdb as rethink
 
 from .rethink import (get_one, get_all, get_multiple, get_random, create_record,
                       update_record)
-from .parse import parse, validate_data, resource_exists
+from .parse import parse, validate_data, resource_exists, convert
 from .response import humanize_datetime, json_api_response
 
 
@@ -78,6 +78,7 @@ def create_or_update(table_name, model, data, *args, **kwargs):
 
         # Update was not succesful
         if code != 200:
+            changed = convert(changed)
             return {}, changed, code
 
     elif code == 404:
@@ -85,6 +86,7 @@ def create_or_update(table_name, model, data, *args, **kwargs):
 
         # Creation didn't succesfully complete!
         if code != 201:
+            changed = convert(changed)
             return {}, changed, code
 
     if isinstance(changed, Exception):
