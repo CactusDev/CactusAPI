@@ -28,3 +28,6 @@ AUTH_EXPIRATION = {
     "minutes": 0,
     "seconds": 4
 }
+
+SENTRY_DSN = "https://supersecretsentryDSN.net"
+SENTRY_ACTIVE = True	# Tells the API whether or not to activate Sentry
