@@ -16,8 +16,8 @@
 * ~~TODO **14** Implement user creation because that's required for configs~~ Confirmed done. Unknown date/commit
 * ~~TODO **15** Don't allow aliases to be created if the aliased command doesn't exists~~ Done 12/22/16 in aad3d5d4f5025dff4e2a5b7ebe2fe09a4bd981a1
 * ~~TODO **16** Aliases should be removed when the aliased command gets removed~~ Done 12/22/16 in aad3d5d4f5025dff4e2a5b7ebe2fe09a4bd981a1
-* ~~TODO **17**: Check auth token for validity based on datetime~~ Done 12/24/16
-* ~~TODO **18**: Implement rate-limiting on endpoints~~ Done 12/24/16, will need to be thoroughly tested by unit tests
+* ~~TODO **17**: Check auth token for validity based on datetime~~ Done 12/24/16 in 2d60236a631b041d68765f5bc524a77e9eeae1c6
+* ~~TODO **18**: Implement rate-limiting on endpoints~~ Done 12/24/16 in 2d60236a631b041d68765f5bc524a77e9eeae1c6, will need to be thoroughly tested by unit tests
 
 # Grouped TODOs
 
@@ -41,4 +41,3 @@
 
 * Figure out how to use underscore_case for fields - dump_to="newName" works, but it's got all sorts of issues
 * Implement response sorting
-*
