@@ -7,12 +7,14 @@ from flask_restplus import Resource, marshal
 from ..models import Config
 from ..schemas import ConfigSchema
 from ..util import helpers
+from .. import limiter
 
 # TODO: Solve createdAt cannot be formatted as datetime bug
 
 
 class ConfigResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -27,13 +29,14 @@ class ConfigResource(Resource):
             # WARNING - CONFUSIFICATING/UGLY CODE AHEAD. PROCEED WITH CAUTION
             # TODO: Clean this crap up
             # Only return the config options they want
-            json_data = request.get_json()
-            if json_data is None:
+            data = helpers.get_mixed_args()
+
+            if data == {}:
                 response["data"] = attributes
 
                 return response, code
 
-            for key in request.get_json().get("keys", []):
+            for key in data.get("keys", []):
                 if ':' in key:
                     # Split the key, only take the first two results
                     primary_key, sub_key = key.split(':')[:2]
@@ -65,14 +68,15 @@ class ConfigResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
 
         attributes, errors, code = helpers.update_resource(
             "config", Config, data, **path_data

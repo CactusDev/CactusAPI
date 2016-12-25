@@ -66,16 +66,14 @@ if __name__ == "__main__":
             logging.info("Database '{}' successfully created!".format(RDB_DB))
             changes_made = True
 
-        for db in dir(models):
-            if not db[0] == "_" and db[0].isupper():
-                db = db.lower() + 's'
-                if not rethink.db(RDB_DB).table_list().contains(db).run(conn):
-                    rethink.db(RDB_DB).table_create(db).run(conn)
-                    logging.info("Table '{}' successfully created in DB "
-                                 "'{}'".format(
-                                     db, RDB_DB
-                                 ))
-                    changes_made = True
+        for db in models.tables:
+            if not rethink.db(RDB_DB).table_list().contains(db).run(conn):
+                rethink.db(RDB_DB).table_create(db).run(conn)
+                logging.info("Table '{}' successfully created in DB "
+                             "'{}'".format(
+                                 db, RDB_DB
+                             ))
+                changes_made = True
 
         if changes_made:
             logging.warn("Database and tables successfully created!")
@@ -86,7 +84,11 @@ if __name__ == "__main__":
 
     logging.debug(app.url_map)
 
+    debug_mode = False
+    if args.debug == "DEBUG":
+        debug_mode = True
+
     app.run(
         port=app.config.get("PORT", 80),
         host=app.config.get("HOST", "0.0.0.0"),
-        debug=app.config.get("DEBUG", False))
+        debug=debug_mode)

@@ -1,13 +1,13 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2016-12-15T05:45:09.741Z",
-	"__export_source": "insomnia.desktop.app:v4.0.9",
+	"__export_date": "2016-12-24T23:13:00.838Z",
+	"__export_source": "insomnia.desktop.app:v4.0.12",
 	"resources": [
 		{
 			"_id": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
 			"parentId": null,
-			"modified": 1481778163964,
+			"modified": 1482169416105,
 			"created": 1481243312919,
 			"name": "CactusDev API",
 			"description": "Used for testing the CactusDev API",
@@ -17,7 +17,7 @@
 		{
 			"_id": "env_81c50d3b20304af99eaf147f165ad581",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163963,
+			"modified": 1482169416104,
 			"created": 1481243383333,
 			"name": "Base Environment",
 			"data": {},
@@ -26,7 +26,7 @@
 		{
 			"_id": "jar_53f740311b6246b88fb941809612a7c1",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481780698522,
+			"modified": 1482621176127,
 			"created": 1481243601336,
 			"name": "Default Jar",
 			"cookies": [],
@@ -35,7 +35,7 @@
 		{
 			"_id": "fld_2903bf5c01ff4ae8b978e50942280518",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163961,
+			"modified": 1482169416103,
 			"created": 1481243541132,
 			"name": "Trust",
 			"environment": {},
@@ -43,9 +43,19 @@
 			"_type": "request_group"
 		},
 		{
+			"_id": "fld_2a4f25d775214e7f98a99a782f7623cb",
+			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
+			"modified": 1482169416103,
+			"created": 1482094188196,
+			"name": "Authentication",
+			"environment": {},
+			"metaSortKey": -1482094188196,
+			"_type": "request_group"
+		},
+		{
 			"_id": "fld_3d3060ed09344701975cf4d677fda041",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163958,
+			"modified": 1482169416102,
 			"created": 1481243820619,
 			"name": "Social",
 			"environment": {},
@@ -55,7 +65,7 @@
 		{
 			"_id": "fld_5e64e71bea664f749e00e8b9d1d05199",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163958,
+			"modified": 1482169416102,
 			"created": 1481243338891,
 			"name": "Command",
 			"environment": {},
@@ -65,7 +75,7 @@
 		{
 			"_id": "fld_6bad52bfa7764481b87dfabe4a3d0519",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163957,
+			"modified": 1482169416102,
 			"created": 1481243461634,
 			"name": "Quote",
 			"environment": {},
@@ -75,7 +85,7 @@
 		{
 			"_id": "fld_a8d98658e4d247979d8614957310ff17",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163956,
+			"modified": 1482169416102,
 			"created": 1481243752992,
 			"name": "Alias",
 			"environment": {},
@@ -85,7 +95,7 @@
 		{
 			"_id": "fld_b0f9507fcb754dcd8cd2c6a7d9296461",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163955,
+			"modified": 1482169416101,
 			"created": 1481243923250,
 			"name": "User",
 			"environment": {},
@@ -95,7 +105,7 @@
 		{
 			"_id": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1481778163955,
+			"modified": 1482169416101,
 			"created": 1481243656982,
 			"name": "Repeat",
 			"environment": {},
@@ -105,7 +115,7 @@
 		{
 			"_id": "env_38ba12575c354d628b0147b50cc5e578",
 			"parentId": "env_81c50d3b20304af99eaf147f165ad581",
-			"modified": 1481778163954,
+			"modified": 1482169416100,
 			"created": 1481243384876,
 			"name": "v1 test - token paradigmshift3d",
 			"data": {
@@ -117,7 +127,7 @@
 		{
 			"_id": "req_7dc41adb4dc2441688a6c776eb08df70",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1481778163954,
+			"modified": 1482169416100,
 			"created": 1481243549005,
 			"url": "{{base_url}}/user/{{token}}/trust/24228",
 			"name": "Create",
@@ -140,7 +150,7 @@
 		{
 			"_id": "req_b0731dbcc5ed4bb593fc9b98ecdbaee1",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1481778163953,
+			"modified": 1482169416099,
 			"created": 1481243570808,
 			"url": "{{base_url}}/user/{{token}}/trust/24228",
 			"name": "Delete",
@@ -157,7 +167,7 @@
 		{
 			"_id": "req_e8ed37d5d1e248299e57cb655518ee90",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1481778163952,
+			"modified": 1482169416099,
 			"created": 1481243588208,
 			"url": "{{base_url}}/user/{{token}}/trust",
 			"name": "Get all",
@@ -174,7 +184,7 @@
 		{
 			"_id": "req_eaca0648aa1e4f82912d8a32b47c89fe",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1481778163952,
+			"modified": 1482169416099,
 			"created": 1481243594831,
 			"url": "{{base_url}}/user/{{token}}/trust/25472",
 			"name": "Get single",
@@ -189,9 +199,106 @@
 			"_type": "request"
 		},
 		{
+			"_id": "req_28b39ebc4ee44ce3b7848be4c839bffe",
+			"parentId": "fld_2a4f25d775214e7f98a99a782f7623cb",
+			"modified": 1482248672616,
+			"created": 1482094193860,
+			"url": "{{base_url}}/login",
+			"name": "Login - URL Encoded",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/x-www-form-urlencoded",
+				"params": [
+					{
+						"name": "token",
+						"value": "paradigmshift3d",
+						"disabled": false
+					},
+					{
+						"name": "password",
+						"value": "foo",
+						"disabled": false
+					},
+					{
+						"name": "scopes",
+						"value": " command:create command:create, command:details bar:spam",
+						"disabled": false
+					}
+				]
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/x-www-form-urlencoded"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1482094193860,
+			"_type": "request"
+		},
+		{
+			"_id": "req_96af6339a6484ffc8b986600843a641f",
+			"parentId": "fld_2a4f25d775214e7f98a99a782f7623cb",
+			"modified": 1482248660027,
+			"created": 1482248557343,
+			"url": "{{base_url}}/login",
+			"name": "Login - Query",
+			"method": "POST",
+			"body": {
+				"text": ""
+			},
+			"parameters": [
+				{
+					"name": "token",
+					"value": "paradigmshift3d"
+				},
+				{
+					"name": "scopes",
+					"value": " command:create command:create, command:details bar:spam"
+				},
+				{
+					"name": "password",
+					"value": "foo"
+				}
+			],
+			"headers": [],
+			"authentication": {},
+			"metaSortKey": -1482094193859,
+			"_type": "request"
+		},
+		{
+			"_id": "req_c814620e110744969c0042b1e2707395",
+			"parentId": "fld_2a4f25d775214e7f98a99a782f7623cb",
+			"modified": 1482416697674,
+			"created": 1482248592887,
+			"url": "{{base_url}}/login",
+			"name": "Login - JSON",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n\t\"token\": \"paradigmshift3d\",\n\t\"password\": \"foo\",\n\t\"scopes\": [\n\t\t\"command:create\",\n\t\t\"command:details\",\n\t\t\"bar:spam\"\n\t]\n}"
+			},
+			"parameters": [
+				{
+					"name": "",
+					"value": ""
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1482094193858,
+			"_type": "request"
+		},
+		{
 			"_id": "req_13c6c9dacf0b4c499d356d019b86c634",
 			"parentId": "fld_3d3060ed09344701975cf4d677fda041",
-			"modified": 1481778163951,
+			"modified": 1482169416098,
 			"created": 1481243820675,
 			"url": "{{base_url}}/user/{{token}}/social/github",
 			"name": "Create",
@@ -214,7 +321,7 @@
 		{
 			"_id": "req_1c97ef3233b048628dace64a6371d588",
 			"parentId": "fld_3d3060ed09344701975cf4d677fda041",
-			"modified": 1481778163951,
+			"modified": 1482169416098,
 			"created": 1481243820660,
 			"url": "{{base_url}}/user/{{token}}/social",
 			"name": "Get all",
@@ -231,7 +338,7 @@
 		{
 			"_id": "req_69f3a044b05145d1ad2cd53a7541b506",
 			"parentId": "fld_3d3060ed09344701975cf4d677fda041",
-			"modified": 1481778163950,
+			"modified": 1482169416097,
 			"created": 1481243820654,
 			"url": "{{base_url}}/user/{{token}}/social/twitter",
 			"name": "Delete",
@@ -248,7 +355,7 @@
 		{
 			"_id": "req_b832a03e6a69465784ff2cd47cb262a0",
 			"parentId": "fld_3d3060ed09344701975cf4d677fda041",
-			"modified": 1481778163950,
+			"modified": 1482248398783,
 			"created": 1481243820637,
 			"url": "{{base_url}}/user/{{token}}/social/github",
 			"name": "Get single",
@@ -265,7 +372,7 @@
 		{
 			"_id": "req_1bb0ed1d53b14031ba509b54e63b26fe",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1481778163949,
+			"modified": 1482169416096,
 			"created": 1481243364382,
 			"url": "{{base_url}}/user/{{token}}/command",
 			"name": "Get all",
@@ -282,9 +389,9 @@
 		{
 			"_id": "req_2d47e2e89bc442fb82641ca28b773e0f",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1481778163949,
+			"modified": 1482414781464,
 			"created": 1481243371570,
-			"url": "{{base_url}}/user/{{token}}/command/spam",
+			"url": "{{base_url}}/user/{{token}}/command/foo",
 			"name": "Get single",
 			"method": "GET",
 			"body": {
@@ -297,11 +404,42 @@
 			"_type": "request"
 		},
 		{
+			"_id": "req_4b1efab79b0642cba8ba631648b8e01c",
+			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
+			"modified": 1482620554519,
+			"created": 1481951470288,
+			"url": "{{base_url}}/user/{{token}}/command/foo",
+			"name": "Create command - protected",
+			"method": "PATCH",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n\t\"userLevel\": 0,\n\t\"response\": {\n\t\t\"role\": 0,\n\t\t\"action\": false,\n\t\t\"target\": null,\n\t\t\"user\": \"\",\n\t\t\"message\": [\n\t\t\t{\n\t\t\t\t\"type\": \"text\",\n\t\t\t\t\"data\": \"lol!\",\n\t\t\t\t\"text\": \"lol!\"\n\t\t\t}\n\t\t]\n\t},\n\t\"arguments\": [{\"type\": \"foo\", \"data\": \"bar\", \"text\": \"bar\"}]\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "X-Auth-JWT",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJjb21tYW5kOmNyZWF0ZSIsImNvbW1hbmQ6ZGV0YWlscyJdLCJleHBpcmVzIjoxNDgyNDM0NzAyfQ.26KjGdTq_qN3UGKm9wCRGVF2ZRNB64LuwqpJ9R9sA69RcBfCM2bR-b9XwlRjTfvZReG6donwf9XFMLHtVoVtKg"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1481951470288,
+			"_type": "request"
+		},
+		{
 			"_id": "req_798479f27a5b4b90a394432a5703351d",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1481778163949,
+			"modified": 1482414732546,
 			"created": 1481243346221,
-			"url": "{{base_url}}/user/{{token}}/command/spam",
+			"url": "{{base_url}}/user/{{token}}/command/foo",
 			"name": "Create",
 			"method": "PATCH",
 			"body": {
@@ -322,9 +460,9 @@
 		{
 			"_id": "req_b0c1357cd4414a10a4f7422168048432",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1481778163948,
+			"modified": 1482414776447,
 			"created": 1481243356848,
-			"url": "{{base_url}}/user/{{token}}/command/spam",
+			"url": "{{base_url}}/user/{{token}}/command/foo",
 			"name": "Delete",
 			"method": "DELETE",
 			"body": {
@@ -339,7 +477,7 @@
 		{
 			"_id": "req_0650bec1a5234e98b77df96782d26132",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1481778163948,
+			"modified": 1482169416094,
 			"created": 1481243491298,
 			"url": "{{base_url}}/user/{{token}}/quote/0",
 			"name": "Delete",
@@ -356,14 +494,14 @@
 		{
 			"_id": "req_22cba47bdd1146cfa28ec9ef27696fdb",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1481778163947,
+			"modified": 1482248418539,
 			"created": 1481243469086,
 			"url": "{{base_url}}/user/{{token}}/quote",
 			"name": "Create",
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"quote\": \"spam!\"\n}"
+				"text": "{\n\t\"quote\": \"foo bar!\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -379,7 +517,7 @@
 		{
 			"_id": "req_36852c6d32e345cca3ecf6a4f67f7309",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1481778163947,
+			"modified": 1482169416093,
 			"created": 1481243500258,
 			"url": "{{base_url}}/user/{{token}}/quote?limit=2",
 			"name": "Get all",
@@ -396,7 +534,7 @@
 		{
 			"_id": "req_3fe897afe2be4c39b083845db25f34a2",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1481778163946,
+			"modified": 1482169416093,
 			"created": 1481243525458,
 			"url": "{{base_url}}/user/paradigmshift3d/quote?random=true",
 			"name": "Get random",
@@ -413,7 +551,7 @@
 		{
 			"_id": "req_d35cc998a4bf4f8ca889014090d91c25",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1481778163946,
+			"modified": 1482169416092,
 			"created": 1481243510228,
 			"url": "{{base_url}}/user/{{token}}/quote/0",
 			"name": "Get single",
@@ -430,9 +568,9 @@
 		{
 			"_id": "req_a43a83691a71477f975081c2f3c04ed8",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1481778163946,
+			"modified": 1482602422007,
 			"created": 1481243753024,
-			"url": "{{base_url}}/user/{{token}}/alias/eggs",
+			"url": "{{base_url}}/user/{{token}}/alias/spam",
 			"name": "Delete",
 			"method": "DELETE",
 			"body": {
@@ -447,14 +585,14 @@
 		{
 			"_id": "req_ae96439f7ed64a25be8d7ac08745680d",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1481778163945,
+			"modified": 1482620907125,
 			"created": 1481243753056,
-			"url": "{{base_url}}/user/{{token}}/alias/eggs",
+			"url": "{{base_url}}/user/{{token}}/alias/spam",
 			"name": "Create",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"command\": \"spam\"\n}"
+				"text": "{\n\t\"command\": \"foo\",\n\t\"arguments\": [\"foo\"]\n} "
 			},
 			"parameters": [],
 			"headers": [
@@ -470,7 +608,7 @@
 		{
 			"_id": "req_e785141612c24ad794075a7330f0154e",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1481778163945,
+			"modified": 1482169416091,
 			"created": 1481243753013,
 			"url": "{{base_url}}/user/{{token}}/alias/eggs",
 			"name": "Get single",
@@ -487,7 +625,7 @@
 		{
 			"_id": "fld_96bee00f61f84e6a9110ede1cae89f36",
 			"parentId": "fld_b0f9507fcb754dcd8cd2c6a7d9296461",
-			"modified": 1481778163944,
+			"modified": 1482169416091,
 			"created": 1481243939635,
 			"name": "Config",
 			"environment": {},
@@ -497,7 +635,7 @@
 		{
 			"_id": "req_06266381b8ea460d9cf18c7c22c16ca2",
 			"parentId": "fld_b0f9507fcb754dcd8cd2c6a7d9296461",
-			"modified": 1481778545796,
+			"modified": 1482169416090,
 			"created": 1481243923278,
 			"url": "{{base_url}}/user/paradigmshift3d",
 			"name": "Delete",
@@ -514,14 +652,14 @@
 		{
 			"_id": "req_3023051e4f3c46e895ba8cc33c38771f",
 			"parentId": "fld_b0f9507fcb754dcd8cd2c6a7d9296461",
-			"modified": 1481778680290,
+			"modified": 1482169416089,
 			"created": 1481243923268,
 			"url": "{{base_url}}/user/ParadigmShift3d",
 			"name": "Create",
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"service\": \"beam\",\n\t\"token\": \"paradigmshift3d\",\n\t\"userId\": 24229\n}"
+				"text": "{\n\t\"service\": \"beam\",\n\t\"token\": \"paradigmshift3d\",\n\t\"userId\": 24229,\n\t\"password\": \"foo\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -537,7 +675,7 @@
 		{
 			"_id": "req_31ed31c0f3dc4b29b5e104c1642e2e45",
 			"parentId": "fld_b0f9507fcb754dcd8cd2c6a7d9296461",
-			"modified": 1481778163942,
+			"modified": 1482169416083,
 			"created": 1481243923281,
 			"url": "{{base_url}}/user/paradigmshift3d",
 			"name": "Get single",
@@ -554,7 +692,7 @@
 		{
 			"_id": "req_0a89c0ae8490417793bd2db3b8975577",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1481778163941,
+			"modified": 1482169416082,
 			"created": 1481243704716,
 			"url": "{{base_url}}/user/{{token}}/repeat/0",
 			"name": "Get single",
@@ -571,7 +709,7 @@
 		{
 			"_id": "req_0e3395c83e0c4f4d960828f81b43d40e",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1481778163941,
+			"modified": 1482621169470,
 			"created": 1481243682864,
 			"url": "{{base_url}}/user/{{token}}/repeat/1",
 			"name": "Delete",
@@ -588,7 +726,7 @@
 		{
 			"_id": "req_52e2520399e0494a99815d6f1cbcb25c",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1481778163940,
+			"modified": 1482169416081,
 			"created": 1481243691007,
 			"url": "{{base_url}}/user/{{token}}/repeat",
 			"name": "Get all",
@@ -605,14 +743,14 @@
 		{
 			"_id": "req_fcddba77aa664eb69f82185a7233b225",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1481778163940,
+			"modified": 1482621175505,
 			"created": 1481243668111,
 			"url": "{{base_url}}/user/{{token}}/repeat",
 			"name": "Create",
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"commandName\": \"fartknocker\",\n\t\"period\": 1800\n}"
+				"text": "{\n\t\"command\": \"foo\",\n\t\"period\": 1800,\n\t\"arguments\": [\"foo\"]\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -628,14 +766,14 @@
 		{
 			"_id": "req_5747d2d8556d48b38b2370761b4dd16d",
 			"parentId": "fld_96bee00f61f84e6a9110ede1cae89f36",
-			"modified": 1481778163939,
+			"modified": 1482169416080,
 			"created": 1481244018483,
 			"url": "{{base_url}}/user/{{token}}/config",
 			"name": "Edit",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"key\": {\n\t\t\"subKey\": {\n\t\t\t\"key\": \"newValue\"\n\t\t}\n\t}\n}"
+				"text": "{\n\t\"spam\": {\n\t\t\"maxEmoji\": 42\n\t}\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -651,7 +789,7 @@
 		{
 			"_id": "req_86d1faed25c54775bd0ab9ae374ae97d",
 			"parentId": "fld_96bee00f61f84e6a9110ede1cae89f36",
-			"modified": 1481778163938,
+			"modified": 1482169416080,
 			"created": 1481243948462,
 			"url": "{{base_url}}/user/{{token}}/config",
 			"name": "Get full",
@@ -668,14 +806,14 @@
 		{
 			"_id": "req_e3e954d5eeca44f7b64b6650cb504558",
 			"parentId": "fld_96bee00f61f84e6a9110ede1cae89f36",
-			"modified": 1481780704916,
+			"modified": 1482169416079,
 			"created": 1481243957636,
 			"url": "{{base_url}}/user/{{token}}/config",
 			"name": "Get single",
 			"method": "GET",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"keys\": [\n\t\t\"spam:maxEmoji\",\n\t\t\"services:0\"\n\t]\n\t\t\t\n}"
+				"text": "{\n\t\"keys\": [\n\t\t\"spam\",\n\t\t\"services\"\n\t]\n\t\t\t\n}"
 			},
 			"parameters": [],
 			"headers": [

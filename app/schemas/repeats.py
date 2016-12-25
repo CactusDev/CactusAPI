@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields, pre_dump, post_dump
 from . import CommandSchema
+from .helpers import CommandUUID
 from dateutil import parser
 
 from ..util import helpers
@@ -10,8 +11,8 @@ class RepeatSchema(Schema):
     period = fields.Integer(required=True, default=900)
     token = fields.String(required=True)
     repeatId = fields.Integer(required=True)
-    commandName = fields.String(required=True)
-    command = fields.Nested(CommandSchema, dump_only=True)
+    command = CommandUUID()
+    arguments = fields.List(fields.String())
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

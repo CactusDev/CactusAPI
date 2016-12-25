@@ -19,6 +19,7 @@ def before_request():
 
 from . import api
 from . import resources
+from . import authentication
 
 prefix = app.config.get("API_PREFIX", "")
 
@@ -26,6 +27,8 @@ api.add_resource(resources.CommandList,
                  "{}/user/<string:token>/command".format(prefix))
 api.add_resource(resources.CommandResource,
                  "{}/user/<string:token>/command/<name>".format(prefix))
+api.add_resource(resources.CommandCounter,
+                 "{}/user/<string:token>/command/<name>/count".format(prefix))
 
 api.add_resource(resources.TrustList,
                  "{}/user/<string:token>/trust".format(prefix))
@@ -58,6 +61,9 @@ api.add_resource(resources.UserResource,
 
 api.add_resource(resources.ConfigResource,
                  "{}/user/<string:token>/config".format(prefix))
+
+# API Login endpoint
+api.add_resource(authentication.Login, "{}/login".format(prefix))
 
 from .util.auth import OAuthSignIn
 

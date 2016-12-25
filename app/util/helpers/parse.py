@@ -1,4 +1,34 @@
+from flask import request
+from collections import Iterable, Mapping
+
 from .rethink import get_one
+
+
+def convert(data):
+    """Blech Marshmallow/Flask-RESTPlus hacky fix because otherwise death"""
+    if isinstance(data, str) or isinstance(data, int):
+        return str(data)
+    elif isinstance(data, Mapping):
+        return dict(map(convert, data.items()))
+    elif isinstance(data, Iterable):
+        return type(data)(map(convert, data))
+    else:
+        print("other:\t", data)
+        return data
+
+
+def get_mixed_args(*args):
+    request_args = request.values
+    request_json = request.get_json()
+
+    if request_json is None:
+        data = request_args
+    else:
+        data = {**request_args, **request_json}
+
+    data = {key: value for key, value in data.items() if key not in args}
+
+    return data
 
 
 def validate_data(model, data, partial=False):

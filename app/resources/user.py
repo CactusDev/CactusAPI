@@ -8,6 +8,8 @@ from .. import api
 from ..models import User, Config
 from ..schemas import UserSchema
 from ..util import helpers
+from ..util.auth import argon_hash
+from .. import limiter
 
 
 class UserList(Resource):
@@ -16,6 +18,7 @@ class UserList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "user", User)
@@ -32,6 +35,7 @@ class UserList(Resource):
 
 class UserResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def get(self, **kwargs):
         # Not using lower_kwargs because we have to assign it to diff. key
         path_data = {"token": kwargs["userName"].lower()}
@@ -48,18 +52,23 @@ class UserResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("userName")
     def post(self, path_data, **kwargs):
         """
         Create the new user in the DB and generate the default config
         in the config table
         """
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**path_data, **json_data}
+        data = {**data, **path_data}
+
+        # TODO: Does this need to be changed/improved at all?
+        if "password" in data:
+            data["password"] = argon_hash(data["password"])
 
         # TODO: Have to check if that token exists already, can't allow
         # duplicates
@@ -80,7 +89,7 @@ class UserResource(Resource):
             response["errors"] = errors
 
         _, errors, config_code = helpers.create_or_update(
-            "config", Config, Config.default_data(json_data["token"]),
+            "config", Config, Config.default_data(data["token"]),
             "token"
         )
 
@@ -89,6 +98,7 @@ class UserResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def delete(self, **kwargs):
         # Not using lower_kwargs because we have to assign it to diff. key
         deleted = helpers.delete_record(

@@ -2,6 +2,21 @@ from functools import wraps
 from flask import request
 
 
+def check_random(func):
+    """Checks if the request is being made with the ?random argument"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if request.args.get("random", '').lower() in ("true", '1'):
+            if "limit" not in request.args:
+                # By default return only 1 random quote
+                kwargs["limit"] = 1
+
+            kwargs["random"] = True
+
+        return func(*args, **kwargs)
+    return wrapper
+
+
 def check_limit(func):
     """
     Checks if limit is an argument past in the request and if so, set's

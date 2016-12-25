@@ -8,6 +8,7 @@ from .. import api
 from ..models import Repeat, User
 from ..schemas import RepeatSchema
 from ..util import helpers
+from .. import limiter
 
 
 class RepeatList(Resource):
@@ -16,6 +17,8 @@ class RepeatList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
+    @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
@@ -30,15 +33,16 @@ class RepeatList(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
         # TODO Make endpoint 400 if the command provided doesn't exist
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**json_data,
+        data = {**data,
                 **path_data,
                 "repeatId": helpers.next_numeric_id(
                     "repeat",
@@ -46,12 +50,27 @@ class RepeatList(Resource):
                     **path_data
                 )}
 
+        command_name = data.get("command")
+        if command_name is None:
+            return {"errors": ["Missing required key 'command'"]}
+
+        cmd = helpers.get_one("command",
+                              token=data["token"],
+                              name=command_name
+                              )
+
+        # The command to be aliased doesn't actually exist
+        if cmd == {}:
+            return {"errors": ["Command to be repeated does not exist!"]}, 404
+
         attributes, errors, code = helpers.create_or_update(
-            "repeat", Repeat, data, "token", "commandName", post=True)
+            "repeat", Repeat, data, "token", "command", post=True)
 
         response = {}
 
         if errors == {}:
+            # Convert "command" to obj
+            attributes["attributes"]["command"] = cmd
             response["data"] = attributes
         else:
             response["errors"] = errors
@@ -61,6 +80,7 @@ class RepeatList(Resource):
 
 class RepeatResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "repeatId")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -75,6 +95,7 @@ class RepeatResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "repeatId")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("repeat", **path_data)

@@ -8,6 +8,7 @@ from .. import api
 from ..models import Trust
 from ..schemas import TrustSchema
 from ..util import helpers
+from .. import limiter
 
 
 class TrustList(Resource):
@@ -16,6 +17,8 @@ class TrustList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
+    @helpers.check_limit
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "trust", Trust, {"token": kwargs["token"]})
@@ -32,14 +35,15 @@ class TrustList(Resource):
 
 class TrustResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "userId")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "trust", Trust, data, "token", "userId"
         )
@@ -58,6 +62,7 @@ class TrustResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         """
@@ -81,6 +86,7 @@ class TrustResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "userId")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("trust", **path_data)

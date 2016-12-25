@@ -2,8 +2,20 @@ import rethinkdb as rethink
 
 from .rethink import (get_one, get_all, get_multiple, get_random, create_record,
                       update_record)
-from .parse import parse, validate_data, resource_exists
+from .parse import parse, validate_data, resource_exists, convert
 from .response import humanize_datetime, json_api_response
+
+
+def _update(table_name, model, data, update_id):
+    parsed, errors, code = parse(model, data, partial=True)
+    if errors != {}:
+        return errors, code
+    else:
+        changed = update_record(
+            table_name, {**parsed, "id": update_id})
+        code = 200
+
+    return changed, code
 
 
 def _create(table_name, model, data):
@@ -27,6 +39,13 @@ def _create(table_name, model, data):
 
 
 def _check_exist(table_name, model, data, *args):
+    if not set(args).issubset(set(data.keys())):
+        return {
+            "errors": [
+                "Missing required key {}".format(key)
+                for key in args if key not in data.keys()]
+        }, 400
+
     # Check if the resource exists based on the string args given
     exist_check = {key: data[key] for key in args if isinstance(key, str)}
     exists_or_error, code = resource_exists(table_name, model, **exist_check)
@@ -38,7 +57,10 @@ def create_or_update(table_name, model, data, *args, **kwargs):
     """Takes the provided data and creates or edits the resource"""
     exists_or_error, code = _check_exist(table_name, model, data, *args)
 
-    if exists_or_error != {}:
+    if code == 400:
+        return {}, exists_or_error, code
+
+    if code is None:
         if kwargs.get("post", False):
             # Try-except because json_api_response throws errors if stuff is
             # bad
@@ -48,18 +70,34 @@ def create_or_update(table_name, model, data, *args, **kwargs):
                 return {}, {"errors": e.args}, 400
 
         update_id = exists_or_error["id"]
-        # Don't change the createdAt
-        if exists_or_error.get("createdAt", None) is not None:
-            del exists_or_error["createdAt"]
 
-        changed = update_record(
-            table_name, {**data, "id": update_id})
-        code = 200
-    else:
+        # Don't change the createdAt
+        if data.get("createdAt") is not None:
+            del data["createdAt"]
+        # Don't let users change counts
+        if data.get("count") is not None:
+            del data["count"]
+
+        changed, code = _update(table_name, model, data, update_id)
+
+        # Update was not succesful
+        if code != 200:
+            changed = convert(changed)
+            return {}, changed, code
+
+    elif code == 404:
+        # Don't change the createdAt
+        if data.get("createdAt") is not None:
+            del data["createdAt"]
+        # Don't let users change counts
+        if data.get("count") is not None:
+            del data["count"]
+
         changed, code = _create(table_name, model, data)
 
         # Creation didn't succesfully complete!
         if code != 201:
+            changed = convert(changed)
             return {}, changed, code
 
     if isinstance(changed, Exception):

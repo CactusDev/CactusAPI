@@ -8,14 +8,17 @@ from .. import api
 from ..models import Social
 from ..schemas import SocialSchema
 from ..util import helpers
+from .. import limiter
 
 
 class SocialList(Resource):
     """
-    Lists all the trusts. Has to be defined separately because of how
+    Lists all the social services. Has to be defined separately because of how
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
+    @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.multi_response(
@@ -33,14 +36,15 @@ class SocialList(Resource):
 
 class SocialResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "service")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["No JSON data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "social", Social, data, "token", "service"
         )
@@ -59,6 +63,7 @@ class SocialResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "service")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -74,6 +79,7 @@ class SocialResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "service")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("social", **path_data)

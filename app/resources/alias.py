@@ -8,15 +8,17 @@ from .. import api
 from ..models import Alias, User
 from ..schemas import CmdAliasSchema
 from ..util import helpers
+from .. import limiter
 
 
 class AliasResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
+    @helpers.check_limit
     @helpers.lower_kwargs("token", "aliasName")
     def get(self, path_data, **kwargs):
-        # TODO: Fix the table generation so it doesn't require second 's'
         attributes, errors, code = helpers.single_response(
-            "aliass", Alias, **path_data)
+            "aliases", Alias, **path_data)
 
         response = {}
 
@@ -33,42 +35,54 @@ class AliasResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "aliasName")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
 
-        # TODO: Fix the table generation so it doesn't require second 's'
+        command_name = data.get("command")
+        if command_name is None:
+            return {"errors": ["Missing required key 'command'"]}
+
+        cmd = helpers.get_one("command",
+                              token=data["token"],
+                              name=command_name
+                              )
+
+        # The command to be aliased doesn't actually exist
+        if cmd == {}:
+            return {"errors": ["Command to be aliased does not exist!"]}, 404
+
+        # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
-            "aliass", Alias, data, ["token", "aliasName"]
+            "aliases", Alias, data, "token", "aliasName"
         )
 
-        # Take attributes, convert "command" to obj
-        cmd_id = attributes["attributes"]["command"]
-        attributes["attributes"]["command"] = helpers.get_one("command",
-                                                              uid=cmd_id)
-
         response = {}
+
+        if errors == {}:
+            # Convert "command" to obj
+            attributes["attributes"]["command"] = cmd
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
 
         if code == 201:
             response["meta"] = {"created": True}
         elif code == 200:
             response["meta"] = {"edited": True}
 
-        if errors == {}:
-            response["data"] = attributes
-        else:
-            response["errors"] = errors
-
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "aliasName")
     def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("aliass", **path_data)
+        deleted = helpers.delete_record("aliases", **path_data)
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

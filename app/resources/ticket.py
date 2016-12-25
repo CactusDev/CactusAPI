@@ -8,6 +8,7 @@ from .. import api
 from ..models import Ticket
 from ..schemas import TicketSchema
 from ..util import helpers
+from .. import limiter
 
 
 class TicketList(Resource):
@@ -16,6 +17,7 @@ class TicketList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
             "quote", Ticket, {"token": kwargs["token"]})
@@ -32,15 +34,17 @@ class TicketList(Resource):
 
 class TicketResource(Resource):
 
+
+@limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def patch(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "ticket", Ticket, data, ["ticketId"]
         )
@@ -59,6 +63,7 @@ class TicketResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -74,6 +79,7 @@ class TicketResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("ticket", **path_data)

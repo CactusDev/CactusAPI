@@ -22,11 +22,23 @@ META_EDITED = {
 }
 
 
+def increment_counter(table, field, **kwargs):
+    try:
+        # NOTE: .limit(1) Could cause issues later on, but if endpoint code is
+        # done correctly should not be anything
+        count = dict(rethink.table(table).filter(
+            kwargs).limit(1).run(g.rdb_conn))
+
+        return count.get(field)
+    except rethink.ReqlOpFailedError as e:
+        return e
+
+
 @pluralize_arg
 def next_numeric_id(table, *, id_field, **kwargs):
     try:
         count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
-        new_id = 0
+        new_id = 1
         for record in count:
             if id_field in record and record[id_field] >= new_id:
                 new_id = record[id_field] + 1
@@ -73,21 +85,30 @@ def create_record(table, data):
 
 
 @pluralize_arg
-def delete_record(table, **kwargs):
+def delete_record(table, limit=1, **kwargs):
     """
     Delete a record in the DB
     Returns the UUID of the record deleted, or None if it fails
     """
     try:
-        record = list(
-            rethink.table(table).filter(kwargs).limit(1).run(g.rdb_conn))
+        response = []
+        if limit is None:
+            request = rethink.table(table).filter(kwargs)
+        elif isinstance(limit, int):
+            request = rethink.table(table).filter(kwargs).limit(limit)
 
-        if len(record) > 0:
-            deleted = rethink.table(table).get(
-                record[0]["id"]).delete().run(g.rdb_conn)
+        results = list(request.run(g.rdb_conn))
 
-            if deleted["deleted"] > 0:
-                return record[0]["id"]
+        if len(results) > 0:
+            for record in results:
+                deleted = rethink.table(table).get(
+                    record["id"]
+                ).delete().run(g.rdb_conn)
+
+                if deleted["deleted"] > 0:
+                    response.append(record["id"])
+
+            return response
 
     except rethink.ReqlOpFailedError as e:
         return e

@@ -8,6 +8,7 @@ from .. import api
 from ..models import Quote
 from ..schemas import QuoteSchema
 from ..util import helpers
+from .. import limiter
 
 
 class QuoteList(Resource):
@@ -16,17 +17,13 @@ class QuoteList(Resource):
     Flask-RESTPlus works.
     """
 
+    @limiter.limit("1000/day;90/hour;20/minute")
+    @helpers.check_random
     @helpers.check_limit
     def get(self, **kwargs):
-        if request.args.get("random", "").lower() in ["true", '1']:
-            if "limit" not in kwargs:
-                kwargs["limit"] = 1
-            attributes, errors, code = helpers.multi_response(
-                "quote", Quote, random=True, **kwargs
-            )
-        else:
-            attributes, errors, code = helpers.multi_response(
-                "quote", Quote, **kwargs)
+        attributes, errors, code = helpers.multi_response(
+            "quote", Quote, **kwargs
+        )
 
         response = {}
 
@@ -37,15 +34,16 @@ class QuoteList(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data,
+        data = {**data,
                 **path_data,
                 "quoteId": helpers.next_numeric_id(
                     "quote",
@@ -68,16 +66,17 @@ class QuoteList(Resource):
 
 class QuoteResource(Resource):
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "quoteId")
     def patch(self, path_data, **kwargs):
         """Create or edit a quote resource"""
-        json_data = request.get_json()
+        data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
-        if json_data is None:
+        if data is None:
             return {"errors": ["Bro ... no data"]}, 400
 
-        data = {**json_data, **path_data}
+        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data, "token", "quoteId"
         )
@@ -96,6 +95,7 @@ class QuoteResource(Resource):
 
         return response, code
 
+    @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token", "quoteId")
     def get(self, path_data, **kwargs):
         """Get a single quote"""

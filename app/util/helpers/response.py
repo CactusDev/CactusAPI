@@ -80,6 +80,9 @@ def json_api_response(data, resource, model):
         raise TypeError(
             "data argument must be either type {} or {}".format(dict, list))
 
+    if data == {}:
+        return data
+
     if isinstance(data, dict):
         data = recurse_dict(data, model)
         return {
