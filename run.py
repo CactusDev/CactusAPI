@@ -84,7 +84,11 @@ if __name__ == "__main__":
 
     logging.debug(app.url_map)
 
+    debug_mode = False
+    if args.debug == "DEBUG":
+        debug_mode = True
+
     app.run(
         port=app.config.get("PORT", 80),
         host=app.config.get("HOST", "0.0.0.0"),
-        debug=app.config.get("DEBUG", False))
+        debug=debug_mode)
