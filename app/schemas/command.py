@@ -34,6 +34,7 @@ class CommandSchema(Schema):
     userLevel = fields.Integer(required=True)
     enabled = fields.Boolean(default=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
+    count = fields.Integer()
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

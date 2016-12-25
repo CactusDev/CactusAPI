@@ -9,8 +9,8 @@
 * ~~TODO **7** Implement cross-platform regex for checking valid tokens.~~ Done 12/23/16 in e4a1c7fea0562c39f1c29431e229a43ced979e0a
 * ~~TODO **8** Move repetitive kwargs parsing into function/decorator~~ Done 12/12/16 in efc24be29eba5543b2a98fe42aa770dc3591dee7
 * ~~TODO **9** Implement allowing URL args OR JSON, not forcing JSON ~~ Done 12/20/16 in 4765bde98de8e5292efa420979c80961fce91283
-* TODO **10** Implement %COUNT%
-* TODO **11** Rewrite specification to match style throughout
+* ~~TODO **10** Implement %COUNT%~~ Done 12/24/16
+* ~~TODO **11** Rewrite specification to match style throughout~~ Not an actual API TODO, but still good to do
 * ~~TODO **12** Minify logging of request URL to make console easier to read~~ Ignore this, not actually needed
 * ~~TODO **13** Implement response sorting/limiting on all endpoints~~ Done 12/24/16 in 2b1e943ddf33e63257f85731a86e3ad78ef45fcd (will be implementing sorting later)
 * ~~TODO **14** Implement user creation because that's required for configs~~ Confirmed done. Unknown date/commit
@@ -41,3 +41,4 @@
 
 * Figure out how to use underscore_case for fields - dump_to="newName" works, but it's got all sorts of issues
 * Implement response sorting
+* Write API reference w/ standard style and up to date stuff

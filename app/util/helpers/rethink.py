@@ -22,6 +22,18 @@ META_EDITED = {
 }
 
 
+def increment_counter(table, field, **kwargs):
+    try:
+        # NOTE: .limit(1) Could cause issues later on, but if endpoint code is
+        # done correctly should not be anything
+        count = dict(rethink.table(table).filter(
+            kwargs).limit(1).run(g.rdb_conn))
+
+        return count.get(field)
+    except rethink.ReqlOpFailedError as e:
+        return e
+
+
 @pluralize_arg
 def next_numeric_id(table, *, id_field, **kwargs):
     try:

@@ -11,6 +11,53 @@ from ..util import helpers, auth
 from .. import limiter
 
 
+class CommandCounter(Resource):
+
+    @limiter.limit("1000/day;90/hour;25/minute")
+    @helpers.lower_kwargs("token", "name")
+    def patch(self, path_data, **kwargs):
+        data = helpers.get_mixed_args()
+
+        if data is None:
+            return {"errors": ["Bro...no data"]}, 400
+
+        data = {**data, **path_data}
+
+        attributes, errors, code = helpers.single_response(
+            "command", Command, **path_data
+        )
+
+        if code == 200:
+            new_count = data["count"]
+
+            if not isinstance(new_count, str):
+                return {"errors": ["Not a string fool"]}, 400
+
+            count = attributes["attributes"]["count"]
+
+            if new_count[0] == '+' and new_count[1:].isdigit():
+                count = count + int(new_count[1:])
+            elif new_count[0] == '-' and new_count[1:].isdigit():
+                count = count - int(new_count[1:])
+            elif new_count[0] == '=' and new_count[1:].isdigit():
+                count = int(new_count[1:])
+
+            response = helpers.update_record(
+                "commands", {"id": attributes["id"], "count": count})
+
+            if response is not None:
+                attributes = response
+
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
+
+
 class CommandList(Resource):
     """
     Lists all the commands. Has to be defined separately because of how

@@ -27,6 +27,8 @@ api.add_resource(resources.CommandList,
                  "{}/user/<string:token>/command".format(prefix))
 api.add_resource(resources.CommandResource,
                  "{}/user/<string:token>/command/<name>".format(prefix))
+api.add_resource(resources.CommandCounter,
+                 "{}/user/<string:token>/command/<name>/count".format(prefix))
 
 api.add_resource(resources.TrustList,
                  "{}/user/<string:token>/trust".format(prefix))

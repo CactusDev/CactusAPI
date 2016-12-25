@@ -70,9 +70,13 @@ def create_or_update(table_name, model, data, *args, **kwargs):
                 return {}, {"errors": e.args}, 400
 
         update_id = exists_or_error["id"]
+
         # Don't change the createdAt
-        if exists_or_error.get("createdAt", None) is not None:
-            del exists_or_error["createdAt"]
+        if data.get("createdAt") is not None:
+            del data["createdAt"]
+        # Don't let users change counts
+        if data.get("count") is not None:
+            del data["count"]
 
         changed, code = _update(table_name, model, data, update_id)
 
@@ -82,6 +86,13 @@ def create_or_update(table_name, model, data, *args, **kwargs):
             return {}, changed, code
 
     elif code == 404:
+        # Don't change the createdAt
+        if data.get("createdAt") is not None:
+            del data["createdAt"]
+        # Don't let users change counts
+        if data.get("count") is not None:
+            del data["count"]
+
         changed, code = _create(table_name, model, data)
 
         # Creation didn't succesfully complete!

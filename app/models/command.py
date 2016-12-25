@@ -10,7 +10,7 @@ class Command:
 
     def __init__(self, *, name, response, token, userLevel=0,
                  createdAt=datetime.utcnow(), enabled=True,
-                 arguments, **kwargs):
+                 arguments, count, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
         self.name = name
@@ -20,3 +20,4 @@ class Command:
         self.enabled = enabled
         self.userLevel = userLevel
         self.arguments = arguments
+        self.count = count

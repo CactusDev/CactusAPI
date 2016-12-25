@@ -13,6 +13,7 @@ api = Api(app)
 
 limiter = Limiter(app, key_func=util.get_remote_address)
 
-sentry = Sentry(app, dsn=app.config["SENTRY_DSN"])
+if app.config["SENTRY_ACTIVE"]:
+    sentry = Sentry(app, dsn=app.config["SENTRY_DSN"])
 
 from . import views

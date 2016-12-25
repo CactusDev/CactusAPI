@@ -1,4 +1,4 @@
-from .command import CommandResource, CommandList
+from .command import CommandResource, CommandList, CommandCounter
 from .trust import TrustResource, TrustList
 from .user import UserList, UserResource
 from .quotes import QuoteResource, QuoteList
@@ -8,7 +8,7 @@ from .social import SocialList, SocialResource
 from .config import ConfigResource
 
 
-__all__ = ["CommandResource", "CommandList",
+__all__ = ["CommandResource", "CommandList", "CommandCounter",
            "TrustResource", "TrustList",
            "UserResource", "UserList",
            "QuoteResource", "QuoteList",
