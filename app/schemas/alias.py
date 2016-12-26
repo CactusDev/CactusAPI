@@ -4,6 +4,7 @@ from dateutil import parser
 from . import CommandSchema
 from .helpers import CommandUUID
 from ..util import helpers
+from .helpers import MessagePacketSchema
 
 
 class CmdAliasSchema(Schema):
@@ -12,7 +13,7 @@ class CmdAliasSchema(Schema):
     createdAt = fields.DateTime()
     token = fields.String(required=True)
     command = CommandUUID()
-    arguments = fields.List(fields.String())
+    arguments = fields.Nested(MessagePacketSchema, many=True)
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

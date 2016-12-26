@@ -4,6 +4,7 @@ from .helpers import CommandUUID
 from dateutil import parser
 
 from ..util import helpers
+from .helpers import MessagePacketSchema
 
 
 class RepeatSchema(Schema):
@@ -12,7 +13,7 @@ class RepeatSchema(Schema):
     token = fields.String(required=True)
     repeatId = fields.Integer(required=True)
     command = CommandUUID()
-    arguments = fields.List(fields.String())
+    arguments = fields.Nested(MessagePacketSchema, many=True)
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

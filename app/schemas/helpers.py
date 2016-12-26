@@ -1,7 +1,13 @@
-from marshmallow import fields, ValidationError
+from marshmallow import fields, ValidationError, Schema
 import re
 
 from ..util import helpers
+
+
+class MessagePacketSchema(Schema):
+    type = fields.String(required=True)
+    data = fields.String(required=True)
+    text = fields.String(required=True)
 
 
 class CommandUUID(fields.Field):

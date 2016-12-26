@@ -3,12 +3,7 @@ from marshmallow import (Schema, fields, post_dump,
 from dateutil import parser
 
 from ..util import helpers
-
-
-class MessagePacketSchema(Schema):
-    type = fields.String(required=True)
-    data = fields.String(required=True)
-    text = fields.String(required=True)
+from .helpers import MessagePacketSchema
 
 
 class ResponseSchema(Schema):
