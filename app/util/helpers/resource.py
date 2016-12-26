@@ -20,13 +20,22 @@ def _update(table_name, model, data, update_id):
 
 def _create(table_name, model, data):
     if hasattr(model, "force_on_create"):
-        for (key, skey) in model.force_on_create.items():
-            if data.get(key, None) is not None:
-                if data[key].get(skey, None) is None:
-                    message = "A valid {} object must be provided during {} "\
-                        "creation".format(skey, table_name)
+        if isinstance(model.force_on_create, dict):
+            for (key, skey) in model.force_on_create.items():
+                if data.get(key, None) is not None:
+                    if data[key].get(skey, None) is None:
+                        message = "A valid {} object must be provided during"\
+                            " {} creation".format(skey, table_name)
 
-                    return {}, {key: {skey: message}}, 400
+                        return {key: {skey: message}}, 400
+
+        elif isinstance(model.force_on_create, set):
+            for key in model.force_on_create:
+                if data.get(key) is None:
+                    message = "A valid {} must be provided during {} creation"\
+                        "".format(key, table_name)
+
+                    return {key: message}, 400
 
     parsed, errors, code = parse(model, data)
     if errors != {}:

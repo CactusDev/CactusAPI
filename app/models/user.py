@@ -6,6 +6,7 @@ class User:
     schema = UserSchema()
 
     ignore = ("password", )
+    force_on_create = {"token"}
 
     def __init__(self, *, token, userName, userId, service="beam",
                  password=None, **kwargs):

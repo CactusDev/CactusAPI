@@ -53,8 +53,7 @@ class UserResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @helpers.lower_kwargs("userName")
-    def post(self, path_data, **kwargs):
+    def post(self, **kwargs):
         """
         Create the new user in the DB and generate the default config
         in the config table
@@ -64,7 +63,7 @@ class UserResource(Resource):
         if data is None:
             return {"errors": ["Bro...no data"]}, 400
 
-        data = {**data, **path_data}
+        data = {**data, **kwargs}
 
         # TODO: Does this need to be changed/improved at all?
         if "password" in data:
