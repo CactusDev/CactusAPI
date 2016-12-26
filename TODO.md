@@ -37,8 +37,11 @@
       * response
       * rethink
 
+  * Rate limiting
+
 # Later TODOs
 
 * Figure out how to use underscore_case for fields - dump_to="newName" works, but it's got all sorts of issues
 * Implement response sorting
 * Write API reference w/ standard style and up to date stuff
+* Sphinx documentation
