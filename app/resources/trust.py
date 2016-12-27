@@ -21,7 +21,7 @@ class TrustList(Resource):
     @helpers.check_limit
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
-            "trust", Trust, {"token": kwargs["token"]})
+            "trust", Trust, **kwargs)
 
         response = {}
 

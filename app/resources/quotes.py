@@ -22,7 +22,7 @@ class QuoteList(Resource):
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
-        data = {**helpers.get_mixed_args(), **path_data}
+        data = {**helpers.get_mixed_args(), **kwargs, **path_data}
         attributes, errors, code = helpers.multi_response(
             "quote", Quote, **data
         )

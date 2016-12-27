@@ -18,6 +18,9 @@
 * ~~TODO **16** Aliases should be removed when the aliased command gets removed~~ Done 12/22/16 in aad3d5d4f5025dff4e2a5b7ebe2fe09a4bd981a1
 * ~~TODO **17**: Check auth token for validity based on datetime~~ Done 12/24/16 in 2d60236a631b041d68765f5bc524a77e9eeae1c6
 * ~~TODO **18**: Implement rate-limiting on endpoints~~ Done 12/24/16 in 2d60236a631b041d68765f5bc524a77e9eeae1c6, will need to be thoroughly tested by unit tests
+* Make sure the token exists as a user in the API, otherwise give a 403 because user doesn't exist
+* Figure out what happened to createdAt key
+* Add command name to repeats
 
 # Grouped TODOs
 
