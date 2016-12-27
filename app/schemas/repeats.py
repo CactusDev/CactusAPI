@@ -14,6 +14,7 @@ class RepeatSchema(Schema):
     repeatId = fields.Integer(required=True)
     command = CommandUUID()
     arguments = fields.Nested(MessagePacketSchema, many=True)
+    commandName = fields.String(required=True)
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

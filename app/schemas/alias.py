@@ -13,6 +13,7 @@ class CmdAliasSchema(Schema):
     createdAt = fields.DateTime()
     token = fields.String(required=True)
     command = CommandUUID()
+    commandName = fields.String(required=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
 
     @pre_dump

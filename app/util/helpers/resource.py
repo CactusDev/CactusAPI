@@ -51,7 +51,7 @@ def _check_exist(table_name, model, data, *args):
     if not set(args).issubset(set(data.keys())):
         return {
             "errors": [
-                "Missing required key {}".format(key)
+                "Missing required key '{}'".format(key)
                 for key in args if key not in data.keys()]
         }, 400
 
