@@ -1,5 +1,4 @@
 import pytest
-import rethinkdb as rethink
 
 
 class TestUsers:
@@ -15,8 +14,7 @@ class TestUsers:
     def test_create(self, client):
         """Valid user creation"""
         user = client.post(self.url, data=self.creation_data)
-        for key, value in user.json.items():
-            self.data[key] = value
+        self.data.update(user.json)
         assert "attributes" in self.data["data"]
         assert "id" in self.data["data"]
 

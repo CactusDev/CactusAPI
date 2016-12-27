@@ -20,9 +20,11 @@ class QuoteList(Resource):
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_random
     @helpers.check_limit
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
+        data = {**helpers.get_mixed_args(), **path_data}
         attributes, errors, code = helpers.multi_response(
-            "quote", Quote, **kwargs
+            "quote", Quote, **data
         )
 
         response = {}
