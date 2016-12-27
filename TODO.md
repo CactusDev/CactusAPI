@@ -20,7 +20,7 @@
 * ~~TODO **18**: Implement rate-limiting on endpoints~~ Done 12/24/16 in 2d60236a631b041d68765f5bc524a77e9eeae1c6, will need to be thoroughly tested by unit tests
 * Make sure the token exists as a user in the API, otherwise give a 403 because user doesn't exist
 * Figure out what happened to createdAt key
-* Add command name to repeats
+* ~~Add command name to repeats~~
 
 # Grouped TODOs
 
