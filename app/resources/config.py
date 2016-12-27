@@ -9,8 +9,6 @@ from ..schemas import ConfigSchema
 from ..util import helpers
 from .. import limiter
 
-# TODO: Solve createdAt cannot be formatted as datetime bug
-
 
 class ConfigResource(Resource):
 
