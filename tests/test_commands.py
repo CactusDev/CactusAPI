@@ -82,18 +82,17 @@ class TestQuotes:
     def test_all(self, client):
         # Create the second command
         name = self.creation_data[1]["name"]
-        print(name)
-        quote = client.patch(
+        cmd = client.patch(
             self.url + "/" + name,
             data=dumps(self.creation_data[1]),
             content_type="application/json"
         )
-        cmd_create_data = quote.json["data"]
+        cmd_create_data = cmd.json["data"]
 
         assert "attributes" in cmd_create_data
         assert "id" in cmd_create_data
         assert cmd_create_data["attributes"]["token"] == "paradigmshift3d"
-        assert cmd_create_data["attributes"]["enabled"] == True
+        assert cmd_create_data["attributes"]["enabled"] is True
         assert cmd_create_data["attributes"]["name"] == name
         assert cmd_create_data["type"] == "command"
 
@@ -108,17 +107,51 @@ class TestQuotes:
         cmd_all_data = cmd.json["data"]
         assert len(cmd_all_data) == 2
 
-    # def test_edit(self, client):
-    #     pass
-    #
+        for result in cmd_all_data:
+            found = False
+            name = result["attributes"]["name"]
+            for value in self.creation_data:
+                if value["name"] == name:
+                    assert result["attributes"] == value
+                    found = True
+            # Check if the command was found in the creation data
+            if not found:
+                raise AssertionError("Command not found")
+
+    def test_edit(self, client):
+        edit_data = {
+            "enabled": False,
+            "response": {
+                "message": [
+                    {
+                        "type": "emoji",
+                        "data": "smile",
+                        "text": ":)"
+                    }
+                ]
+            }
+        }
+        edit_name = self.creation_data[0]["name"]
+
+        cmd = client.patch(
+            self.url + "/" + edit_name,
+            data=dumps(edit_data),
+            content_type="application/json"
+        )
+
+        cmd_edit_data = cmd.json
+
+        assert cmd_edit_data["meta"]["edited"] is True
+        assert cmd_edit_data["data"]["attributes"]["enabled"] is False
+        assert cmd_edit_data["data"]["attributes"][
+            "response"]["message"] == edit_data["response"]["message"]
+
     def test_removal(self, client):
         """Remove a command and see if it matches"""
         # Using the quote ID from the first created quote
-        quote = client.delete(
+        cmd = client.delete(
             self.url + "/" + str(self.data["attributes"]["name"]))
-        deletion_data = quote.json
-
-        print(deletion_data)
+        deletion_data = cmd.json
 
         assert deletion_data["meta"]["deleted"][
             "command"][0] == self.data["id"]
