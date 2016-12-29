@@ -27,8 +27,8 @@ class AnnouncementsSchema(Schema):
 
 class SpamSchema(Schema):
     maxEmoji = fields.Integer(default=6)
-    allowUrls = fields.Boolean(default=False)
     maxCapsScore = fields.Integer(default=16)
+    allowUrls = fields.Boolean(default=False)
 
 
 class ConfigSchema(Schema):

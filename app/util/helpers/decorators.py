@@ -6,8 +6,8 @@ def check_random(func):
     """Checks if the request is being made with the ?random argument"""
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if request.args.get("random", '').lower() in ("true", '1'):
-            if "limit" not in request.args:
+        if request.values.get("random", '').lower() in ("true", '1'):
+            if "limit" not in request.values:
                 # By default return only 1 random quote
                 kwargs["limit"] = 1
 
@@ -24,7 +24,7 @@ def check_limit(func):
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        limit = request.args.get("limit", None)
+        limit = request.values.get("limit", None)
         if limit is not None and limit.isdigit():
             kwargs["limit"] = int(limit)
         return func(*args, **kwargs)

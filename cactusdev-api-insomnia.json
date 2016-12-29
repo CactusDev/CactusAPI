@@ -391,7 +391,7 @@
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
 			"modified": 1482860392266,
 			"created": 1481243371570,
-			"url": "{{base_url}}/user/{{token}}/command/foo",
+			"url": "{{base_url}}/user/{{token}}/command/bar",
 			"name": "Get single",
 			"method": "GET",
 			"body": {

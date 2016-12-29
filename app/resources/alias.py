@@ -18,7 +18,7 @@ class AliasResource(Resource):
     @helpers.lower_kwargs("token", "aliasName")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "aliases", Alias, **path_data)
+            "aliases", Alias, **{**kwargs, **path_data})
 
         response = {}
 

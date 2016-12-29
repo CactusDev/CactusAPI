@@ -8,6 +8,7 @@ from .response import humanize_datetime, json_api_response
 
 def _update(table_name, model, data, update_id):
     parsed, errors, code = parse(model, data, partial=True)
+
     if errors != {}:
         return errors, code
     else:

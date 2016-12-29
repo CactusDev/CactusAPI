@@ -21,6 +21,7 @@ from . import api
 from . import resources
 from . import authentication
 
+
 prefix = app.config.get("API_PREFIX", "")
 
 api.add_resource(resources.CommandList,

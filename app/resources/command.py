@@ -68,15 +68,16 @@ class CommandList(Resource):
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
+        data = {**kwargs, **path_data}
         attributes, errors, code = helpers.multi_response(
-            "command", Command, **path_data)
+            "command", Command, **data)
 
         # Handle builtins
         custom_exists = set(obj.get("attributes", {}).get("name")
                             for obj in attributes)
 
         builtins, errors, code = helpers.multi_response(
-            "builtins", Command, **path_data
+            "builtins", Command, **data
         )
 
         for builtin in builtins:
@@ -119,7 +120,7 @@ class CommandResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"command:details", "command:create"})
+    # @auth.scopes_required({"command:details", "command:create"})
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()

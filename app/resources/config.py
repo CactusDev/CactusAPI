@@ -9,8 +9,6 @@ from ..schemas import ConfigSchema
 from ..util import helpers
 from .. import limiter
 
-# TODO: Solve createdAt cannot be formatted as datetime bug
-
 
 class ConfigResource(Resource):
 
@@ -78,7 +76,7 @@ class ConfigResource(Resource):
 
         data = {**data, **path_data}
 
-        attributes, errors, code = helpers.update_resource(
+        attributes, errors, code = helpers.create_or_update(
             "config", Config, data, **path_data
         )
 
