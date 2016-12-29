@@ -6,7 +6,7 @@ from datetime import datetime
 from ..helpers import get_one
 
 
-def scopes_required(scopes):
+def scopes_required(required_scopes):
     def wrapper(f):
         @wraps(f)
         def decorated(*args, **kwargs):
@@ -48,7 +48,23 @@ def scopes_required(scopes):
                         "Provided user token and JWT token do not match!"]
                 }, 403
 
-            allowed = set(decoded.get("scopes", [])).issuperset(scopes)
+            token_scopes = set(decoded.get("scopes", []))
+
+            allowed = required_scopes.difference(token_scopes)
+
+            # The scopes allowed for this JWT do not contain all of the
+            # required scopes for this endpoint
+            if len(allowed):
+                return {
+                    "errors": [
+                        {
+                            "message": "Scopes allowed for that JWT token do not meet "
+                            "endpoint requirements",
+                            "missing": list(allowed)
+                        }
+                    ]
+                }, 403
+
             expiration = decoded.get("expires")
 
             if datetime.timestamp(datetime.utcnow()) > expiration:
@@ -58,17 +74,8 @@ def scopes_required(scopes):
                     ]
                 }
 
-            # The scopes allowed for this JWT do not contain all of the
-            # required scopes for this endpoint
-            if not allowed:
-                return {
-                    "errors": [
-                        "Scopes allowed for that JWT token do not meet "
-                        "endpoint requirements"]
-                }, 403
-
             # Passed the scopes requirements, return the endpoint's response
-            return f(*args, acct_token=acct_token, **kwargs)
+            return f(*args, **kwargs)
 
         return decorated
 

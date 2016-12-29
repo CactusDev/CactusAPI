@@ -35,12 +35,30 @@ class RepeatList(Resource):
 
         return response, code
 
+
+class RepeatResource(Resource):
+
+    @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"repeat:details"})
+    @helpers.lower_kwargs("token", "repeatName")
+    def get(self, path_data, **kwargs):
+        attributes, errors, code = helpers.single_response(
+            "repeat", Repeat, **path_data)
+
+        response = {}
+
+        if errors == {}:
+            response["data"] = attributes
+        else:
+            response["errors"] = errors
+
+        return response, code
+
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"repeat:details", "repeat:create",
                            "repeat:manage"})
-    @helpers.lower_kwargs("token")
-    def post(self, path_data, **kwargs):
-        # TODO Make endpoint 400 if the command provided doesn't exist
+    @helpers.lower_kwargs("token", "repeatName")
+    def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
 
         if data is None:
@@ -57,7 +75,7 @@ class RepeatList(Resource):
         # TODO: Refactor this
         command_name = data.get("commandName")
         if command_name is None:
-            return {"errors": ["Missing required key 'commandName'"]}
+            return {"errors": ["Missing required key 'commandName'"]}, 400
 
         cmd = helpers.get_one("command",
                               token=data["token"],
@@ -66,7 +84,7 @@ class RepeatList(Resource):
 
         # The command to be aliased doesn't actually exist
         if cmd == {}:
-            return {"errors": ["Command to be repeated does not exist!"]}, 404
+            return {"errors": ["Command to be repeated does not exist!"]}, 400
 
         attributes, errors, code = helpers.create_or_update(
             "repeat", Repeat, data, "token", "commandName", post=True)
@@ -82,28 +100,9 @@ class RepeatList(Resource):
 
         return response, code
 
-
-class RepeatResource(Resource):
-
-    @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"repeat:details"})
-    @helpers.lower_kwargs("token", "repeatId")
-    def get(self, path_data, **kwargs):
-        attributes, errors, code = helpers.single_response(
-            "repeat", Repeat, **path_data)
-
-        response = {}
-
-        if errors == {}:
-            response["data"] = attributes
-        else:
-            response["errors"] = errors
-
-        return response, code
-
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"repeat:manage"})
-    @helpers.lower_kwargs("token", "repeatId")
+    @helpers.lower_kwargs("token", "repeatName")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("repeat", **path_data)
 

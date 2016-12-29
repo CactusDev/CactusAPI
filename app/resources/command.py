@@ -69,7 +69,7 @@ class CommandList(Resource):
     @auth.scopes_required({"command:details", "command:list"})
     @helpers.check_limit
     @helpers.lower_kwargs("token")
-    def get(self, path_data, acct_token, **kwargs):
+    def get(self, path_data, **kwargs):
         data = {**kwargs, **path_data}
         attributes, errors, code = helpers.multi_response(
             "command", Command, **data)

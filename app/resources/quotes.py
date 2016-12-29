@@ -22,7 +22,7 @@ class QuoteList(Resource):
     @helpers.check_random
     @helpers.check_limit
     @helpers.lower_kwargs("token")
-    def get(self, path_data, acct_token, **kwargs):
+    def get(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **kwargs, **path_data}
 
         attributes, errors, code = helpers.multi_response(
@@ -41,7 +41,7 @@ class QuoteList(Resource):
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"quote:details", "quote:manage", "quote:create"})
     @helpers.lower_kwargs("token")
-    def post(self, path_data, acct_token, **kwargs):
+    def post(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
 
         # TODO: Make this an actual error/let Marshmallow handle it
@@ -74,7 +74,7 @@ class QuoteResource(Resource):
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"quote:details", "quote:manage", "quote:create"})
     @helpers.lower_kwargs("token", "quoteId")
-    def patch(self, path_data, acct_token, **kwargs):
+    def patch(self, path_data, **kwargs):
         """Create or edit a quote resource"""
         data = helpers.get_mixed_args()
 
@@ -104,7 +104,7 @@ class QuoteResource(Resource):
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"quote:details"})
     @helpers.lower_kwargs("token", "quoteId")
-    def get(self, path_data, acct_token, **kwargs):
+    def get(self, path_data, **kwargs):
         """Get a single quote"""
         attributes, errors, code = helpers.single_response(
             "quote", Quote, **path_data
@@ -121,7 +121,7 @@ class QuoteResource(Resource):
 
     @helpers.lower_kwargs("token", "quoteId")
     @auth.scopes_required({"quote:manage"})
-    def delete(self, path_data, acct_token, **kwargs):
+    def delete(self, path_data, **kwargs):
         """Delete a quote resource"""
         deleted = helpers.delete_record("quote", **path_data)
 
