@@ -24,6 +24,14 @@
 * TODO Make repeats "editable" to change time
 * TODO Figure out what happened to createdAt key
 * ~~Add command name to repeats~~
+* TODO Make the scopes error and say which scopes are required/provided
+    Eg: "errors": [
+		"Scopes allowed for that JWT token do not meet endpoint requirements",
+        "scopes": {
+            "required": ["scopes:foo", "bar:spam"],
+            "provided": ["scopes:bar", "bar:spam"]
+        }
+	]
 
 # Grouped TODOs
 
