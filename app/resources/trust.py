@@ -7,7 +7,7 @@ from datetime import datetime
 from .. import api
 from ..models import Trust
 from ..schemas import TrustSchema
-from ..util import helpers
+from ..util import helpers, auth
 from .. import limiter
 
 
@@ -18,6 +18,7 @@ class TrustList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"trust:details", "trust:list"})
     @helpers.check_limit
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
@@ -36,6 +37,7 @@ class TrustList(Resource):
 class TrustResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"trust:details", "trust:create", "trust:manage"})
     @helpers.lower_kwargs("token", "userId")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -63,6 +65,7 @@ class TrustResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"trust:details"})
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         """
@@ -87,6 +90,7 @@ class TrustResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"trust:manage"})
     @helpers.lower_kwargs("token", "userId")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("trust", **path_data)

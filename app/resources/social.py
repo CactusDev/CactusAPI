@@ -7,7 +7,7 @@ from datetime import datetime
 from .. import api
 from ..models import Social
 from ..schemas import SocialSchema
-from ..util import helpers
+from ..util import helpers, auth
 from .. import limiter
 
 
@@ -18,6 +18,7 @@ class SocialList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"social:details", "social:list"})
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -38,6 +39,8 @@ class SocialList(Resource):
 class SocialResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"social:details", "social:create",
+                           "social:manage"})
     @helpers.lower_kwargs("token", "service")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -65,6 +68,7 @@ class SocialResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"social:details"})
     @helpers.lower_kwargs("token", "service")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -81,6 +85,7 @@ class SocialResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"social:manage"})
     @helpers.lower_kwargs("token", "service")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("social", **path_data)

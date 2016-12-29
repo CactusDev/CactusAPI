@@ -47,12 +47,16 @@ class Login(Resource):
 
         # TODO: Validate requested scopes against set of defined scopes
         # in config (API_SCOPES)
-
         # HACK: For now, just hard-code it. Fix after feature-freeze
         API_SCOPES = {
-            "command:create", "command:details", "command:delete",
-            "user:details",
-            "quote:create", "quote:details", "quote:delete"
+            "alias:create", "alias:details", "alias:manage", "alias:list",
+            "command:create", "command:details", "command:manage",
+            "command:list",
+            "config:create", "config:details", "config:manage", "config:list",
+            "quote:create", "quote:details", "quote:manage", "quote:list",
+            "repeat:create", "repeat:details", "repeat:manage", "repeat:list",
+            "social:create", "social:details", "social:manage", "social:list",
+            "trust:create", "trust:details", "trust:manage", "trust:list",
         }
 
         if isinstance(scopes, str):

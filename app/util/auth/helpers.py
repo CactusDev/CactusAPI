@@ -10,11 +10,12 @@ def scopes_required(scopes):
     def wrapper(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            # The endpoint is decorated, meaning it requires *some* form of
-            # authentication token in the X-Token-Auth header, return Forbidden
-            # X-Auth-JWT - JWT token
-            # X-Auth-Token - Account token
-
+            """
+            The endpoint is decorated, meaning it requires *some* form of
+            authentication token in the X-Token-Auth header, return Forbidden
+            X-Auth-JWT - JWT token
+            X-Auth-Token - Account token
+            """
             jw_token = request.headers.get("X-Auth-JWT", None)
             acct_token = request.headers.get("X-Auth-Token", None)
 
@@ -67,7 +68,7 @@ def scopes_required(scopes):
                 }, 403
 
             # Passed the scopes requirements, return the endpoint's response
-            return f(*args, **kwargs)
+            return f(*args, acct_token=acct_token, **kwargs)
 
         return decorated
 

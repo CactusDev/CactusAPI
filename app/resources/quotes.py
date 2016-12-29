@@ -7,7 +7,7 @@ from flask_restplus import Resource, marshal
 from .. import api
 from ..models import Quote
 from ..schemas import QuoteSchema
-from ..util import helpers
+from ..util import helpers, auth
 from .. import limiter
 
 
@@ -18,6 +18,7 @@ class QuoteList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"quote:details", "quote:list"})
     @helpers.check_random
     @helpers.check_limit
     @helpers.lower_kwargs("token")
@@ -37,6 +38,7 @@ class QuoteList(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"quote:details", "quote:manage", "quote:create"})
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -69,6 +71,7 @@ class QuoteList(Resource):
 class QuoteResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"quote:details", "quote:manage", "quote:create"})
     @helpers.lower_kwargs("token", "quoteId")
     def patch(self, path_data, **kwargs):
         """Create or edit a quote resource"""
@@ -98,6 +101,7 @@ class QuoteResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"quote:details"})
     @helpers.lower_kwargs("token", "quoteId")
     def get(self, path_data, **kwargs):
         """Get a single quote"""
@@ -115,6 +119,7 @@ class QuoteResource(Resource):
         return response, code
 
     @helpers.lower_kwargs("token", "quoteId")
+    @auth.scopes_required({"quote:manage"})
     def delete(self, path_data, **kwargs):
         """Delete a quote resource"""
         deleted = helpers.delete_record("quote", **path_data)

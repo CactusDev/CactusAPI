@@ -7,7 +7,7 @@ from flask_restplus import Resource, marshal
 from .. import api
 from ..models import User, Config
 from ..schemas import UserSchema
-from ..util import helpers
+from ..util import helpers, auth
 from ..util.auth import argon_hash
 from .. import limiter
 
@@ -16,6 +16,8 @@ class UserList(Resource):
     """
     Lists all the Users. Has to be defined separately because of how
     Flask-RESTPlus works.
+
+    NOT CURRENTLY ACTIVE
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
@@ -52,6 +54,7 @@ class UserResource(Resource):
 
         return response, code
 
+    @auth.scopes_required({"root"})
     @limiter.limit("1000/day;90/hour;20/minute")
     def post(self, **kwargs):
         """
@@ -97,6 +100,7 @@ class UserResource(Resource):
 
         return response, code
 
+    @auth.scopes_required({"root"})
     @limiter.limit("1000/day;90/hour;20/minute")
     def delete(self, **kwargs):
         # Not using lower_kwargs because we have to assign it to diff. key

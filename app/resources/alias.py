@@ -7,13 +7,14 @@ from flask_restplus import Resource, marshal
 from .. import api
 from ..models import Alias, User
 from ..schemas import CmdAliasSchema
-from ..util import helpers
+from ..util import helpers, auth
 from .. import limiter
 
 
 class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"alias:details", "alias:list"})
     @helpers.check_limit
     @helpers.lower_kwargs("token", "aliasName")
     def get(self, path_data, **kwargs):
@@ -36,6 +37,7 @@ class AliasResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"alias:details", "alias:create", "alias:manage"})
     @helpers.lower_kwargs("token", "aliasName")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
@@ -82,6 +84,7 @@ class AliasResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"alias:manage"})
     @helpers.lower_kwargs("token", "aliasName")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("aliases", **path_data)
