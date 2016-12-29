@@ -77,7 +77,8 @@ class CommandList(Resource):
                             for obj in attributes)
 
         builtins, errors, code = helpers.multi_response(
-            "builtins", Command, **data
+            "builtins", Command, **{key: value for key, value
+                                    in data.items() if key != "token"}
         )
 
         for builtin in builtins:
@@ -107,7 +108,8 @@ class CommandResource(Resource):
 
         if code == 404:
             attributes, errors, code = helpers.single_response(
-                "builtins", Command, **path_data
+                "builtins", Command, **{key: value for key, value
+                                        in path_data.items() if key != "token"}
             )
 
         response = {}
@@ -166,7 +168,8 @@ class CommandResource(Resource):
                                             command=deleted[0])
 
             deleted = {"command": deleted,
-                       "aliases": aliases, "repeats": repeats}
+                       "aliases": aliases,
+                       "repeats": repeats}
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
