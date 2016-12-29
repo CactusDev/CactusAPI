@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2016-12-26T22:57:08.063Z",
+	"__export_date": "2016-12-27T20:38:00.996Z",
 	"__export_source": "insomnia.desktop.app:v4.0.12",
 	"resources": [
 		{
@@ -26,7 +26,7 @@
 		{
 			"_id": "jar_53f740311b6246b88fb941809612a7c1",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1482793020887,
+			"modified": 1482871000798,
 			"created": 1481243601336,
 			"name": "Default Jar",
 			"cookies": [],
@@ -389,7 +389,7 @@
 		{
 			"_id": "req_2d47e2e89bc442fb82641ca28b773e0f",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1482771434564,
+			"modified": 1482860392266,
 			"created": 1481243371570,
 			"url": "{{base_url}}/user/{{token}}/command/bar",
 			"name": "Get single",
@@ -406,14 +406,14 @@
 		{
 			"_id": "req_4b1efab79b0642cba8ba631648b8e01c",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1482792959344,
+			"modified": 1482851604368,
 			"created": 1481951470288,
 			"url": "{{base_url}}/user/{{token}}/command/foo",
 			"name": "Create command - protected",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"userLevel\": 0,\n\t\"response\": {\n\t\t\"role\": 0,\n\t\t\"action\": false,\n\t\t\"target\": null,\n\t\t\"user\": \"\",\n\t\t\"message\": [\n\t\t\t{\n\t\t\t\t\"type\": \"text\",\n\t\t\t\t\"data\": \"lol!\",\n\t\t\t\t\"text\": \"lol!\"\n\t\t\t}\n\t\t]\n\t},\n\t\"arguments\": [{\n\t\t\t\t\"type\": \"action\",\n\t\t\t\t\"data\": \"COUNT\",\n\t\t\t\t\"text\": \"%COUNT%\"\n\t\t\t}]\n}"
+				"text": "{\n\t\"userLevel\": 0,\n\t\"response\": {\n\t\t\"role\": 0,\n\t\t\"action\": false,\n\t\t\"target\": null,\n\t\t\"user\": \"\",\n\t\t\"message\": [\n\t\t\t{\n\t\t\t\t\"type\": \"text\",\n\t\t\t\t\"data\": \"lol!\",\n\t\t\t\t\"text\": \"lol!\"\n\t\t\t}\n\t\t]\n\t}\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -423,7 +423,7 @@
 				},
 				{
 					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJleHBpcmVzIjoxNDgyODk3MzUwLCJzY29wZXMiOlsiY29tbWFuZDpjcmVhdGUiLCJjb21tYW5kOmRldGFpbHMiXSwidG9rZW4iOiJwYXJhZGlnbXNoaWZ0M2QifQ.XxiV5-fr9pxcYyyWODmlsPsPosa0qi1f0eu-dVn5UC6bPOrbjuGDWSG3CBiJEgsphBfcwn9U6Od4j9cliKyMrQ"
+					"value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHBpcmVzIjoxNDgyOTAwNzE2LCJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJjb21tYW5kOmNyZWF0ZSIsImNvbW1hbmQ6ZGV0YWlscyJdfQ.O7aybp4MJmXN8SFdLyRuqziMMCGWDqk2JDMAub3_lbVuQqlAvSwOt9qBdW4z2kn5YxgFLu4Ih37uQsragDWR8A"
 				},
 				{
 					"name": "X-Auth-Token",
@@ -477,7 +477,7 @@
 		{
 			"_id": "req_e5ecbb8799434fd48dd270bb15aa1a81",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1482640758776,
+			"modified": 1482798416540,
 			"created": 1482638754893,
 			"url": "{{base_url}}/user/{{token}}/command/foo/count",
 			"name": "Update count",
@@ -608,14 +608,14 @@
 		{
 			"_id": "req_ae96439f7ed64a25be8d7ac08745680d",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1482793018471,
+			"modified": 1482871000210,
 			"created": 1481243753056,
 			"url": "{{base_url}}/user/{{token}}/alias/spam",
 			"name": "Create",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"command\": \"foo\",\n\t\"arguments\": [\n\t\t{\n\t\t\t\"type\": \"text\",\n\t\t\t\"data\": \"foo\",\n\t\t\t\"text\": \"foo\"\n\t\t}\n\t]\n} "
+				"text": "{\n\t\"commandName\": \"foo\",\n\t\"arguments\": [\n\t\t{\n\t\t\t\"type\": \"text\",\n\t\t\t\"data\": \"foo\",\n\t\t\t\"text\": \"foo\"\n\t\t}\n\t]\n} "
 			},
 			"parameters": [],
 			"headers": [
@@ -732,7 +732,7 @@
 		{
 			"_id": "req_0e3395c83e0c4f4d960828f81b43d40e",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1482621169470,
+			"modified": 1482870623900,
 			"created": 1481243682864,
 			"url": "{{base_url}}/user/{{token}}/repeat/1",
 			"name": "Delete",
@@ -766,14 +766,14 @@
 		{
 			"_id": "req_fcddba77aa664eb69f82185a7233b225",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1482621175505,
+			"modified": 1482870705690,
 			"created": 1481243668111,
 			"url": "{{base_url}}/user/{{token}}/repeat",
 			"name": "Create",
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"command\": \"foo\",\n\t\"period\": 1800,\n\t\"arguments\": [\"foo\"]\n}"
+				"text": "{\n\t\"period\": 1800,\n\t\"arguments\": [\n\t\t{\n\t\t\t\"type\": \"text\",\n\t\t\t\"data\": \"foo\",\n\t\t\t\"text\": \"foo\"\n\t\t}\n\t],\n\t\"commandName\": \"foo\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -789,14 +789,14 @@
 		{
 			"_id": "req_5747d2d8556d48b38b2370761b4dd16d",
 			"parentId": "fld_96bee00f61f84e6a9110ede1cae89f36",
-			"modified": 1482169416080,
+			"modified": 1482869816010,
 			"created": 1481244018483,
 			"url": "{{base_url}}/user/{{token}}/config",
 			"name": "Edit",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"spam\": {\n\t\t\"maxEmoji\": 42\n\t}\n}"
+				"text": "{\n\t\"spam\": {\n\t\t\"maxEmoji\": 22\n\t}\n}"
 			},
 			"parameters": [],
 			"headers": [

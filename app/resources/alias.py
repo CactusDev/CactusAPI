@@ -45,9 +45,9 @@ class AliasResource(Resource):
 
         data = {**data, **path_data}
 
-        command_name = data.get("command")
+        command_name = data.get("commandName")
         if command_name is None:
-            return {"errors": ["Missing required key 'command'"]}
+            return {"errors": ["Missing required key 'commandName'"]}
 
         cmd = helpers.get_one("command",
                               token=data["token"],

@@ -51,9 +51,10 @@ class RepeatList(Resource):
                     **path_data
                 )}
 
-        command_name = data.get("command")
+        # TODO: Refactor this
+        command_name = data.get("commandName")
         if command_name is None:
-            return {"errors": ["Missing required key 'command'"]}
+            return {"errors": ["Missing required key 'commandName'"]}
 
         cmd = helpers.get_one("command",
                               token=data["token"],
@@ -65,7 +66,7 @@ class RepeatList(Resource):
             return {"errors": ["Command to be repeated does not exist!"]}, 404
 
         attributes, errors, code = helpers.create_or_update(
-            "repeat", Repeat, data, "token", "command", post=True)
+            "repeat", Repeat, data, "token", "commandName", post=True)
 
         response = {}
 
