@@ -58,6 +58,8 @@ class AliasResource(Resource):
         if cmd == {}:
             return {"errors": ["Command to be aliased does not exist!"]}, 404
 
+        data["command"] = cmd["id"]
+
         # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
             "aliases", Alias, data, "token", "aliasName"
