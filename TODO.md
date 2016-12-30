@@ -23,6 +23,7 @@
 * ~~TODO Make repeats "editable" to change time~~
 * TODO Figure out what happened to createdAt key
 * ~~Add command name to repeats~~
+* Store active keys in redis
 
 # Grouped TODOs
 
