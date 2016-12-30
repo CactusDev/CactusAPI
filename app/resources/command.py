@@ -123,13 +123,6 @@ class CommandResource(Resource):
 
         # No custom command exists
         if code == 404:
-            attributes, errors, code = helpers.single_response(
-                "builtins", Command, **{key: value for key, value
-                                        in path_data.items() if key != "token"}
-            )
-
-        # No custom or builtin exist
-        if code == 404:
             attributes, errors, code = helpers.multi_response(
                 "aliases", Alias, **path_data
             )
@@ -139,6 +132,13 @@ class CommandResource(Resource):
                     "commands",
                     uid=alias["attributes"]["command"]
                 )
+
+        # No custom or aliased commands exist
+        if code == 404:
+            attributes, errors, code = helpers.single_response(
+                "builtins", Command, **{key: value for key, value
+                                        in path_data.items() if key != "token"}
+            )
 
         response = {}
 
@@ -155,9 +155,6 @@ class CommandResource(Resource):
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["Bro...no data"]}, 400
 
         data = {**data, **path_data}
 
