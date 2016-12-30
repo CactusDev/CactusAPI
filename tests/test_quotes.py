@@ -50,7 +50,7 @@ class TestQuotes:
         ).json
 
         i = 0
-        while i < 5:
+        while i < 10:
             quote_internal = client.get(
                 self.url, data={"random": "true", "limit": 1}).json
             if quote_internal["data"][0]["attributes"] != quote["data"]["attributes"]:
@@ -59,7 +59,7 @@ class TestQuotes:
 
             i += 1
 
-        if i == 5:
+        if i == 10:
             raise AssertionError(
                 "No random results returned within attempt limit")
 
