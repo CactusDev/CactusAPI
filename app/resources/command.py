@@ -5,7 +5,7 @@ from flask import request
 from flask_restplus import Resource
 
 from .. import api
-from ..models import Command, User
+from ..models import Command, User, Alias
 from ..schemas import CommandSchema
 from ..util import helpers, auth
 from .. import limiter
@@ -88,6 +88,18 @@ class CommandList(Resource):
             if b_name not in custom_exists:
                 attributes.append(builtin)
 
+        aliases, errors, code = helpers.multi_response(
+            "aliases", Alias, **data
+        )
+
+        for alias in aliases:
+            alias["attributes"]["command"] = helpers.get_one(
+                "commands",
+                uid=alias["attributes"]["command"]
+            )
+
+        attributes = attributes + aliases
+
         response = {}
 
         if errors != []:
@@ -109,11 +121,24 @@ class CommandResource(Resource):
         attributes, errors, code = helpers.single_response(
             "command", Command, **path_data)
 
+        # No custom command exists
         if code == 404:
             attributes, errors, code = helpers.single_response(
                 "builtins", Command, **{key: value for key, value
                                         in path_data.items() if key != "token"}
             )
+
+        # No custom or builtin exist
+        if code == 404:
+            attributes, errors, code = helpers.multi_response(
+                "aliases", Alias, **path_data
+            )
+
+            for alias in attributes:
+                alias["attributes"]["command"] = helpers.get_one(
+                    "commands",
+                    uid=alias["attributes"]["command"]
+                )
 
         response = {}
 
