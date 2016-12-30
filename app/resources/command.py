@@ -123,7 +123,7 @@ class CommandResource(Resource):
 
         # No custom command exists
         if code == 404:
-            attributes, errors, code = helpers.multi_response(
+            attributes, errors, code = helpers.single_response(
                 "aliases", Alias, **path_data
             )
 
