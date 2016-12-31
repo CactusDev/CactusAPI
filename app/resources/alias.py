@@ -48,8 +48,17 @@ class AliasResource(Resource):
         data = {**data, **path_data}
 
         command_name = data.get("commandName")
+
         if command_name is None:
-            return {"errors": ["Missing required key 'commandName'"]}
+            return {"errors": ["Missing required key 'commandName'"]}, 400
+
+        cmd_exists = helpers.get_one("command",
+                                     token=data["token"],
+                                     name=data.get("aliasName"))
+
+        if cmd_exists != {}:
+            return {"errors": [
+                "Command already exists with the requested alias name"]}, 400
 
         cmd = helpers.get_one("command",
                               token=data["token"],

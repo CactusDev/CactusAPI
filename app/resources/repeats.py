@@ -24,7 +24,7 @@ class RepeatList(Resource):
     def get(self, path_data, **kwargs):
         data = {**path_data, **kwargs}
         attributes, errors, code = helpers.multi_response(
-            "repeat", Repeat, **data)
+            "repeats", Repeat, **data)
 
         response = {}
 
@@ -43,7 +43,7 @@ class RepeatResource(Resource):
     @helpers.lower_kwargs("token", "repeatName")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "repeat", Repeat, **path_data)
+            "repeats", Repeat, **path_data)
 
         response = {}
 
