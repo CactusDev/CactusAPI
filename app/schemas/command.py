@@ -9,7 +9,6 @@ from .helpers import MessagePacketSchema
 class ResponseSchema(Schema):
     message = fields.Nested(MessagePacketSchema, many=True)
     user = fields.String()
-    role = fields.Integer()
     action = fields.Boolean()
     target = fields.String(allow_none=True)
 
@@ -25,8 +24,8 @@ class CommandSchema(Schema):
     name = fields.String(required=True)
     response = fields.Nested(ResponseSchema, required=True)
     createdAt = fields.DateTime()
-    token = fields.String(required=True)
-    userLevel = fields.Integer(required=True)
+    token = fields.String(required=True, default=0)
+    role = fields.Integer(required=True)
     enabled = fields.Boolean(default=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
     count = fields.Integer(default=0)

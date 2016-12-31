@@ -66,7 +66,6 @@ class CommandList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"command:details", "command:list"})
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -101,7 +100,6 @@ class CommandList(Resource):
 class CommandResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"command:details"})
     @helpers.lower_kwargs("token", "name")
     def get(self, path_data, **kwargs):
         """/api/v1/:token/command/:command -> [str Command name]"""
@@ -125,8 +123,7 @@ class CommandResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"command:details", "command:create",
-                           "command:manage"})
+    @auth.scopes_required({"command:create", "command:manage"})
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
         data = helpers.get_mixed_args()

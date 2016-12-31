@@ -4,7 +4,6 @@ from .helpers import CommandUUID
 from dateutil import parser
 
 from ..util import helpers
-from .helpers import MessagePacketSchema
 
 
 class RepeatSchema(Schema):
@@ -13,7 +12,6 @@ class RepeatSchema(Schema):
     token = fields.String(required=True)
     repeatName = fields.String(required=True)
     command = CommandUUID()
-    arguments = fields.Nested(MessagePacketSchema, many=True)
     commandName = fields.String(required=True)
 
     @pre_dump

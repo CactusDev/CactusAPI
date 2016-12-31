@@ -1,8 +1,7 @@
 from flask import request
-
 from flask_restplus import Resource
-
 from jose import jwt
+import redis
 
 from .. import api, app
 from ..models import User
@@ -29,7 +28,7 @@ class Login(Resource):
 
         user = helpers.get_one("users", token=data["token"])
         if user == {}:
-            return {}, 404
+            return {"errors": ["User account does not exist"]}, 404
         hashed_password = user.get("password")
 
         if hashed_password is None:
@@ -49,14 +48,13 @@ class Login(Resource):
         # in config (API_SCOPES)
         # HACK: For now, just hard-code it. Fix after feature-freeze
         API_SCOPES = {
-            "alias:create", "alias:details", "alias:manage", "alias:list",
-            "command:create", "command:details", "command:manage",
-            "command:list",
-            "config:create", "config:details", "config:manage", "config:list",
-            "quote:create", "quote:details", "quote:manage", "quote:list",
-            "repeat:create", "repeat:details", "repeat:manage", "repeat:list",
-            "social:create", "social:details", "social:manage", "social:list",
-            "trust:create", "trust:details", "trust:manage", "trust:list",
+            "alias:create", "alias:manage",
+            "command:create", "command:manage",
+            "config:create", "config:manage",
+            "quote:create", "quote:manage",
+            "repeat:create", "repeat:manage",
+            "social:create", "social:manage",
+            "trust:create", "trust:manage",
         }
 
         if isinstance(scopes, str):
@@ -70,10 +68,7 @@ class Login(Resource):
         if scopes == []:
             return {"errors": ["At least one scope must be requested"]}, 400
 
-        to_encode = {"token": data["token"],
-                     "scopes": scopes,
-                     "expires": auth.create_expires(
-                         **app.config["AUTH_EXPIRATION"])}
+        to_encode = {"token": data["token"], "scopes": scopes}
 
         jw_token = jwt.encode(to_encode, hashed_password, algorithm="HS512")
 

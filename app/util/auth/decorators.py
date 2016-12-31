@@ -58,8 +58,8 @@ def scopes_required(required_scopes):
                 return {
                     "errors": [
                         {
-                            "message": "Scopes allowed for that JWT token do not meet "
-                            "endpoint requirements",
+                            "message": "Scopes allowed for that access token "
+                            "do not meet endpoint requirements",
                             "missing": list(allowed)
                         }
                     ]
