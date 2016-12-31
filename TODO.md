@@ -25,7 +25,7 @@
 * ~~Add command name to repeats~~
 * TODO Make `PATCH` for quotes only edit, not create
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
-* TODO Convert list in auth key to bits/hex strings
+* ~~TODO Convert list in auth key to bits/hex strings~~
 
 # Grouped TODOs
 

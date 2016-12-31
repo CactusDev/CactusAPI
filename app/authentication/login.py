@@ -48,20 +48,31 @@ class Login(Resource):
         # TODO: Validate requested scopes against set of defined scopes
         # in config (API_SCOPES)
         # HACK: For now, just hard-code it. Fix after feature-freeze
-        API_SCOPES = app.config.get("API_SCOPES", {}).keys()
+        API_SCOPES = app.config.get("API_SCOPES", {})
+
+        if API_SCOPES == []:
+            print("WARNING!  API_SCOPES IS NOT CONFIGURED")
 
         if isinstance(scopes, str):
             scopes = scopes.split()
 
-        # Parse out non-valid scopes
-        scopes = [scope for scope in scopes if scope in API_SCOPES]
+        bits = list("00000000000000")
+
+        scopes = [scope for scope in scopes if scope in API_SCOPES.keys()]
+
+        # Parse out non-valid scopes and convert to bit string
+        for scope in scopes:
+            if scope in API_SCOPES:
+                bits[API_SCOPES[scope]] = "1"
+
+        bits = ''.join(bits)
 
         # Check scopes that are being requested by the user to see if the user
         # is allowed access to those resources
         if scopes == []:
             return {"errors": ["At least one scope must be requested"]}, 400
 
-        to_encode = {"token": data["token"], "scopes": scopes}
+        to_encode = {"token": data["token"], "scopes": bits}
 
         jw_token = jwt.encode(to_encode, hashed_password, algorithm="HS512")
 
@@ -70,8 +81,7 @@ class Login(Resource):
         key_store = {
             **to_encode,
             "expiration": auth.create_expires(
-                **app.config.get("AUTH_EXPIRATION", {"days": 1})
-            ),
+                **app.config.get("AUTH_EXPIRATION", {"days": 1})),
             "key": jw_token
         }
 

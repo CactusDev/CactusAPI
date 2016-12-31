@@ -4,6 +4,7 @@ from jose import jwt, JWTError
 from datetime import datetime
 
 from ..helpers import get_one
+from ... import app
 
 
 def scopes_required(required_scopes):
@@ -76,7 +77,22 @@ def scopes_required(required_scopes):
                         "Provided user token and JWT token do not match!"]
                 }, 403
 
-            token_scopes = set(decoded.get("scopes", []))
+            token_scopes = set()
+            API_SCOPES = app.config.get("API_SCOPES", {})
+
+            if API_SCOPES == []:
+                print("WARNING! API_SCOPES IS NOT CONFIGURED")
+
+            i = 0
+            bits = decoded.get("scopes", "")
+
+            for scope in bits:
+                if scope == '1':
+                    for k, v in API_SCOPES.items():
+                        if v == i:
+                            token_scopes.add(k)
+
+                i += 1
 
             allowed = required_scopes.difference(token_scopes)
 
