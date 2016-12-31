@@ -1,7 +1,6 @@
 from flask import request
 from flask_restplus import Resource
 from jose import jwt
-import redis
 
 from .. import api, app
 from ..models import User
@@ -26,6 +25,8 @@ class Login(Resource):
             return {"errors": ["Missing either 'token' or 'password' "
                                "required keys"]}, 400
 
+        # TODO: limit authentication requests to 5/minute
+
         user = helpers.get_one("users", token=data["token"])
         if user == {}:
             return {"errors": ["User account does not exist"]}, 404
@@ -47,15 +48,7 @@ class Login(Resource):
         # TODO: Validate requested scopes against set of defined scopes
         # in config (API_SCOPES)
         # HACK: For now, just hard-code it. Fix after feature-freeze
-        API_SCOPES = {
-            "alias:create", "alias:manage",
-            "command:create", "command:manage",
-            "config:create", "config:manage",
-            "quote:create", "quote:manage",
-            "repeat:create", "repeat:manage",
-            "social:create", "social:manage",
-            "trust:create", "trust:manage",
-        }
+        API_SCOPES = app.config.get("API_SCOPES", {}).keys()
 
         if isinstance(scopes, str):
             scopes = scopes.split()
@@ -71,6 +64,21 @@ class Login(Resource):
         to_encode = {"token": data["token"], "scopes": scopes}
 
         jw_token = jwt.encode(to_encode, hashed_password, algorithm="HS512")
+
+        exists = helpers.get_one("keys", token=data["token"])
+
+        key_store = {
+            **to_encode,
+            "expiration": auth.create_expires(
+                **app.config.get("AUTH_EXPIRATION", {"days": 1})
+            ),
+            "key": jw_token
+        }
+
+        if exists == {}:
+            helpers.create_record("keys", key_store)
+        else:
+            helpers.update_record("keys", {**exists, **key_store})
 
         # TODO: Find out if this is a security problem including the scopes
         return {"token": jw_token, "scopes": scopes}

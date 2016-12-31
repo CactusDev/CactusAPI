@@ -29,5 +29,22 @@ AUTH_EXPIRATION = {
     "seconds": 4
 }
 
+API_SCOPES = {
+    "alias:create": "00000000000001",
+    "alias:manage": "00000000000010",
+    "command:create": "00000000000100",
+    "command:manage": "00000000001000",
+    "config:create": "00000000010000",
+    "config:manage": "00000000100000",
+    "quote:create": "00000001000000",
+    "quote:manage": "00000010000000",
+    "repeat:create": "00000100000000",
+    "repeat:manage": "00001000000000",
+    "social:create": "00010000000000",
+    "social:manage": "00100000000000",
+    "trust:create": "01000000000000",
+    "trust:manage": "10000000000000"
+}
+
 SENTRY_DSN = "https://supersecretsentryDSN.net"
 SENTRY_ACTIVE = True  # Tells the API whether or not to activate Sentry

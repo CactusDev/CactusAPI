@@ -23,10 +23,9 @@
 * ~~TODO Make repeats "editable" to change time~~
 * TODO Figure out what happened to createdAt key
 * ~~Add command name to repeats~~
-* Store active keys in redis
-* TODO Implement redis-based auth bits
 * TODO Make `PATCH` for quotes only edit, not create
-* TODO Change X-Auth-JWT to X-Auth-Key
+* ~~TODO Change X-Auth-JWT to X-Auth-Key~~
+* TODO Convert list in auth key to bits/hex strings
 
 # Grouped TODOs
 

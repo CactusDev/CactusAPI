@@ -13,21 +13,49 @@ def scopes_required(required_scopes):
             """
             The endpoint is decorated, meaning it requires *some* form of
             authentication token in the X-Token-Auth header, return Forbidden
-            X-Auth-JWT - JWT token
+            X-Auth-Key - JWT token
             X-Auth-Token - Account token
             """
-            jw_token = request.headers.get("X-Auth-JWT", None)
+            jw_token = request.headers.get("X-Auth-Key", None)
             acct_token = request.headers.get("X-Auth-Token", None)
 
             if jw_token is None:
-                missing = "X-Auth-JWT"
+                missing = "X-Auth-Key"
                 if acct_token is None:
                     missing += " and X-Auth-Token"
 
-                return {"errors": ["X-Token-Auth header is incorrect. "
+                return {"errors": ["Authentication header is incorrect. "
                                    "Missing required {} "
                                    "header(s)".format(missing)]
                         }, 403
+
+            exists = get_one("keys", token=acct_token)
+
+            if exists == {}:
+                return {
+                    "errors": [
+                        "Invalid authentication key",
+                        "No users currently authenticated for that token"
+                    ]
+                }, 403
+            else:
+                if exists.get("key", "") != jw_token:
+                    return {
+                        "errors": [
+                            "Invalid authentication key",
+                            "Supplied key does not match any currently valid"
+                            " keys"
+                        ]
+                    }, 403
+
+                time_now = datetime.timestamp(datetime.utcnow())
+                if time_now > exists.get("expiration", 0):
+                    return {
+                        "errors": [
+                            "Invalid authentication key",
+                            "Key has expired"
+                        ]
+                    }, 403
 
             user = get_one("users", token=acct_token)
             password = user.get("password")
@@ -64,15 +92,6 @@ def scopes_required(required_scopes):
                         }
                     ]
                 }, 403
-
-            expiration = decoded.get("expires")
-
-            if datetime.timestamp(datetime.utcnow()) > expiration:
-                return {
-                    "errors": [
-                        "Invalid authentication key - key has expired"
-                    ]
-                }
 
             # Passed the scopes requirements, return the endpoint's response
             return f(*args, **kwargs)
