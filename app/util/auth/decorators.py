@@ -3,13 +3,14 @@ from flask import request, jsonify
 from jose import jwt, JWTError
 from datetime import datetime
 
-from ..helpers import get_one
+from ..helpers import get_one, APIError, return_error
 from ... import app
 
 
 def scopes_required(required_scopes):
     def wrapper(f):
         @wraps(f)
+        @return_error
         def decorated(*args, **kwargs):
             """
             The endpoint is decorated, meaning it requires *some* form of
@@ -25,29 +26,30 @@ def scopes_required(required_scopes):
                 if acct_token is None:
                     missing += " and X-Auth-Token"
 
-                return {"errors": ["Authentication header is incorrect. "
-                                   "Missing required {} "
-                                   "header(s)".format(missing)]
-                        }, 403
+                raise APIError(
+                    "Authentication header is incorrect. Missing required {}"
+                    " header(s)".format(missing), code=403)
+
+            user = get_one("users", token=acct_token)
+            password = user.get("password")
+
+            if user == {} or password is None:
+                raise APIError(
+                    "User account is not configured for API access", code=403)
 
             exists = get_one("keys", token=acct_token)
-
             if exists == {}:
-                return {
-                    "errors": [
-                        "Invalid authentication key",
-                        "No users currently authenticated for that token"
-                    ]
-                }, 403
+                raise APIError(
+                    "Invalid authentication key",
+                    "Token's user account not currently authenticated",
+                    code=403)
+
             else:
                 if exists.get("key", "") != jw_token:
-                    return {
-                        "errors": [
-                            "Invalid authentication key",
-                            "Supplied key does not match any currently valid"
-                            " keys"
-                        ]
-                    }, 403
+                    raise APIError(
+                        "Invalid authentication key",
+                        "Supplied key does not match any currently valid keys",
+                        code=403)
 
                 time_now = datetime.timestamp(datetime.utcnow())
                 if time_now > exists.get("expiration", 0):
@@ -58,29 +60,18 @@ def scopes_required(required_scopes):
                         ]
                     }, 403
 
-            user = get_one("users", token=acct_token)
-            password = user.get("password")
-
-            if user == {} or password is None:
-                return {
-                    "errors": ["User account is not configured for API access"]
-                }, 403
-
             try:
                 decoded = jwt.decode(jw_token, password, algorithms="HS512")
             except JWTError as e:
-                return {"errors": [arg.args for arg in e.args]}, 403
+                raise APIError(*[arg.args for arg in e.args], code=403)
 
             if acct_token != decoded.get("token", ""):
-                return {
-                    "errors": [
-                        "Provided user token and JWT token do not match!"]
-                }, 403
+                raise APIError("User token and JWT key do not match", code=403)
 
             token_scopes = set()
             API_SCOPES = app.config.get("API_SCOPES", {})
 
-            if API_SCOPES == []:
+            if API_SCOPES == {}:
                 print("WARNING! API_SCOPES IS NOT CONFIGURED")
 
             i = 0
@@ -98,16 +89,13 @@ def scopes_required(required_scopes):
 
             # The scopes allowed for this JWT do not contain all of the
             # required scopes for this endpoint
-            if len(allowed):
-                return {
-                    "errors": [
-                        {
-                            "message": "Scopes allowed for that access token "
-                            "do not meet endpoint requirements",
-                            "missing": list(allowed)
-                        }
-                    ]
-                }, 403
+            if allowed:
+                raise APIError(
+                    {
+                        "message": "Scopes allowed for that access token "
+                        "do not meet endpoint requirements",
+                        "missing": list(allowed)
+                    }, code=403)
 
             # Passed the scopes requirements, return the endpoint's response
             return f(*args, **kwargs)

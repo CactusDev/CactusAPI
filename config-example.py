@@ -30,20 +30,20 @@ AUTH_EXPIRATION = {
 }
 
 API_SCOPES = {
-    "alias:create": "00000000000001",
-    "alias:manage": "00000000000010",
-    "command:create": "00000000000100",
-    "command:manage": "00000000001000",
-    "config:create": "00000000010000",
-    "config:manage": "00000000100000",
-    "quote:create": "00000001000000",
-    "quote:manage": "00000010000000",
-    "repeat:create": "00000100000000",
-    "repeat:manage": "00001000000000",
-    "social:create": "00010000000000",
-    "social:manage": "00100000000000",
-    "trust:create": "01000000000000",
-    "trust:manage": "10000000000000"
+    "alias:create": 13,     # "00000000000001",
+    "alias:manage": 12,     # "00000000000010",
+    "command:create": 11,   # "00000000000100",
+    "command:manage": 10,   # "00000000001000",
+    "config:create": 9,     # "00000000010000",
+    "config:manage": 8,     # "00000000100000",
+    "quote:create": 7,      # "00000001000000",
+    "quote:manage": 6,      # "00000010000000",
+    "repeat:create": 5,     # "00000100000000",
+    "repeat:manage": 4,     # "00001000000000",
+    "social:create": 3,     # "00010000000000",
+    "social:manage": 2,     # "00100000000000",
+    "trust:create": 1,      # "01000000000000",
+    "trust:manage": 0,      # "10000000000000"
 }
 
 SENTRY_DSN = "https://supersecretsentryDSN.net"

@@ -2,6 +2,24 @@ from functools import wraps
 from flask import request
 
 
+class APIError(Exception):
+
+    def __init__(self, *message, code):
+        super().__init__(message)
+        self.message = message
+        self.code = code
+
+
+def return_error(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except APIError as e:
+            return {"errors": e.message}, e.code
+    return wrapper
+
+
 def check_random(func):
     """Checks if the request is being made with the ?random argument"""
     @wraps(func)
