@@ -77,6 +77,9 @@ def scopes_required(required_scopes):
             i = 0
             bits = decoded.get("scopes", "")
 
+            if bits == "root":
+                token_scopes = [*API_SCOPES.keys(), "root"]
+
             for scope in bits:
                 if scope == '1':
                     for k, v in API_SCOPES.items():

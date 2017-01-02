@@ -23,8 +23,6 @@ parser.add_argument(
     default="INFO"
 )
 
-parser.add_argument
-
 args = parser.parse_args()
 
 logging.basicConfig(
