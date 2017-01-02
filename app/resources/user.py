@@ -9,6 +9,7 @@ from ..models import User, Config
 from ..schemas import UserSchema
 from ..util import helpers, auth
 from ..util.auth import argon_hash
+from ..util.helpers import APIError
 from .. import limiter
 
 
@@ -56,17 +57,13 @@ class UserResource(Resource):
 
     @auth.scopes_required({"root"})
     @limiter.limit("1000/day;90/hour;20/minute")
+    @helpers.catch_api_error
     def post(self, **kwargs):
         """
         Create the new user in the DB and generate the default config
         in the config table
         """
-        data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["Bro...no data"]}, 400
-
-        data = {**data, **kwargs}
+        data = {**helpers.get_mixed_args(), **kwargs}
 
         # TODO: Does this need to be changed/improved at all?
         if "password" in data:
@@ -75,12 +72,11 @@ class UserResource(Resource):
         # TODO: Have to check if that token exists already, can't allow
         # duplicates
         attributes, errors, code = helpers.create_or_update(
-            "user", User, data, "service", "userId", post=True
-        )
+            "user", User, data, "service", "userId", post=True)
 
         # Failed creating the user record
         if errors != {}:
-            return {"errors": errors}, code
+            raise APIError(errors, code=code)
 
         # Generate the response now, since we don't need to include the config
         response = {}
@@ -92,11 +88,10 @@ class UserResource(Resource):
 
         _, errors, config_code = helpers.create_or_update(
             "config", Config, Config.default_data(data["token"]),
-            "token"
-        )
+            "token")
 
         if errors != {}:
-            return {"errors": errors}, config_code
+            raise APIError(errors, code=config_code)
 
         return response, code
 

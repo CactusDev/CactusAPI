@@ -3,14 +3,14 @@ from flask import request, jsonify
 from jose import jwt, JWTError
 from datetime import datetime
 
-from ..helpers import get_one, APIError, return_error
+from ..helpers import get_one, APIError, catch_api_error
 from ... import app
 
 
 def scopes_required(required_scopes):
     def wrapper(f):
         @wraps(f)
-        @return_error
+        @catch_api_error
         def decorated(*args, **kwargs):
             """
             The endpoint is decorated, meaning it requires *some* form of

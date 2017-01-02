@@ -18,7 +18,6 @@ class TrustList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"trust:details", "trust:list"})
     @helpers.check_limit
     def get(self, **kwargs):
         attributes, errors, code = helpers.multi_response(
@@ -37,18 +36,12 @@ class TrustList(Resource):
 class TrustResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"trust:details", "trust:create", "trust:manage"})
+    @auth.scopes_required({"trust:create", "trust:manage"})
     @helpers.lower_kwargs("token", "userId")
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["Bro ... no data"]}, 400
-
-        data = {**data, **path_data}
+        data = {**helpers.get_mixed_args(), **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "trust", Trust, data, "token", "userId"
-        )
+            "trust", Trust, data, "token", "userId")
 
         response = {}
 
@@ -65,7 +58,6 @@ class TrustResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"trust:details"})
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         """
@@ -77,8 +69,7 @@ class TrustResource(Resource):
             path_data["userName"] = kwargs["userId"]
 
         attributes, errors, code = helpers.single_response(
-            "trust", Trust, **path_data
-        )
+            "trust", Trust, **path_data)
 
         response = {}
 

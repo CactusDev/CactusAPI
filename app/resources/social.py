@@ -18,7 +18,6 @@ class SocialList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"social:details", "social:list"})
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -39,19 +38,12 @@ class SocialList(Resource):
 class SocialResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"social:details", "social:create",
-                           "social:manage"})
+    @auth.scopes_required({"social:create", "social:manage"})
     @helpers.lower_kwargs("token", "service")
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["No JSON data"]}, 400
-
-        data = {**data, **path_data}
+        data = {**helpers.get_mixed_args(), **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "social", Social, data, "token", "service"
-        )
+            "social", Social, data, "token", "service")
 
         response = {}
 
@@ -72,8 +64,7 @@ class SocialResource(Resource):
     @helpers.lower_kwargs("token", "service")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "social", Social, **path_data
-        )
+            "social", Social, **path_data)
 
         response = {}
 

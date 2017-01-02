@@ -8,6 +8,7 @@ from .. import api
 from ..models import Repeat, User
 from ..schemas import RepeatSchema
 from ..util import helpers, auth
+from ..util.helpers import APIError
 from .. import limiter
 
 
@@ -18,7 +19,6 @@ class RepeatList(Resource):
     """
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"repeat:details", "repeat:list"})
     @helpers.check_limit
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
@@ -39,7 +39,6 @@ class RepeatList(Resource):
 class RepeatResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"repeat:details"})
     @helpers.lower_kwargs("token", "repeatName")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
@@ -55,27 +54,22 @@ class RepeatResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"repeat:details", "repeat:create",
-                           "repeat:manage"})
+    @auth.scopes_required({"repeat:create", "repeat:manage"})
     @helpers.lower_kwargs("token", "repeatName")
+    @helpers.catch_api_error
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["Bro...no data"]}, 400
-
-        data = {**data,
+        data = {**helpers.get_mixed_args(),
                 **path_data,
                 "repeatId": helpers.next_numeric_id(
                     "repeat",
                     id_field="repeatId",
                     **path_data
-                )}
+        )}
 
         # TODO: Refactor this
         command_name = data.get("commandName")
         if command_name is None:
-            return {"errors": ["Missing required key 'commandName'"]}, 400
+            raise APIError("Missing required key 'commandName'", code=400)
 
         cmd = helpers.get_one("command",
                               token=data["token"],
@@ -84,7 +78,7 @@ class RepeatResource(Resource):
 
         # The command to be aliased doesn't actually exist
         if cmd == {}:
-            return {"errors": ["Command to be repeated does not exist!"]}, 400
+            raise APIError("Command to be repeated does not exist!", code=400)
 
         attributes, errors, code = helpers.create_or_update(
             "repeat", Repeat, data, "token", "commandName", post=True)

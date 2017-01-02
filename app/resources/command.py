@@ -8,21 +8,18 @@ from .. import api
 from ..models import Command, User, Alias
 from ..schemas import CommandSchema
 from ..util import helpers, auth
+from ..util.helpers import APIError
 from .. import limiter
 
 
 class CommandCounter(Resource):
 
     @limiter.limit("1000/day;90/hour;25/minute")
-    @auth.scopes_required({"command:details", "command:manage"})
+    @auth.scopes_required({"command:manage"})
     @helpers.lower_kwargs("token", "name")
+    @helpers.catch_api_error
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["Bro...no data"]}, 400
-
-        data = {**data, **path_data}
+        data = {**helpers.get_mixed_args(), **path_data}
 
         attributes, errors, code = helpers.single_response(
             "command", Command, **path_data
@@ -32,7 +29,7 @@ class CommandCounter(Resource):
             new_count = data["count"]
 
             if not isinstance(new_count, str):
-                return {"errors": ["Not a string fool"]}, 400
+                raise APIError({"count": "Must be a string"}, code=400)
 
             count = attributes["attributes"]["count"]
 
@@ -151,9 +148,7 @@ class CommandResource(Resource):
     @auth.scopes_required({"command:create", "command:manage"})
     @helpers.lower_kwargs("token", "name")
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        data = {**data, **path_data}
+        data = {**helpers.get_mixed_args(), **path_data}
 
         attributes, errors, code = helpers.create_or_update(
             "command", Command, data, "token", "name"

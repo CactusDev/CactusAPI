@@ -10,7 +10,7 @@ class APIError(Exception):
         self.code = code
 
 
-def return_error(func):
+def catch_api_error(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:

@@ -38,13 +38,7 @@ class TicketResource(Resource):
 @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("ticketId")
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        # TODO: Make this an actual error/let Marshmallow handle it
-        if data is None:
-            return {"errors": ["Bro ... no data"]}, 400
-
-        data = {**data, **path_data}
+        data = {**helpers.get_mixed_args(), **path_data}
         attributes, errors, code = helpers.create_or_update(
             "ticket", Ticket, data, ["ticketId"]
         )

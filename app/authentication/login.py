@@ -16,7 +16,7 @@ class Login(Resource):
         pass
 
     # TODO: Refactor after feature-freeze
-    @helpers.return_error
+    @helpers.catch_api_error
     def post(self, **kwargs):
         data = helpers.get_mixed_args()
 
