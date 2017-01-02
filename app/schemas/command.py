@@ -11,6 +11,7 @@ class ResponseSchema(Schema):
     user = fields.String()
     action = fields.Boolean()
     target = fields.String(allow_none=True)
+    role = fields.Integer(required=True, default=0)
 
     @validates('message')
     def validate_message(self, value):
@@ -24,8 +25,7 @@ class CommandSchema(Schema):
     name = fields.String(required=True)
     response = fields.Nested(ResponseSchema, required=True)
     createdAt = fields.DateTime()
-    token = fields.String(required=True, default=0)
-    role = fields.Integer(required=True)
+    token = fields.String(required=True)
     enabled = fields.Boolean(default=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
     count = fields.Integer(default=0)

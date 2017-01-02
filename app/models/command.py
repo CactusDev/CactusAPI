@@ -8,7 +8,7 @@ class Command:
 
     force_on_create = {"response": "message"}
 
-    def __init__(self, *, name, response, token, userLevel=0,
+    def __init__(self, *, name, response, token, role=0,
                  createdAt=datetime.utcnow(), enabled=True,
                  arguments, count, **kwargs):
         if "id" in kwargs:
@@ -18,6 +18,6 @@ class Command:
         self.token = token.lower()
         self.createdAt = createdAt
         self.enabled = enabled
-        self.userLevel = userLevel
+        self.role = role
         self.arguments = arguments
         self.count = count
