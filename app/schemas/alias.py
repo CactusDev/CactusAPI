@@ -9,7 +9,7 @@ from .helpers import MessagePacketSchema
 
 class CmdAliasSchema(Schema):
     id = fields.String()
-    aliasName = fields.String(required=True)
+    name = fields.String(required=True)
     createdAt = fields.DateTime()
     token = fields.String(required=True)
     command = CommandUUID()
