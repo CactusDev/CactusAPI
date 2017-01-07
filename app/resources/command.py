@@ -89,10 +89,15 @@ class CommandList(Resource):
         )
 
         for alias in aliases:
-            alias["attributes"]["command"] = helpers.get_one(
+            # HACK: Need to redo this to handle aliases better
+            command = helpers.get_one(
                 "commands",
                 uid=alias["attributes"]["command"]
             )
+            del command["name"]
+
+            alias["attributes"].update(command)
+            del alias["attributes"]["command"]
 
         attributes = attributes + aliases
 
@@ -121,11 +126,15 @@ class CommandResource(Resource):
             attributes, errors, code = helpers.single_response(
                 "aliases", Alias, **path_data
             )
-
-            attributes["attributes"]["command"] = helpers.get_one(
+            # HACK: Need to redo this to handle aliases better
+            command = helpers.get_one(
                 "commands",
                 uid=attributes["attributes"]["command"]
             )
+            del command["name"]
+
+            attributes["attributes"].update(command)
+            del attributes["attributes"]["command"]
 
         # No custom or aliased commands exist
         if code == 404:
