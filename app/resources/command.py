@@ -122,11 +122,10 @@ class CommandResource(Resource):
                 "aliases", Alias, **path_data
             )
 
-            for alias in attributes:
-                alias["attributes"]["command"] = helpers.get_one(
-                    "commands",
-                    uid=alias["attributes"]["command"]
-                )
+            attributes["attributes"]["command"] = helpers.get_one(
+                "commands",
+                uid=attributes["attributes"]["command"]
+            )
 
         # No custom or aliased commands exist
         if code == 404:
