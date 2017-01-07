@@ -47,7 +47,7 @@ api.add_resource(resources.RepeatResource,
                  "{}/user/<string:token>/repeat/<repeatName>".format(prefix))
 
 api.add_resource(resources.AliasResource,
-                 "{}/user/<string:token>/alias/<aliasName>".format(prefix))
+                 "{}/user/<string:token>/alias/<name>".format(prefix))
 
 api.add_resource(resources.SocialList,
                  "{}/user/<string:token>/social".format(prefix))

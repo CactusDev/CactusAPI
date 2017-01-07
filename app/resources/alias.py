@@ -16,7 +16,7 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    @helpers.lower_kwargs("token", "aliasName")
+    @helpers.lower_kwargs("token", "name")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
             "aliases", Alias, **{**kwargs, **path_data})
@@ -38,7 +38,7 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:create", "alias:manage"})
-    @helpers.lower_kwargs("token", "aliasName")
+    @helpers.lower_kwargs("token", "name")
     @helpers.catch_api_error
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
@@ -48,9 +48,7 @@ class AliasResource(Resource):
         if command_name is None:
             raise APIError("Missing required key 'commandName'", code=400)
 
-        cmd_exists = helpers.get_one("command",
-                                     token=data["token"],
-                                     name=data.get("aliasName"))
+        cmd_exists = helpers.get_one("command", **path_data)
 
         if cmd_exists != {}:
             raise APIError(
@@ -70,7 +68,7 @@ class AliasResource(Resource):
 
         # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
-            "aliases", Alias, data, "token", "aliasName"
+            "aliases", Alias, data, "token", "name"
         )
 
         response = {}
@@ -91,7 +89,7 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:manage"})
-    @helpers.lower_kwargs("token", "aliasName")
+    @helpers.lower_kwargs("token", "name")
     def delete(self, path_data, **kwargs):
         deleted = helpers.delete_record("aliases", **path_data)
 
