@@ -58,7 +58,7 @@ def scopes_required(required_scopes):
                             "Invalid authentication key",
                             "Key has expired"
                         ]
-                    }, 403
+                    }, 401
 
             try:
                 decoded = jwt.decode(jw_token, password, algorithms="HS512")
