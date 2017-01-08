@@ -60,7 +60,6 @@ class SocialResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"social:details"})
     @helpers.lower_kwargs("token", "service")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
