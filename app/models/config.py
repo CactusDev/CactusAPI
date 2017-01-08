@@ -52,7 +52,7 @@ class Announcements:
     def default(announcement):
         return {
             "announce": False,
-            "message": "Thanks for the {}, %NAME%!".format(announcement)
+            "message": "Thanks for the {}, %USER%!".format(announcement)
         }
 
     def __init__(self,
