@@ -39,6 +39,10 @@ class CommandCounter(Resource):
                 count = count - int(new_count[1:])
             elif new_count[0] == '=' and new_count[1:].isdigit():
                 count = int(new_count[1:])
+            else:
+                raise APIError({
+                    "Invalid format for count": "Must start with one of =+-"
+                }, code=400)
 
             response = helpers.update_record(
                 "commands", {"id": attributes["id"], "count": count})
@@ -89,13 +93,12 @@ class CommandList(Resource):
         )
 
         for alias in aliases:
-            # HACK: Need to redo this to handle aliases better
-            command = helpers.get_one(
+            command = helpers.uid_to_object(
                 "commands",
-                uid=alias["attributes"]["command"]
+                alias["attributes"]["command"],
+                alias,
+                "name", "id"
             )
-            del command["name"]
-
             alias["attributes"].update(command)
             del alias["attributes"]["command"]
 
@@ -121,27 +124,8 @@ class CommandResource(Resource):
         attributes, errors, code = helpers.single_response(
             "command", Command, **path_data)
 
-        # No custom command exists
         if code == 404:
-            attributes, errors, code = helpers.single_response(
-                "aliases", Alias, **path_data
-            )
-            # HACK: Need to redo this to handle aliases better
-            command = helpers.get_one(
-                "commands",
-                uid=attributes["attributes"]["command"]
-            )
-            del command["name"]
-
-            attributes["attributes"].update(command)
-            del attributes["attributes"]["command"]
-
-        # No custom or aliased commands exist
-        if code == 404:
-            attributes, errors, code = helpers.single_response(
-                "builtins", Command, **{key: value for key, value
-                                        in path_data.items() if key != "token"}
-            )
+            attributes, errors, code = helpers.alias_then_builtins(**path_data)
 
         response = {}
 

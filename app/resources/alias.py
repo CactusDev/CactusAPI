@@ -21,18 +21,31 @@ class AliasResource(Resource):
         attributes, errors, code = helpers.single_response(
             "aliases", Alias, **{**kwargs, **path_data})
 
+        if code != 404:
+            command = helpers.uid_to_object(
+                "commands",
+                attributes["attributes"]["command"],
+                "name"
+            )
+
+            # It's not a custom command, must be a builtin
+            if command == {}:
+                command = helpers.uid_to_object(
+                    "builtins",
+                    attributes["attributes"]["command"],
+                    "name"
+                )
+
+            attributes["attributes"].update(command)
+
+            del attributes["attributes"]["command"]
+
         response = {}
 
         if errors == {}:
             response["data"] = attributes
         else:
             response["errors"] = errors
-
-        if attributes != {} and isinstance(attributes, dict):
-            # Take attributes, convert "command" to obj
-            cmd_id = attributes["attributes"]["command"]
-            attributes["attributes"]["command"] = helpers.get_one("command",
-                                                                  uid=cmd_id)
 
         return response, code
 
@@ -48,21 +61,25 @@ class AliasResource(Resource):
         if command_name is None:
             raise APIError("Missing required key 'commandName'", code=400)
 
-        cmd_exists = helpers.get_one("command", **path_data)
+        cmd_exists = helpers.get_one("commands", **path_data)
 
         if cmd_exists != {}:
             raise APIError(
                 "Command already exists with the requested alias name",
                 code=400)
 
-        cmd = helpers.get_one("command",
+        cmd = helpers.get_one("commands",
                               token=data["token"],
                               name=command_name
                               )
 
+        # Now we're getting the command that the alias is aliasing
         # The command to be aliased doesn't actually exist
         if cmd == {}:
-            raise APIError("Command to be aliased does not exist!", code=404)
+            cmd = helpers.get_one("builtins", name=command_name)
+            if cmd == {}:
+                raise APIError(
+                    "Command to be aliased does not exist!", code=404)
 
         data["command"] = cmd["id"]
 

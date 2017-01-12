@@ -1,5 +1,5 @@
-from .response import (multi_response, single_response,
-                       humanize_datetime, validate_uuid4)
+from .response import (multi_response, single_response, alias_then_builtins,
+                       humanize_datetime, validate_uuid4, uid_to_object)
 from .resource import create_or_update, update_resource
 from .decorators import (check_limit, lower_kwargs, pluralize_arg, check_random,
                          APIError, catch_api_error)
@@ -10,7 +10,7 @@ from .parse import get_mixed_args
 
 __all__ = [
     "multi_response", "single_response", "humanize_datetime", "validate_uuid4",
-    "create_or_update", "update_resource",
+    "create_or_update", "update_resource", "alias_then_builtins",
     "check_limit", "lower_kwargs", "pluralize_arg", "check_random",
     "APIError", "catch_api_error",
     "get_one", "get_all", "get_multiple", "get_random", "next_numeric_id",

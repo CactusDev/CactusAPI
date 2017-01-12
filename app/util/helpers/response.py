@@ -4,6 +4,7 @@ from uuid import UUID
 
 from .rethink import get_one, get_all, get_random, get_multiple
 from .parse import parse
+from ... import models
 
 
 def multi_response(table_name, model, random=False, **kwargs):
@@ -70,6 +71,44 @@ def recurse_dict(data, model):
             del data[key]
 
     return data
+
+
+def uid_to_object(table, uid, *args):
+    response = get_one(
+        table,
+        uid=uid
+    )
+
+    if response != {}:
+        response = {k: v for k, v in response.items() if k not in args}
+
+    return response
+
+
+def alias_then_builtins(*args, **kwargs):
+
+    attributes, errors, code = single_response(
+        "aliases", models.Alias, **kwargs
+    )
+
+    if code != 404:
+        # HACK: Need to redo this to handle aliases better
+        command = uid_to_object(
+            "commands",
+            attributes["attributes"]["command"],
+            "name"
+        )
+        attributes["attributes"].update(command)
+
+        del attributes["attributes"]["command"]
+    # No custom or aliased commands exist
+    elif code == 404:
+        attributes, errors, code = single_response(
+            "builtins", models.Command, **{key: value for key, value
+                                           in kwargs.items() if key != "token"}
+        )
+
+    return attributes, errors, code
 
 
 def json_api_response(data, resource, model):

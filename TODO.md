@@ -26,6 +26,8 @@
 * TODO Make `PATCH` for quotes only edit, not create
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
 * ~~TODO Convert list in auth key to bits/hex strings~~
+* TODO Make it so repeats detect aliases and builtins - move this code to a helper
+* TODO Aliases detect builtins
 
 # Grouped TODOs
 
