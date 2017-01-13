@@ -26,9 +26,24 @@ class RepeatList(Resource):
         attributes, errors, code = helpers.multi_response(
             "repeats", Repeat, **data)
 
+        for repeat in attributes:
+            cmd = helpers.get_one("command",
+                                  name=repeat["attributes"]["commandName"],
+                                  token=path_data["token"]
+                                  )
+
+            # No custom command matches that
+            if cmd == {}:
+                cmd, errors, code = helpers.alias_then_builtins(
+                    name=repeat["attributes"]["commandName"],
+                    token=path_data["token"]
+                )
+
+            repeat["attributes"]["command"] = cmd
+
         response = {}
 
-        if errors != []:
+        if errors != [] and errors != {}:
             response["errors"] = errors
         else:
             response["data"] = attributes
@@ -44,10 +59,31 @@ class RepeatResource(Resource):
         attributes, errors, code = helpers.single_response(
             "repeats", Repeat, **path_data)
 
+        if code != 404:
+            cmd = helpers.get_one("command",
+                                  name=attributes["attributes"]["commandName"],
+                                  token=path_data["token"]
+                                  )
+
+            # No custom command matches that
+            if cmd == {}:
+                cmd, errors, _ = helpers.alias_then_builtins(
+                    name=attributes["attributes"]["commandName"],
+                    token=path_data["token"]
+                )
+        else:
+            cmd = attributes
+
         response = {}
 
+        # TODO: Can this be cleaned up? Probably.
         if errors == {}:
-            response["data"] = attributes
+            if code == 404:
+                response["data"] = {}
+            else:
+                # Convert "command" to obj
+                attributes["attributes"]["command"] = cmd
+                response["data"] = attributes
         else:
             response["errors"] = errors
 
@@ -75,10 +111,15 @@ class RepeatResource(Resource):
                               token=data["token"],
                               name=command_name
                               )
-
-        # The command to be aliased doesn't actually exist
+        # No custom command matches that
         if cmd == {}:
-            raise APIError("Command to be repeated does not exist!", code=400)
+            cmd, errors, code = helpers.alias_then_builtins(
+                name=command_name
+            )
+
+            if code == 404:
+                raise APIError("Command to be repeated does not exist!",
+                               code=400)
 
         attributes, errors, code = helpers.create_or_update(
             "repeat", Repeat, data, "token", "commandName", post=True)
