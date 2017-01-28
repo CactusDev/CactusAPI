@@ -59,6 +59,7 @@ def _check_exist(table_name, model, data, *args):
     # Check if the resource exists based on the string args given
     exist_check = {key: data[key] for key in args if isinstance(key, str)}
     exists_or_error, code = resource_exists(table_name, model, **exist_check)
+    print(exists_or_error)
 
     return exists_or_error, code
 

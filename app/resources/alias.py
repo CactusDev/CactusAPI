@@ -16,10 +16,10 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "aliases", Alias, **{**kwargs, **path_data})
+            "aliases", Alias, cased="name", **{**kwargs, **path_data})
 
         response = {}
 
@@ -38,17 +38,18 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:create", "alias:manage"})
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     @helpers.catch_api_error
     def patch(self, path_data, **kwargs):
-        data = {**helpers.get_mixed_args(), **path_data}
+        lookup_data = {**path_data, "name": kwargs["name"]}
+        data = {**helpers.get_mixed_args(), **path_data, **lookup_data}
 
         command_name = data.get("commandName")
 
         if command_name is None:
             raise APIError("Missing required key 'commandName'", code=400)
 
-        cmd_exists = helpers.get_one("command", **path_data)
+        cmd_exists = helpers.get_one("command", **lookup_data)
 
         if cmd_exists != {}:
             raise APIError(
@@ -89,9 +90,12 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:manage"})
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("aliases", **path_data)
+        data = {**path_data, **kwargs}
+        deleted = helpers.delete_record("aliases",
+                                        **{k: v for k, v in data.items()
+                                           if k != "token"})
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
