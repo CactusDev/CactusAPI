@@ -16,13 +16,13 @@ class CommandCounter(Resource):
 
     @limiter.limit("1000/day;90/hour;25/minute")
     @auth.scopes_required({"command:manage"})
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     @helpers.catch_api_error
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
 
         attributes, errors, code = helpers.single_response(
-            "command", Command, **path_data
+            "command", Command, **{**path_data, "name": kwargs["name"]}
         )
 
         if code == 200:
@@ -114,17 +114,18 @@ class CommandList(Resource):
 class CommandResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         """/api/v1/:token/command/:command -> [str Command name]"""
+        data = {**kwargs, **path_data}
 
         attributes, errors, code = helpers.single_response(
-            "command", Command, cased="name", **path_data)
+            "command", Command, cased="name", **data)
 
         # No custom command exists
         if code == 404:
             attributes, errors, code = helpers.single_response(
-                "aliases", Alias, cased="name", **path_data
+                "aliases", Alias, cased="name", **data
             )
 
             # HACK: Need to redo this to handle aliases better
@@ -133,7 +134,8 @@ class CommandResource(Resource):
                     "commands",
                     uid=attributes["attributes"]["command"]
                 )
-                del command["name"]
+                if command != {} and "name" in command:
+                    del command["name"]
 
                 attributes["attributes"].update(command)
                 del attributes["attributes"]["command"]
@@ -143,7 +145,7 @@ class CommandResource(Resource):
             attributes, errors, code = helpers.single_response(
                 "builtins", Command, cased="name",
                 **{key: value for key, value
-                   in path_data.items() if key != "token"}
+                   in data.items() if key != "token"}
             )
 
         response = {}
@@ -157,9 +159,9 @@ class CommandResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"command:create", "command:manage"})
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     def patch(self, path_data, **kwargs):
-        data = {**helpers.get_mixed_args(), **path_data}
+        data = {**helpers.get_mixed_args(), **path_data, **kwargs}
 
         attributes, errors, code = helpers.create_or_update(
             "command", Command, data, "token", "name"
@@ -181,9 +183,12 @@ class CommandResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"command:manage"})
-    @helpers.lower_kwargs("token", "name")
+    @helpers.lower_kwargs("token")
     def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("command", **path_data)
+        data = {**path_data, **kwargs}
+        deleted = helpers.delete_record("command",
+                                        **{k: v for k, v in data.items()
+                                           if k != "token"})
 
         if deleted is not None:
             aliases = helpers.delete_record("aliases",

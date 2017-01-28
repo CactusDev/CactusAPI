@@ -158,21 +158,19 @@ def get_one(table, uid=None, **kwargs):
 
     response = query.run(g.rdb_conn)
 
-    # TODO: Remove .limit(1) and make our own logic to handle checking if there
-    #       are multiple results and which to use
-
     if response is not None:
         if not is_uid:
             response = list(response)
-            print("response:\t", response)
-            for res in response:
-                # print(res)
-                # print(res.get(cased["key"]))
-                print(cased)
-                if res.get(cased["key"]) == cased["value"]:
-                    print("FOO!")
+            # Only check if cased was provided
+            if cased is not None:
+                for res in response:
+                    if res.get(cased["key"]) == cased["value"]:
+                        return res
+
             if len(response) > 0:
                 return response[0]
+            else:
+                return {}
         else:
             return dict(response)
 
