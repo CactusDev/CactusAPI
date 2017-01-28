@@ -130,7 +130,10 @@ def get_one(table, uid=None, **kwargs):
     """
     is_uid = False
 
-    to_filter = kwargs.get("cased", kwargs)
+    cased = kwargs.get("cased")
+    if cased is not None:
+        del kwargs["cased"]
+    to_filter = kwargs.get("to_filter", kwargs)
 
     # uid, if included, must be type string or uuid.UUID
     if uid is not None:
@@ -147,11 +150,11 @@ def get_one(table, uid=None, **kwargs):
     elif kwargs == {} and uid is None:
         # uid was not included and neither were any kwargs
         # Select the first row in the table
-        query = rethink.table(table).limit(1)
+        query = rethink.table(table)
 
     elif kwargs != {} and uid is None:
         # uid was not included, but there are kwargs
-        query = rethink.table(table).filter(to_filter).limit(1)
+        query = rethink.table(table).filter(to_filter)
 
     response = query.run(g.rdb_conn)
 
@@ -161,6 +164,13 @@ def get_one(table, uid=None, **kwargs):
     if response is not None:
         if not is_uid:
             response = list(response)
+            print("response:\t", response)
+            for res in response:
+                # print(res)
+                # print(res.get(cased["key"]))
+                print(cased)
+                if res.get(cased["key"]) == cased["value"]:
+                    print("FOO!")
             if len(response) > 0:
                 return response[0]
         else:

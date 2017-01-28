@@ -38,8 +38,9 @@ def single_response(table_name, model, **kwargs):
     # TODO: Allow for case-insensitive search/sorting
     cased = kwargs.get("cased")
     if cased is not None and isinstance(cased, str):
-        kwargs["cased"] = lambda row: row[cased].match(
+        kwargs["to_filter"] = lambda row: row[cased].match(
             "(?i)^{val}$".format(val=kwargs[cased]))
+        kwargs["cased"] = {"key": cased, "value": kwargs[cased]}
 
     data = get_one(table_name, **kwargs)
 
