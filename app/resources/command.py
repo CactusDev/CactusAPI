@@ -119,12 +119,12 @@ class CommandResource(Resource):
         """/api/v1/:token/command/:command -> [str Command name]"""
 
         attributes, errors, code = helpers.single_response(
-            "command", Command, **path_data)
+            "command", Command, cased="name", **path_data)
 
         # No custom command exists
         if code == 404:
             attributes, errors, code = helpers.single_response(
-                "aliases", Alias, **path_data
+                "aliases", Alias, cased="name", **path_data
             )
 
             # HACK: Need to redo this to handle aliases better
@@ -141,8 +141,9 @@ class CommandResource(Resource):
         # No custom or aliased commands exist
         if code == 404:
             attributes, errors, code = helpers.single_response(
-                "builtins", Command, **{key: value for key, value
-                                        in path_data.items() if key != "token"}
+                "builtins", Command, cased="name",
+                **{key: value for key, value
+                   in path_data.items() if key != "token"}
             )
 
         response = {}

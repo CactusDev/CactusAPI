@@ -130,6 +130,8 @@ def get_one(table, uid=None, **kwargs):
     """
     is_uid = False
 
+    to_filter = kwargs.get("cased", kwargs)
+
     # uid, if included, must be type string or uuid.UUID
     if uid is not None:
         if not isinstance(uid, str):
@@ -149,9 +151,12 @@ def get_one(table, uid=None, **kwargs):
 
     elif kwargs != {} and uid is None:
         # uid was not included, but there are kwargs
-        query = rethink.table(table).filter(kwargs).limit(1)
+        query = rethink.table(table).filter(to_filter).limit(1)
 
     response = query.run(g.rdb_conn)
+
+    # TODO: Remove .limit(1) and make our own logic to handle checking if there
+    #       are multiple results and which to use
 
     if response is not None:
         if not is_uid:
