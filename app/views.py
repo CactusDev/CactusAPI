@@ -67,6 +67,15 @@ api.add_resource(resources.ConfigResource,
 api.add_resource(authentication.Login, "{}/login".format(prefix))
 
 from .util.auth import OAuthSignIn
+from . import util
+
+
+@app.route("/test/<name>")
+def test(**kwargs):
+    print(kwargs)
+    resp, err, code = util.helpers.create_or_update("commands", kwargs, "name")
+
+    return jsonify({"resp": resp, "err": err}), code
 
 
 @app.route("/authorize/<provider>")
