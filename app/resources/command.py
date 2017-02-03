@@ -164,7 +164,8 @@ class CommandResource(Resource):
         data = {**helpers.get_mixed_args(), **path_data, **kwargs}
 
         attributes, errors, code = helpers.create_or_update(
-            "command", Command, data, "token", "name"
+            "command", Command, data,
+            token=path_data["token"], name=kwargs["name"]
         )
 
         response = {}

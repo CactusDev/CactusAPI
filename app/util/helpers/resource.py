@@ -6,15 +6,11 @@ from .parse import parse, validate_data, resource_exists, convert
 from .response import humanize_datetime, json_api_response
 
 
-def _update(table_name, model, data, update_id):
-    parsed, errors, code = parse(model, data, partial=True)
+def _update(table_name, data, update_id):
 
-    if errors != {}:
-        return errors, code
-    else:
-        changed = update_record(
-            table_name, {**parsed, "id": update_id})
-        code = 200
+    changed = update_record(
+        table_name, {**data, "id": update_id})
+    code = 200
 
     return changed, code
 
@@ -48,110 +44,56 @@ def _create(table_name, model, data):
     return changed, code
 
 
-# def _check_exist(table_name, model, data, *args):
-#     if not set(args).issubset(set(data.keys())):
-#         return {
-#             "errors": [
-#                 "Missing required key '{}'".format(key)
-#                 for key in args if key not in data.keys()]
-#         }, 400
-#
-#     # Check if the resource exists based on the string args given
-#     exist_check = {key: data[key] for key in args if isinstance(key, str)}
-#     exists_or_error, code = resource_exists(table_name, model, **exist_check)
-#
-#     return exists_or_error, code
-
-
-def _check_exist(table_name, data, *args):
-    if not set(args).issubset(set(data.keys())):
-        return {
-            "errors": [
-                "Missing required key '{}'".format(key)
-                for key in args if key not in data.keys()]
-        }, 400
-
-    # Check if the resource exists based on the string args given
-    exist_check = {key: data[key] for key in args if isinstance(key, str)}
+def _check_exist(table_name, data):
+    exist_check = {key: val for key,
+                   val in data.items()
+                   if isinstance(val, str) or key == "cased"}
     exists_or_error, code = resource_exists(table_name, **exist_check)
 
     return exists_or_error, code
 
 
-def create_or_update(table_name, data, *args, **kwargs):
-    exists_or_error, code = _check_exist(table_name, data, *args)
+def create_or_update(table_name, model, data, *args, **kwargs):
 
-    # TODO: Use Marshmallow dump_only to stop editing of certain things
-    #       Don't want to use our own checking system
+    # kwargs is the data we're using to check if the resource exists off of
+    exists_or_error, code = _check_exist(
+        table_name,
+        {**kwargs, "cased": {"key": "name", "value": kwargs["name"]}}
+    )
 
-    # Resource exists
+    # Resource exists - update and return response
     if code == 200:
-        # Update resource and return results
-        return exists_or_error, {}, code
-    # Resource does NOT exist
+        parsed, errors, code = parse(model, data, partial=True)
+        if errors != {}:
+            return {}, errors, code
+
+        changed, code = _update(table_name, parsed, exists_or_error["id"])
+        try:
+            response = json_api_response(changed, "command", model)
+        except TypeError as e:
+            return {}, e.args, 500
+
+        return response, errors, code
+
+    # Resource does NOT exist - create resource & return results
     elif code == 404:
-        # Create resource & return results
-        return "CREATE DAT YO", {}, code
+
+        parsed, errors, code = parse(model, data)
+        if errors != {}:
+            return {}, errors, code
+
+        changed, code = _create(table_name, model, parsed)
+
+        try:
+            response = json_api_response(changed, "command", model)
+        except TypeError as e:
+            return {}, e.args, 500
+
+        return response, errors, code
+
     # Some other number, thus an error
     else:
         return {}, exists_or_error, code
-
-
-# def create_or_update(table_name, model, data, *args, **kwargs):
-#     """Takes the provided data and creates or edits the resource"""
-#     exists_or_error, code = _check_exist(table_name, model, data, *args)
-#
-#     if code == 400:
-#         return {}, exists_or_error, code
-#
-#     if code is None:
-#         if kwargs.get("post", False):
-#             # Try-except because json_api_response throws errors if stuff is
-#             # bad
-#             try:
-#                 return json_api_response(exists_or_error, table_name, model), {}, 409
-#             except TypeError as e:
-#                 return {}, {"errors": e.args}, 400
-#
-#         update_id = exists_or_error["id"]
-#
-#         # Don't change the createdAt
-#         if data.get("createdAt") is not None:
-#             del data["createdAt"]
-#         # Don't let users change counts
-#         if data.get("count") is not None:
-#             del data["count"]
-#
-#         changed, code = _update(table_name, model, data, update_id)
-#
-#         # Update was not succesful
-#         if code != 200:
-#             changed = convert(changed)
-#             return {}, changed, code
-#
-#     elif code == 404:
-#         # Don't change the createdAt
-#         if data.get("createdAt") is not None:
-#             del data["createdAt"]
-#         # Don't let users change counts
-#         if data.get("count") is not None:
-#             del data["count"]
-#
-#         changed, code = _create(table_name, model, data)
-#
-#         # Creation didn't succesfully complete!
-#         if code != 201:
-#             changed = convert(changed)
-#             return {}, changed, code
-#
-#     if isinstance(changed, Exception):
-#         return {}, {"errors": changed.args}, 500
-#
-#     # Try-except because json_api_response throws errors if stuff is bad
-#     try:
-#         return json_api_response(changed, table_name, model), {}, code
-#     except TypeError as e:
-#         return {}, {"errors": e.args}, 400
 
 
 def update_resource(table_name, model, data, **kwargs):
