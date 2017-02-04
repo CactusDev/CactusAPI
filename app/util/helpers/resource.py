@@ -77,7 +77,6 @@ def create_or_update(table_name, model, data, *args, **kwargs):
 
     # Resource does NOT exist - create resource & return results
     elif code == 404:
-
         parsed, errors, code = parse(model, data)
         if errors != {}:
             return {}, errors, code

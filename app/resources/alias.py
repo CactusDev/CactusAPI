@@ -16,10 +16,9 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "aliases", Alias, cased="name", **{**kwargs, **path_data})
+            "aliases", Alias, cased="name", **{**kwargs, "token": })
 
         response = {}
 
@@ -38,11 +37,11 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:create", "alias:manage"})
-    @helpers.lower_kwargs("token")
     @helpers.catch_api_error
-    def patch(self, path_data, **kwargs):
-        lookup_data = {**path_data, "name": kwargs["name"]}
-        data = {**helpers.get_mixed_args(), **path_data, **lookup_data}
+    def patch(self, **kwargs):
+        lookup_data = {"token": kwargs["token"].lower(),
+                       "name": kwargs["name"]}
+        data = {**helpers.get_mixed_args(), **lookup_data}
 
         command_name = data.get("commandName")
 
@@ -69,7 +68,8 @@ class AliasResource(Resource):
 
         # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
-            "aliases", Alias, data, "token", "name"
+            "aliases", Alias, data,
+            token=kwargs["token"].lower(), name=kwargs["name"]
         )
 
         response = {}
