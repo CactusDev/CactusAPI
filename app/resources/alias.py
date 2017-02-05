@@ -18,7 +18,8 @@ class AliasResource(Resource):
     @helpers.check_limit
     def get(self, path_data, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "aliases", Alias, cased="name", **{**kwargs, "token": })
+            "aliases", Alias, cased="name",
+            **{"name": kwargs["name"], "token": kwargs["token"].lower()})
 
         response = {}
 
@@ -61,6 +62,7 @@ class AliasResource(Resource):
                               )
 
         # The command to be aliased doesn't actually exist
+        # caused by _deserialize method in schema
         if cmd == {}:
             raise APIError("Command to be aliased does not exist!", code=404)
 
@@ -90,12 +92,8 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:manage"})
-    @helpers.lower_kwargs("token")
-    def delete(self, path_data, **kwargs):
-        data = {**path_data, **kwargs}
-        deleted = helpers.delete_record("aliases",
-                                        **{k: v for k, v in data.items()
-                                           if k != "token"})
+    def delete(self, **kwargs):
+        deleted = helpers.delete_record("aliases", name=kwargs["name"])
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200
