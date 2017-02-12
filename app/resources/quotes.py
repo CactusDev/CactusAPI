@@ -47,11 +47,15 @@ class QuoteList(Resource):
                 "quoteId": helpers.next_numeric_id(
                     "quote",
                     id_field="quoteId",
-                    **path_data
-        )}
+                    **path_data)
+                }
 
+        # TODO: Make this helpers.create
         attributes, errors, code = helpers.create_or_update(
-            "quote", Quote, data, "quote", "token", post=True)
+            "quote", Quote, data,
+            token=kwargs["token"].lower(), quoteId=data["quoteId"],
+            post=True
+        )
 
         response = {}
 
@@ -77,7 +81,8 @@ class QuoteResource(Resource):
             raise APIError("Quote does not exist!", code=404)
 
         attributes, errors, code = helpers.create_or_update(
-            "quote", Quote, data, "token", "quoteId"
+            "quote", Quote, data,
+            token=kwargs["token"].lower(), quote=data.get("quote", "")
         )
 
         response = {}

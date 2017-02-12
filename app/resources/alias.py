@@ -16,7 +16,7 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    def get(self, path_data, **kwargs):
+    def get(self, **kwargs):
         attributes, errors, code = helpers.single_response(
             "aliases", Alias, cased="name",
             **{"name": kwargs["name"], "token": kwargs["token"].lower()})
@@ -71,7 +71,8 @@ class AliasResource(Resource):
         # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
             "aliases", Alias, data,
-            token=kwargs["token"].lower(), name=kwargs["name"]
+            token=kwargs["token"].lower(), name=kwargs["name"],
+            cased={"key": "name", "value": kwargs["name"]}
         )
 
         response = {}

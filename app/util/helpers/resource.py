@@ -47,18 +47,28 @@ def _create(table_name, model, data):
 def _check_exist(table_name, data):
     exist_check = {key: val for key,
                    val in data.items()
-                   if isinstance(val, str) or key == "cased"}
+                   if isinstance(val, (str, int)) or key == "cased"}
+
     exists_or_error, code = resource_exists(table_name, **exist_check)
 
     return exists_or_error, code
 
 
 def create_or_update(table_name, model, data, *args, **kwargs):
+
+    exist_filter = {k: v for k, v in kwargs.items() if k != "post"}
+
+    if kwargs.get("cased", False):
+        exist_filter = {**kwargs, "cased": kwargs["cased"]}
+
     # kwargs is the data we're using to check if the resource exists off of
     exists_or_error, code = _check_exist(
         table_name,
-        {**kwargs, "cased": {"key": "name", "value": kwargs["name"]}}
+        exist_filter
     )
+
+    if kwargs.get("post", False) and code == 200:
+        return {}, "Resource already exists", 409
 
     # Parse the results
     if len(exists_or_error) > 0:

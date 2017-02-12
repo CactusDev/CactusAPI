@@ -165,7 +165,8 @@ class CommandResource(Resource):
 
         attributes, errors, code = helpers.create_or_update(
             "command", Command, data,
-            token=kwargs["token"].lower(), name=kwargs["name"]
+            token=kwargs["token"].lower(), name=kwargs["name"],
+            cased={"key": "name", "value": kwargs["name"]}
         )
 
         response = {}
