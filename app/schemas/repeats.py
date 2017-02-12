@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, pre_dump, post_dump
 from . import CommandSchema
 from .helpers import CommandUUID
-from dateutil import parser
+from datetime import datetime
 
 from ..util import helpers
 
@@ -13,17 +13,5 @@ class RepeatSchema(Schema):
     repeatName = fields.String(required=True)
     command = CommandUUID()
     commandName = fields.String(required=True)
-
-    @pre_dump
-    def rethink_to_dt_obj(self, obj):
-        if hasattr(obj, "createdAt"):
-            obj.createdAt = parser.parse(obj.createdAt)
-
-        return obj
-
-    @post_dump
-    def humanize_datetime(self, data):
-        if "createdAt" in data:
-            data["createdAt"] = helpers.humanize_datetime(data["createdAt"])
-
-        return data
+    createdAt = fields.DateTime(
+        "%c", default=datetime.utcnow().strftime("%c"), dump_only=True)

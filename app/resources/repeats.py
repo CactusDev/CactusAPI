@@ -79,6 +79,8 @@ class RepeatResource(Resource):
         if cmd == {}:
             raise APIError("Command to be repeated does not exist!", code=400)
 
+        data["command"] = cmd["id"]
+
         attributes, errors, code = helpers.create_or_update(
             "repeat", Repeat, data,
             token=kwargs["token"].lower(), repeatName=kwargs["repeatName"]
