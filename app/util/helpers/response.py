@@ -90,6 +90,9 @@ def json_api_response(data, resource, model):
     if data == {}:
         return data
 
+    if resource.endswith('s'):
+        resource = resource[:-1]
+
     if isinstance(data, dict):
         data = recurse_dict(data, model)
         return {

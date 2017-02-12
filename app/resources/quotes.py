@@ -53,7 +53,7 @@ class QuoteList(Resource):
         # TODO: Make this helpers.create
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data,
-            token=kwargs["token"].lower(), quoteId=data["quoteId"],
+            token=kwargs["token"].lower(), quote=data["quote"],
             post=True
         )
 
@@ -82,7 +82,7 @@ class QuoteResource(Resource):
 
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data,
-            token=kwargs["token"].lower(), quote=data.get("quote", "")
+            token=kwargs["token"].lower(), quoteId=kwargs["quoteId"]
         )
 
         response = {}

@@ -54,8 +54,7 @@ def _check_exist(table_name, data):
     return exists_or_error, code
 
 
-def create_or_update(table_name, model, data, *args, **kwargs):
-
+def check_existance(table_name, **kwargs):
     exist_filter = {k: v for k, v in kwargs.items() if k != "post"}
 
     if kwargs.get("cased", False):
@@ -68,11 +67,18 @@ def create_or_update(table_name, model, data, *args, **kwargs):
     )
 
     if kwargs.get("post", False) and code == 200:
-        return {}, "Resource already exists", 409
+        return "Resource already exists", 409
 
     # Parse the results
-    if len(exists_or_error) > 0:
+    if isinstance(exists_or_error, list) and len(exists_or_error) > 0:
         exists_or_error = exists_or_error[0]
+
+    return exists_or_error, code
+
+
+def create_or_update(table_name, model, data, **kwargs):
+
+    exists_or_error, code = check_existance(table_name, **kwargs)
 
     # Resource exists - update and return response
     if code == 200:
@@ -82,7 +88,7 @@ def create_or_update(table_name, model, data, *args, **kwargs):
 
         changed, code = _update(table_name, parsed, exists_or_error["id"])
         try:
-            response = json_api_response(changed, "command", model)
+            response = json_api_response(changed, table_name, model)
         except TypeError as e:
             return {}, e.args, 500
 
@@ -97,7 +103,7 @@ def create_or_update(table_name, model, data, *args, **kwargs):
         changed, code = _create(table_name, model, parsed)
 
         try:
-            response = json_api_response(changed, "command", model)
+            response = json_api_response(changed, table_name, model)
         except TypeError as e:
             return {}, e.args, 500
 
