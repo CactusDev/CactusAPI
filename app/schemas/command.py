@@ -21,7 +21,7 @@ class ResponseSchema(Schema):
 
 
 class CommandSchema(Schema):
-    id = fields.String()
+    id = fields.String(dump_only=True)
     name = fields.String(required=True)
     response = fields.Nested(ResponseSchema, required=True)
     createdAt = fields.DateTime(
