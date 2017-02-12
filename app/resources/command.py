@@ -16,13 +16,13 @@ class CommandCounter(Resource):
 
     @limiter.limit("1000/day;90/hour;25/minute")
     @auth.scopes_required({"command:manage"})
-    @helpers.lower_kwargs("token")
     @helpers.catch_api_error
-    def patch(self, path_data, **kwargs):
-        data = {**helpers.get_mixed_args(), **path_data}
+    def patch(self, **kwargs):
+        data = {**helpers.get_mixed_args(), "token": kwargs["token"].lower()}
 
         attributes, errors, code = helpers.single_response(
-            "command", Command, **{**path_data, "name": kwargs["name"]}
+            "command", Command,
+            **{"token": kwargs["token"].lower(), "name": kwargs["name"]}
         )
 
         if code == 200:
@@ -137,7 +137,7 @@ class CommandResource(Resource):
 
             break
 
-        if attributes["type"] == "aliases":
+        if attributes.get("type") == "aliases":
             command = helpers.get_one(
                 "commands",
                 uid=attributes["attributes"]["command"]

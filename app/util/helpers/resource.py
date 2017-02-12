@@ -54,12 +54,15 @@ def _check_exist(table_name, data):
 
 
 def create_or_update(table_name, model, data, *args, **kwargs):
-
     # kwargs is the data we're using to check if the resource exists off of
     exists_or_error, code = _check_exist(
         table_name,
         {**kwargs, "cased": {"key": "name", "value": kwargs["name"]}}
     )
+
+    # Parse the results
+    if len(exists_or_error) > 0:
+        exists_or_error = exists_or_error[0]
 
     # Resource exists - update and return response
     if code == 200:

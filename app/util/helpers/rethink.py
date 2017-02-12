@@ -214,13 +214,18 @@ def get_multiple(table, limit=None, **kwargs):
         Other keyword arguments may be included filter the request by
     """
 
+    cased = kwargs.get("cased")
+    if cased is not None:
+        del kwargs["cased"]
+    to_filter = kwargs.get("to_filter", kwargs)
+
     # Check if limit is not None, then the user wants a limit
     if limit is not None and kwargs != {}:
-        query = rethink.table(table).filter(kwargs).limit(limit)
+        query = rethink.table(table).filter(to_filter).limit(limit)
     elif limit is not None and kwargs == {}:
         query = rethink.table(table).limit(limit)
     elif limit is None and kwargs != {}:
-        query = rethink.table(table).filter(kwargs)
+        query = rethink.table(table).filter(to_filter)
     elif limit is None and kwargs == {}:
         query = rethink.table(table)
 
