@@ -21,7 +21,7 @@
 * ~~TODO Make sure the token exists as a user in the API, otherwise give a 403 because user doesn't exist~~
 * ~~TODO Repeats done by repeat alias instead of numeric ID~~
 * ~~TODO Make repeats "editable" to change time~~
-* TODO Figure out what happened to createdAt key
+* ~~TODO Figure out what happened to createdAt key~~
 * ~~Add command name to repeats~~
 * TODO Make `PATCH` for quotes only edit, not create
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
@@ -51,5 +51,5 @@
 
 * Figure out how to use underscore_case for fields - dump_to="newName" works, but it's got all sorts of issues
 * Implement response sorting
-* Write API reference w/ standard style and up to date stuff
+* ~~Write API reference w/ standard style and up to date stuff~~
 * Sphinx documentation
