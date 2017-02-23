@@ -47,4 +47,4 @@ API_SCOPES = {
 }
 
 SENTRY_DSN = "https://supersecretsentryDSN.net"
-SENTRY_ACTIVE = True  # Tells the API whether or not to activate Sentry
+SENTRY_ACTIVE = False  # Tells the API whether or not to activate Sentry, disabled by default
