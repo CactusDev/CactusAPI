@@ -44,10 +44,10 @@ api.add_resource(resources.QuoteResource,
 api.add_resource(resources.RepeatList,
                  "{}/user/<string:token>/repeat".format(prefix))
 api.add_resource(resources.RepeatResource,
-                 "{}/user/<string:token>/repeat/<int:repeatId>".format(prefix))
+                 "{}/user/<string:token>/repeat/<repeatName>".format(prefix))
 
 api.add_resource(resources.AliasResource,
-                 "{}/user/<string:token>/alias/<aliasName>".format(prefix))
+                 "{}/user/<string:token>/alias/<name>".format(prefix))
 
 api.add_resource(resources.SocialList,
                  "{}/user/<string:token>/social".format(prefix))

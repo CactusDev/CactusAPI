@@ -9,9 +9,9 @@ from .helpers import MessagePacketSchema
 class ResponseSchema(Schema):
     message = fields.Nested(MessagePacketSchema, many=True)
     user = fields.String()
-    role = fields.Integer()
     action = fields.Boolean()
     target = fields.String(allow_none=True)
+    role = fields.Integer(required=True, default=0)
 
     @validates('message')
     def validate_message(self, value):
@@ -26,10 +26,9 @@ class CommandSchema(Schema):
     response = fields.Nested(ResponseSchema, required=True)
     createdAt = fields.DateTime()
     token = fields.String(required=True)
-    userLevel = fields.Integer(required=True)
     enabled = fields.Boolean(default=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
-    count = fields.Integer()
+    count = fields.Integer(default=0)
 
     @pre_dump
     def rethink_to_dt_obj(self, obj):

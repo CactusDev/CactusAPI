@@ -7,7 +7,8 @@ from flask_restplus import Resource, marshal
 from .. import api
 from ..models import Quote
 from ..schemas import QuoteSchema
-from ..util import helpers
+from ..util import helpers, auth
+from ..util.helpers import APIError
 from .. import limiter
 
 
@@ -23,6 +24,7 @@ class QuoteList(Resource):
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **kwargs, **path_data}
+
         attributes, errors, code = helpers.multi_response(
             "quote", Quote, **data
         )
@@ -37,21 +39,16 @@ class QuoteList(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"quote:manage", "quote:create"})
     @helpers.lower_kwargs("token")
     def post(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        # TODO: Make this an actual error/let Marshmallow handle it
-        if data is None:
-            return {"errors": ["Bro ... no data"]}, 400
-
-        data = {**data,
+        data = {**helpers.get_mixed_args(),
                 **path_data,
                 "quoteId": helpers.next_numeric_id(
                     "quote",
                     id_field="quoteId",
                     **path_data
-                )}
+        )}
 
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data, "quote", "token", post=True)
@@ -69,16 +66,16 @@ class QuoteList(Resource):
 class QuoteResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"quote:manage"})
     @helpers.lower_kwargs("token", "quoteId")
+    @helpers.catch_api_error
     def patch(self, path_data, **kwargs):
         """Create or edit a quote resource"""
-        data = helpers.get_mixed_args()
+        data = {**helpers.get_mixed_args(), **path_data}
 
-        # TODO: Make this an actual error/let Marshmallow handle it
-        if data is None:
-            return {"errors": ["Bro ... no data"]}, 400
+        if helpers.get_one("quotes", **path_data) == {}:
+            raise APIError("Quote does not exist!", code=404)
 
-        data = {**data, **path_data}
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data, "token", "quoteId"
         )
@@ -115,6 +112,7 @@ class QuoteResource(Resource):
         return response, code
 
     @helpers.lower_kwargs("token", "quoteId")
+    @auth.scopes_required({"quote:manage"})
     def delete(self, path_data, **kwargs):
         """Delete a quote resource"""
         deleted = helpers.delete_record("quote", **path_data)

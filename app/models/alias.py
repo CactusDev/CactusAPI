@@ -6,11 +6,11 @@ class Alias:
 
     schema = CmdAliasSchema()
 
-    def __init__(self, *, aliasName, token, arguments, commandName="",
+    def __init__(self, *, name, token, arguments, commandName="",
                  createdAt=datetime.utcnow(), enabled=True, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
-        self.aliasName = aliasName
+        self.name = name
         self.token = token
         self.createdAt = createdAt
         self.commandName = commandName

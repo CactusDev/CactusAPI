@@ -6,7 +6,7 @@ from flask_restplus import Resource, marshal
 
 from ..models import Config
 from ..schemas import ConfigSchema
-from ..util import helpers
+from ..util import helpers, auth
 from .. import limiter
 
 
@@ -67,14 +67,10 @@ class ConfigResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
+    @auth.scopes_required({"config:manage"})
     @helpers.lower_kwargs("token")
     def patch(self, path_data, **kwargs):
-        data = helpers.get_mixed_args()
-
-        if data is None:
-            return {"errors": ["Bro...no data"]}, 400
-
-        data = {**data, **path_data}
+        data = {**helpers.get_mixed_args(), **path_data}
 
         attributes, errors, code = helpers.create_or_update(
             "config", Config, data, **path_data

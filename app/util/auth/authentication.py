@@ -1,5 +1,6 @@
 from argon2 import PasswordHasher, exceptions
 from datetime import datetime, timedelta
+from ..helpers import get_one
 
 ph = PasswordHasher()
 
@@ -27,3 +28,8 @@ def verify_password(password_hash, password):
         return ph.verify(password_hash, password)
     except exceptions.VerificationError:
         return False
+
+
+def verify_exists(token):
+    exists = get_one("users", token=token, limit=1)
+    return True if exists != {} else False

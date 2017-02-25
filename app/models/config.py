@@ -52,7 +52,7 @@ class Announcements:
     def default(announcement):
         return {
             "announce": False,
-            "message": "Thanks for the {}, %NAME%!".format(announcement)
+            "message": "Thanks for the {}, %USER%!".format(announcement)
         }
 
     def __init__(self,
@@ -75,11 +75,9 @@ class Spam:
     """
 
     def __init__(self,
-                 maxEmoji=12,
-                 autoTimeout=False,
-                 notifyMod={"notify": False, "userNames": []},
-                 allowLinks=True):
+                 maxEmoji=6,
+                 allowUrls=False,
+                 maxCapsScore=16):
         self.maxEmoji = maxEmoji
-        self.autoTimeout = autoTimeout
-        self.notifyMod = notifyMod
-        self.allowLinks = allowLinks
+        self.allowUrls = allowUrls
+        self.maxCapsScore = maxCapsScore
