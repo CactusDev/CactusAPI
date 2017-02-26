@@ -46,6 +46,7 @@
       * rethink
 
   * Rate limiting
+  * Tables and users have to be created before tests can occur
 
 # Later TODOs
 

@@ -1,15 +1,15 @@
 import sys
 import pytest
 import rethinkdb as rethink
-from os import environ
+from os import environ as env
 
 # Why this works, I don't know. Blech.
 sys.path.append(".")
 
 
-# def pytest_sessionstart(session):
-#     if "APIKEY" not in environ:
-#         pytest.exit("NEED THE API ACCESS KEY YA DANG FOOL")
+def pytest_sessionstart(session):
+    if "APIKEY" not in env:
+        pytest.exit("NEED THE API ACCESS KEY YA FOOL!")
 
 
 def pytest_sessionfinish(session):
@@ -23,8 +23,8 @@ def app(request):
     from app import app
     app.config["TESTING"] = True
     app.config["RDB_DB"] = "testing"
-    # app.config["API_TOKEN"] = "root"
-    # app.config["API_KEY"] = environ["APIKEY"]
+    app.config["API_TOKEN"] = "root"
+    app.config["API_KEY"] = env["APIKEY"]
 
     return app
 
