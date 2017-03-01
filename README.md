@@ -1,4 +1,76 @@
-# CactusAPI Specification
+# CactusAPI
+
+CactusAPI handles all the creations and deletions that happen within all the services.
+
+## CactusAPI Setup:
+
+CactusAPI controls all the configurable elements of the bot. From commands, to quotes, to the spam config
+
+```
+git clone https://github.com/CactusDev/CactusAPI
+cd CactusAPI
+cp config-example.py config.py
+```
+
+Next, open `config.py` in your favorite editor, and adjust `OAUTH_CREDENTIALS` to contain
+services for the platforms that your instance will run on.
+
+Example:
+
+```python
+OAUTH_CREDENTIALS = {
+    "beam": {
+        "CLIENT_ID": "SuperCoolClientIDFromBeamsDevLab",
+        "CLIENT_SECRET": "SuperCoolClientSecretFromBeamsDevLab"
+    }
+}
+```
+
+Next, set `RDB_DB`, `RDB_HOST`, and `RDB_PORT` to your rethink config.
+
+Next, change `SECRET_KEY` to something secure.
+
+Example:
+
+```python
+SECRET_KEY = "bUDWSNJQ8h39tWO72dC9HA5TWorLE2"
+```
+
+Next, change `AUTH_EXPIRATION` to the amount of time that you would like an authentication
+key to last for.
+
+If we wanted it to last for 1 day, 4 hours, 25 minutes, and 7 seconds:
+
+```python
+AUTH_EXPIRATION = {
+    "days": 1,
+    "hours": 4,
+    "minutes": 25,
+    "seconds": 7
+}
+```
+
+Next, install the dependencies.
+
+```
+pip3 install -r requirements.txt
+```
+
+Next, run `python3 run.py -c` to create all the tables needed.
+
+Finally, create a user in the API with a post request that contains the following data
+
+```json
+{
+    "service": "beam",
+    "token": "username",
+    "userId": <USERID>,
+    "password": "supercoolpasswordhere"
+}
+```
+
+Replace `<userId>` with the user id from the api of the service.
+
 
 ## How to interact with the api
 
