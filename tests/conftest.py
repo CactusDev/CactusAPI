@@ -2,12 +2,15 @@ import sys
 import pytest
 import rethinkdb as rethink
 from os import environ as env
+import subprocess
 
 # Why this works, I don't know. Blech.
 sys.path.append(".")
 
 
 def pytest_sessionstart(session):
+    # Generate root access token (gen.py --raw -p sys.argv[2] -u sys.argv[1])
+
     if "APIKEY" not in env:
         pytest.exit("NEED THE API ACCESS KEY YA FOOL!")
 

@@ -8,11 +8,12 @@ class TestQuotes:
 
     def test_create(self, client, app):
         """Valid quote creation"""
-        quote = client.post(self.url, data=self.creation_data[0],
-                            headers={
-                                "X-Auth-Key": app.config["API_KEY"],
-                                "X-Auth-Token": app.config["API_TOKEN"]
-        })
+        quote = client.post(
+            self.url, data=self.creation_data[0],
+            headers={
+                "X-Auth-Key": app.config["API_KEY"],
+                "X-Auth-Token": app.config["API_TOKEN"]
+            })
 
         if hasattr(quote, "json"):
             update_data = quote.json
