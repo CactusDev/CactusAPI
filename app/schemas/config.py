@@ -37,3 +37,4 @@ class ConfigSchema(Schema):
     services = fields.Nested(ServiceSchema, many=True)
     announce = fields.Nested(AnnouncementsSchema)
     spam = fields.Nested(SpamSchema)
+    whitelistedUrls = fields.List(fields.String)

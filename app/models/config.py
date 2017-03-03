@@ -8,12 +8,13 @@ class Config:
     ignore = ("password", )
 
     def __init__(self, token=None, services=None, announce=None, spam=None,
-                 **kwargs):
+                 whitelisted_urls=[], **kwargs):
         # TODO: Don't add if None
         self.token = token
         self.services = services
         self.announce = announce
         self.spam = spam
+        self.whitelisted_urls = whitelisted_urls
 
     @staticmethod
     def default_data(token=None):
@@ -21,7 +22,8 @@ class Config:
             "token": token.lower(),
             "services": [Service().__dict__],
             "announce": Announcements().__dict__,
-            "spam": Spam().__dict__
+            "spam": Spam().__dict__,
+            "whitelisted_urls": []
         }
 
 
