@@ -91,4 +91,3 @@ ENV/
 
 config.py
 rethinkdb_data/
-gen.py
