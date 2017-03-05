@@ -43,6 +43,7 @@ def pytest_sessionfinish(session):
 
 @pytest.fixture
 def app(request):
+    from app import app
     global token
     app.config["TESTING"] = True
     app.config["RDB_DB"] = "testing"
@@ -56,3 +57,11 @@ def app(request):
 def client(app):
     with app.test_client() as client:
         yield client
+
+
+@pytest.fixture
+def api_auth(app):
+    return {
+        "X-Auth-Token": app.config["API_TOKEN"],
+        "X-Auth-Key": app.config["API_KEY"]
+    }

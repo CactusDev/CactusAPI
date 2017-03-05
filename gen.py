@@ -154,7 +154,7 @@ if __name__ == "__main__":
     conn = rethink.connect(
         host=config.RDB_HOST,
         port=config.RDB_PORT,
-        db=config.RDB_DB
+        db="testing"
     )
 
     try:
