@@ -147,14 +147,18 @@ if __name__ == "__main__":
                         "password provided in the arguments, no prompt")
     parser.add_argument("password", type=str, metavar="password", nargs=1,
                         help="The root account's password")
+    parser.add_argument("database", default=config.RDB_DB, type=str, nargs='?',
+                        help="The database to store the token in")
 
     parsed = parser.parse_args()
     password = parsed.password[0]
 
+    db = parsed.database
+
     conn = rethink.connect(
         host=config.RDB_HOST,
         port=config.RDB_PORT,
-        db="testing"
+        db=db
     )
 
     try:

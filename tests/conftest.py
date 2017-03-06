@@ -21,8 +21,8 @@ def pytest_sessionstart(session):
     else:
         password = app.config["ROOT_PASSWORD"]
 
-    root_pass = subprocess.run("python3 gen.py --raw {password}".format(
-        password=password
+    root_pass = subprocess.run("python3 gen.py --raw {} {}".format(
+        password, "testing"
     ), stdout=subprocess.PIPE, shell=True)
 
     if root_pass.stdout.decode().rstrip() == "password":

@@ -1,4 +1,4 @@
-from json import dumps
+from json import dumps, loads
 import pytest
 
 
@@ -6,7 +6,6 @@ class TestQuotes:
     creation_data = [
         {
             "name": "foo",
-            "userLevel": 0,
             "response": {
                 "role": 0,
                 "action": False,
@@ -23,7 +22,6 @@ class TestQuotes:
         },
         {
             "name": "bar",
-            "userLevel": 0,
             "response": {
                 "role": 0,
                 "action": False,
@@ -47,35 +45,30 @@ class TestQuotes:
     url = "/api/v1/user/paradigmshift3d/command"
     data = {}
 
-    # def test_create(self, client, app):
-    #     """Valid command creation"""
-    #     # Get data from the creation_data dict
-    #     name = self.creation_data[0]["name"]
-    #     cmd = client.patch(self.url + "/" + name,
-    #                        data=dumps(self.creation_data[0]),
-    #                        content_type="application/json",
-    #                        headers={
-    #                            "X-Auth-Key": app.config["API_KEY"],
-    #                            "X-Auth-Token": app.config["API_TOKEN"]
-    #                        })
-    #
-    #     pytest.exit(cmd.json)
-    #
-    #     self.data.update(cmd.json["data"])
-    #
-    #     assert "attributes" in self.data
-    #     assert "id" in self.data
-    #     assert self.data["attributes"]["token"] == "paradigmshift3d"
-    #     assert self.data["attributes"]["enabled"] is True
-    #     assert self.data["attributes"]["name"] == name
-    #     assert self.data["type"] == "command"
-    #
-    #     # The submitted data does not have these keys and we already asserted
-    #     # them, so add them so the final test can complete
-    #     self.creation_data[0]["token"] = self.data["attributes"]["token"]
-    #     self.creation_data[0]["enabled"] = self.data["attributes"]["enabled"]
-    #
-    #     assert self.data["attributes"] == self.creation_data[0]
+    def test_create(self, client, api_auth):
+        """Valid command creation"""
+        # Get data from the creation_data dict
+        name = self.creation_data[0]["name"]
+        cmd = client.patch(self.url + "/" + name,
+                           data=dumps(self.creation_data[0]),
+                           content_type="application/json",
+                           headers=api_auth)
+
+        data = loads(cmd.data.decode())["data"]
+
+        assert "attributes" in data
+        assert "id" in data
+        assert data["attributes"]["token"] == "paradigmshift3d"
+        assert data["attributes"]["enabled"] is True
+        assert data["attributes"]["name"] == name
+        assert data["type"] == "command"
+
+        # The submitted data does not have these keys and we already asserted
+        # them, so add them so the final test can complete
+        self.creation_data[0]["token"] = data["attributes"]["token"]
+        self.creation_data[0]["enabled"] = data["attributes"]["enabled"]
+
+        assert self.creation_data[0] == data["attributes"]
     #
     # def test_single(self, client):
     #     """Get a single user object and see if it matches (it should)"""

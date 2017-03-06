@@ -80,7 +80,12 @@ class TestQuotes:
         i = 0
         while i < 10:
             quote_internal = client.get(
-                self.url, data={"random": "true", "limit": 1}).json
+                self.url, data={"random": "true", "limit": 1})
+            if hasattr(quote, "json"):
+                quote_internal = quote_internal.json
+            else:
+                quote_internal = json.loads(
+                    quote_internal.data.decode('utf-8'))
             if quote_internal["data"][0]["attributes"] != quote["data"][0]["attributes"]:
                 # It's a different quote, thus ?random=true is working
                 break
@@ -90,18 +95,23 @@ class TestQuotes:
         if i == 10:
             raise AssertionError(
                 "No random results returned within attempt limit")
-    #
 
     def test_removal(self, client, api_auth):
         """Remove a quote and see if it matches"""
         quote_create = client.post(
             self.url, data=self.creation_data[0], headers=api_auth)
-        creation_data = quote_create.json
+        if hasattr(quote_create, "json"):
+            creation_data = quote_create.json
+        else:
+            creation_data = json.loads(quote_create.data.decode('utf-8'))
 
         quote_id = creation_data["data"]["attributes"]["quoteId"]
 
         quote = client.delete(self.url + '/' + str(quote_id), headers=api_auth)
-        deletion_data = quote.json
+        if hasattr(quote, "json"):
+            deletion_data = quote.json
+        else:
+            deletion_data = json.loads(quote.data.decode('utf-8'))
 
         assert deletion_data["meta"]["deleted"][
             0] == creation_data["data"]["id"]
