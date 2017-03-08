@@ -53,7 +53,7 @@ class SocialResource(Resource):
             response["meta"] = {"edited": True}
 
         if errors == {}:
-            response["attributes"] = attributes
+            response["data"] = attributes
         else:
             response["errors"] = errors
 
