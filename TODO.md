@@ -21,8 +21,8 @@
 * ~~TODO Make sure the token exists as a user in the API, otherwise give a 403 because user doesn't exist~~
 * ~~TODO Repeats done by repeat alias instead of numeric ID~~
 * ~~TODO Make repeats "editable" to change time~~
-* TODO Figure out what happened to createdAt key
-* ~~Add command name to repeats~~
+* ~~TODO Figure out what happened to createdAt key~~
+* ~~TODO Add command name to repeats~~
 * TODO Make `PATCH` for quotes only edit, not create
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
 * ~~TODO Convert list in auth key to bits/hex strings~~
@@ -30,10 +30,12 @@
 # Grouped TODOs
 
 * Unit tests
-  * Commands
-  * Quotes
-  * Tickets
+  ~~* Commands~~
+  ~~* Quotes~~
   * Trusts
+  ~~* Users~~
+  * Aliases
+  * Repeats
   * Models/Schemas:
     * Validation
     * Import/Export
