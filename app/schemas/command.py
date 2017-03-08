@@ -9,9 +9,9 @@ from .helpers import MessagePacketSchema
 class ResponseSchema(Schema):
     message = fields.Nested(MessagePacketSchema, many=True)
     user = fields.String()
-    action = fields.Boolean()
+    action = fields.Boolean(default=False)
     target = fields.String(allow_none=True)
-    role = fields.Integer(required=True, default=0)
+    role = fields.Integer(default=0)
 
     @validates('message')
     def validate_message(self, value):

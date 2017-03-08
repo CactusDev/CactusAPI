@@ -3,8 +3,8 @@ import pytest
 
 
 class TestQuotes:
-    creation_data = [
-        {
+    creation_data = {
+        "foo": {
             "name": "foo",
             "response": {
                 "role": 0,
@@ -20,7 +20,7 @@ class TestQuotes:
                 ]
             }
         },
-        {
+        "bar": {
             "name": "bar",
             "response": {
                 "role": 0,
@@ -41,20 +41,22 @@ class TestQuotes:
                 ]
             }
         }
-    ]
+    }
     url = "/api/v1/user/paradigmshift3d/command"
     data = {}
 
     def test_create(self, client, api_auth):
         """Valid command creation"""
         # Get data from the creation_data dict
-        name = self.creation_data[0]["name"]
+        name = "foo"
         cmd = client.patch(self.url + "/" + name,
-                           data=dumps(self.creation_data[0]),
+                           data=dumps(self.creation_data[name]),
                            content_type="application/json",
                            headers=api_auth)
 
         data = loads(cmd.data.decode())["data"]
+        assert data["attributes"]["count"] == 0
+        del data["attributes"]["count"]
 
         assert "attributes" in data
         assert "id" in data
@@ -65,92 +67,104 @@ class TestQuotes:
 
         # The submitted data does not have these keys and we already asserted
         # them, so add them so the final test can complete
-        self.creation_data[0]["token"] = data["attributes"]["token"]
-        self.creation_data[0]["enabled"] = data["attributes"]["enabled"]
+        self.creation_data[name]["token"] = data["attributes"]["token"]
+        self.creation_data[name]["enabled"] = data["attributes"]["enabled"]
 
-        assert self.creation_data[0] == data["attributes"]
-    #
-    # def test_single(self, client):
-    #     """Get a single user object and see if it matches (it should)"""
-    #     cmd = client.get(self.url + "/" + self.data["attributes"]["name"])
-    #     cmd_single_data = cmd.json["data"]
-    #
-    #     assert cmd_single_data["attributes"] == self.data["attributes"]
-    #     assert cmd_single_data["id"] == self.data["id"]
-    #
-    # def test_all(self, client):
-    #     # Create the second command
-    #     name = self.creation_data[1]["name"]
-    #     cmd = client.patch(
-    #         self.url + "/" + name,
-    #         data=dumps(self.creation_data[1]),
-    #         content_type="application/json"
-    #     )
-    #     cmd_create_data = cmd.json["data"]
-    #
-    #     assert "attributes" in cmd_create_data
-    #     assert "id" in cmd_create_data
-    #     assert cmd_create_data["attributes"]["token"] == "paradigmshift3d"
-    #     assert cmd_create_data["attributes"]["enabled"] is True
-    #     assert cmd_create_data["attributes"]["name"] == name
-    #     assert cmd_create_data["type"] == "command"
-    #
-    #     # The submitted data does not have these keys and we already asserted
-    #     # them, so add them so the final test can complete
-    #     self.creation_data[1]["token"] = self.data["attributes"]["token"]
-    #     self.creation_data[1]["enabled"] = self.data["attributes"]["enabled"]
-    #
-    #     assert cmd_create_data["attributes"] == self.creation_data[1]
-    #
-    #     cmd = client.get(self.url)
-    #     cmd_all_data = cmd.json["data"]
-    #     assert len(cmd_all_data) == 2
-    #
-    #     for result in cmd_all_data:
-    #         found = False
-    #         name = result["attributes"]["name"]
-    #         for value in self.creation_data:
-    #             if value["name"] == name:
-    #                 assert result["attributes"] == value
-    #                 found = True
-    #         # Check if the command was found in the creation data
-    #         if not found:
-    #             raise AssertionError("Command not found")
-    #
-    # def test_edit(self, client):
-    #     edit_data = {
-    #         "enabled": False,
-    #         "response": {
-    #             "message": [
-    #                 {
-    #                     "type": "emoji",
-    #                     "data": "smile",
-    #                     "text": ":)"
-    #                 }
-    #             ]
-    #         }
-    #     }
-    #     edit_name = self.creation_data[0]["name"]
-    #
-    #     cmd = client.patch(
-    #         self.url + "/" + edit_name,
-    #         data=dumps(edit_data),
-    #         content_type="application/json"
-    #     )
-    #
-    #     cmd_edit_data = cmd.json
-    #
-    #     assert cmd_edit_data["meta"]["edited"] is True
-    #     assert cmd_edit_data["data"]["attributes"]["enabled"] is False
-    #     assert cmd_edit_data["data"]["attributes"][
-    #         "response"]["message"] == edit_data["response"]["message"]
-    #
-    # def test_removal(self, client):
-    #     """Remove a command and see if it matches"""
-    #     # Using the quote ID from the first created quote
-    #     cmd = client.delete(
-    #         self.url + "/" + str(self.data["attributes"]["name"]))
-    #     deletion_data = cmd.json
-    #
-    #     assert deletion_data["meta"]["deleted"][
-    #         "command"][0] == self.data["id"]
+        assert self.creation_data[name] == data["attributes"]
+
+    def test_single(self, client):
+        """Get a single user object and see if it matches (it should)"""
+        name = "foo"
+        cmd = client.get(self.url + "/" + self.creation_data[name]["name"])
+
+        cmd_data = loads(cmd.data.decode())["data"]
+        assert cmd_data["attributes"]["count"] == 0
+        del cmd_data["attributes"]["count"]
+
+        assert cmd_data["attributes"] == self.creation_data[name]
+
+    def test_all(self, client, api_auth):
+        # Create the second command
+        name = "bar"
+        cmd = client.patch(
+            self.url + "/" + name,
+            data=dumps(self.creation_data[name]),
+            content_type="application/json",
+            headers=api_auth
+        )
+        cmd_create_data = cmd.json["data"]
+
+        assert "attributes" in cmd_create_data
+        assert "id" in cmd_create_data
+        assert cmd_create_data["attributes"]["token"] == "paradigmshift3d"
+        assert cmd_create_data["attributes"]["enabled"] is True
+        assert cmd_create_data["attributes"]["name"] == name
+        assert cmd_create_data["type"] == "command"
+
+        # These have already been asserted, so go ahead and remove them
+        del cmd_create_data["attributes"]["count"]
+        del cmd_create_data["attributes"]["enabled"]
+        del cmd_create_data["attributes"]["token"]
+
+        assert cmd_create_data["attributes"] == self.creation_data[name]
+
+        cmd = client.get(self.url)
+        cmd_all_data = cmd.json["data"]
+        assert len(cmd_all_data) == 2
+
+        returned_cmds = [cmd["attributes"]["name"] for cmd in cmd_all_data]
+
+        for name in self.creation_data.keys():
+            if name not in returned_cmds:
+                raise AssertionError(
+                    "Command {name} was not returned by API!".format(name=name)
+                )
+
+    def test_edit(self, client, api_auth):
+        edit_data = {
+            "enabled": False,
+            "response": {
+                "message": [
+                    {
+                        "type": "emoji",
+                        "data": "smile",
+                        "text": ":)"
+                    }
+                ]
+            }
+        }
+        edit_name = "foo"
+
+        cmd = client.patch(
+            self.url + "/" + edit_name,
+            data=dumps(edit_data),
+            content_type="application/json",
+            headers=api_auth
+        )
+
+        data = loads(cmd.data.decode())
+
+        assert data["meta"]["edited"] is True
+        assert data["data"]["attributes"]["enabled"] is False
+        assert data["data"]["attributes"][
+            "response"]["message"] == edit_data["response"]["message"]
+
+    def test_removal(self, client, api_auth):
+        """Remove a command and see if it matches"""
+        # Using the quote ID from the first created quote
+        for name in self.creation_data.keys():
+            _ = client.delete(self.url + "/" + name, headers=api_auth)
+
+        # Create command to delete
+        name = "foo"
+        cmd = client.patch(self.url + "/" + name,
+                           data=dumps(self.creation_data[name]),
+                           content_type="application/json",
+                           headers=api_auth)
+
+        created_id = loads(cmd.data.decode())["data"]["id"]
+
+        deleted = client.delete(self.url + "/" + name, headers=api_auth)
+        deletion_data = loads(deleted.data.decode())
+
+        assert deletion_data["meta"]["deleted"]["command"][0] == created_id
