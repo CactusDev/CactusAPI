@@ -170,4 +170,9 @@ class TestQuotes:
 
     def test_alias_and_repeat_removal(self, client, api_auth):
         # TODO
+        # Create command
+        # Create repeat that uses command
+        # Create alias that uses command
+        # Delete command
+        # Command, repeat, alias IDs all match?
         pass
