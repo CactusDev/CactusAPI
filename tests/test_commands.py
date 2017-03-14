@@ -1,5 +1,4 @@
 from json import dumps, loads
-import pytest
 
 
 class TestQuotes:
@@ -168,3 +167,7 @@ class TestQuotes:
         deletion_data = loads(deleted.data.decode())
 
         assert deletion_data["meta"]["deleted"]["command"][0] == created_id
+
+    def test_alias_and_repeat_removal(self, client, api_auth):
+        # TODO
+        pass

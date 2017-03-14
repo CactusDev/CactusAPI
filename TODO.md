@@ -50,6 +50,7 @@
 
   * Rate limiting
   * Tables and users have to be created before tests can occur
+  * Resources aren't 100% removed from DB until end of test (specifically commands, because they're needed in later tests)
 
 # Later TODOs
 

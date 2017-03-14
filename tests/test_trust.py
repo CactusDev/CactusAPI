@@ -1,6 +1,5 @@
 """Tests the trust endpoint of the API"""
 import json
-import pytest
 
 
 class TestTrusts:
