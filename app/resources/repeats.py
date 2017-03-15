@@ -39,10 +39,11 @@ class RepeatList(Resource):
 class RepeatResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @helpers.lower_kwargs("token", "repeatName")
+    @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
+        data = {**path_data, **kwargs}
         attributes, errors, code = helpers.single_response(
-            "repeats", Repeat, **path_data)
+            "repeats", Repeat, **data)
 
         response = {}
 
@@ -55,33 +56,35 @@ class RepeatResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"repeat:create", "repeat:manage"})
-    @helpers.lower_kwargs("token", "repeatName")
     @helpers.catch_api_error
-    def patch(self, path_data, **kwargs):
+    def patch(self, **kwargs):
         data = {**helpers.get_mixed_args(),
-                **path_data,
+                "token": kwargs["token"].lower(),
                 "repeatId": helpers.next_numeric_id(
                     "repeat",
                     id_field="repeatId",
-                    **path_data
-        )}
+                    token=kwargs["token"].lower()),
+                "repeatName": kwargs["repeatName"]
+                }
 
-        # TODO: Refactor this
-        command_name = data.get("commandName")
-        if command_name is None:
+        if data.get("commandName") is None:
             raise APIError("Missing required key 'commandName'", code=400)
 
         cmd = helpers.get_one("command",
                               token=data["token"],
-                              name=command_name
+                              name=data.get("commandName")
                               )
 
         # The command to be aliased doesn't actually exist
         if cmd == {}:
             raise APIError("Command to be repeated does not exist!", code=400)
 
+        data["command"] = cmd["id"]
+
         attributes, errors, code = helpers.create_or_update(
-            "repeat", Repeat, data, "token", "commandName", post=True)
+            "repeat", Repeat, data,
+            token=kwargs["token"].lower(), repeatName=kwargs["repeatName"]
+        )
 
         response = {}
 
@@ -96,9 +99,10 @@ class RepeatResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"repeat:manage"})
-    @helpers.lower_kwargs("token", "repeatName")
+    @helpers.lower_kwargs("token")
     def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("repeat", **path_data)
+        data = {**path_data, "repeatName": kwargs["repeatName"]}
+        deleted = helpers.delete_record("repeat", **data)
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

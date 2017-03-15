@@ -32,7 +32,7 @@ class SpamSchema(Schema):
 
 
 class ConfigSchema(Schema):
-    id = fields.String()
+    id = fields.String(dump_only=True)
     token = fields.String(required=True)
     services = fields.Nested(ServiceSchema, many=True)
     announce = fields.Nested(AnnouncementsSchema)

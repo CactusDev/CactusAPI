@@ -2,7 +2,7 @@ from marshmallow import (Schema, fields, pre_dump, validates,
                          post_dump, ValidationError)
 from . import CommandSchema
 from .helpers import CommandUUID
-from dateutil import parser
+from datetime import datetime
 
 from ..util import helpers
 
@@ -14,6 +14,8 @@ class RepeatSchema(Schema):
     repeatName = fields.String(required=True)
     command = CommandUUID()
     commandName = fields.String(required=True)
+    createdAt = fields.DateTime(
+        "%c", default=datetime.utcnow().strftime("%c"), dump_only=True)
 
     @validates("period")
     def foo(self, data):

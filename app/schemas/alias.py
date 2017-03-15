@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, pre_load, pre_dump, post_dump, post_load
-from dateutil import parser
+from datetime import datetime
 
 from . import CommandSchema
 from .helpers import CommandUUID
@@ -8,24 +8,11 @@ from .helpers import MessagePacketSchema
 
 
 class CmdAliasSchema(Schema):
-    id = fields.String()
+    id = fields.String(dump_only=True)
     name = fields.String(required=True)
-    createdAt = fields.DateTime()
+    createdAt = fields.DateTime(
+        "%c", default=datetime.utcnow().strftime("%c"), dump_only=True)
     token = fields.String(required=True)
     command = CommandUUID()
     commandName = fields.String(required=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
-
-    @pre_dump
-    def rethink_to_dt_obj(self, obj):
-        if hasattr(obj, "createdAt"):
-            obj.createdAt = parser.parse(obj.createdAt)
-
-        return obj
-
-    @post_dump
-    def humanize_datetime(self, data):
-        if "createdAt" in data:
-            data["createdAt"] = helpers.humanize_datetime(data["createdAt"])
-
-        return data

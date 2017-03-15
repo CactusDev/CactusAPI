@@ -16,10 +16,10 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    @helpers.lower_kwargs("token", "name")
-    def get(self, path_data, **kwargs):
+    def get(self, **kwargs):
         attributes, errors, code = helpers.single_response(
-            "aliases", Alias, **{**kwargs, **path_data})
+            "aliases", Alias, cased="name",
+            **{"name": kwargs["name"], "token": kwargs["token"].lower()})
 
         response = {}
 
@@ -38,17 +38,18 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:create", "alias:manage"})
-    @helpers.lower_kwargs("token", "name")
     @helpers.catch_api_error
-    def patch(self, path_data, **kwargs):
-        data = {**helpers.get_mixed_args(), **path_data}
+    def patch(self, **kwargs):
+        lookup_data = {"token": kwargs["token"].lower(),
+                       "name": kwargs["name"]}
+        data = {**helpers.get_mixed_args(), **lookup_data}
 
         command_name = data.get("commandName")
 
         if command_name is None:
             raise APIError("Missing required key 'commandName'", code=400)
 
-        cmd_exists = helpers.get_one("command", **path_data)
+        cmd_exists = helpers.get_one("command", **lookup_data)
 
         if cmd_exists != {}:
             raise APIError(
@@ -61,6 +62,7 @@ class AliasResource(Resource):
                               )
 
         # The command to be aliased doesn't actually exist
+        # caused by _deserialize method in schema
         if cmd == {}:
             raise APIError("Command to be aliased does not exist!", code=404)
 
@@ -68,7 +70,9 @@ class AliasResource(Resource):
 
         # TODO: Make secondary PATCH requests change command to Rethink UUID
         attributes, errors, code = helpers.create_or_update(
-            "aliases", Alias, data, "token", "name"
+            "aliases", Alias, data,
+            token=kwargs["token"].lower(), name=kwargs["name"],
+            cased={"key": "name", "value": kwargs["name"]}
         )
 
         response = {}
@@ -89,9 +93,8 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"alias:manage"})
-    @helpers.lower_kwargs("token", "name")
-    def delete(self, path_data, **kwargs):
-        deleted = helpers.delete_record("aliases", **path_data)
+    def delete(self, **kwargs):
+        deleted = helpers.delete_record("aliases", name=kwargs["name"])
 
         if deleted is not None:
             return {"meta": {"deleted": deleted}}, 200

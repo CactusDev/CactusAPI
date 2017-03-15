@@ -41,7 +41,7 @@ class TrustResource(Resource):
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "trust", Trust, data, "token", "userId")
+            "trust", Trust, data, **path_data)
 
         response = {}
 

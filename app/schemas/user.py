@@ -4,7 +4,7 @@ from .helpers import ValidateToken
 
 
 class UserSchema(Schema):
-    id = fields.String()
+    id = fields.String(dump_only=True)
     token = ValidateToken(required=True)
     userName = fields.String(required=True)
     userId = fields.Integer(required=True)

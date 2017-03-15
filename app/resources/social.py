@@ -43,7 +43,9 @@ class SocialResource(Resource):
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
         attributes, errors, code = helpers.create_or_update(
-            "social", Social, data, "token", "service")
+            "social", Social, data,
+            **path_data
+        )
 
         response = {}
 
