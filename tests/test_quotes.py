@@ -1,37 +1,37 @@
-import pytest
 import json
 
 
 class TestQuotes:
-    creation_data = [{"quote": "Cacti rock!"}, {"quote": "CactusBot!"}]
+    creation_data = {
+        "rock": {"quote": "Cacti rock!"},
+        "cactusbot": {"quote": "CactusBot!"}
+    }
     url = "/api/v1/user/paradigmshift3d/quote"
 
     def test_create(self, client, api_auth):
         """Valid quote creation"""
+        name = "rock"
         quote = client.post(
-            self.url, data=self.creation_data[0], headers=api_auth)
+            self.url, data=self.creation_data[name], headers=api_auth)
+        data = json.loads(quote.data.decode('utf-8'))
 
-        if hasattr(quote, "json"):
-            update_data = quote.json
-        else:
-            update_data = json.loads(quote.data.decode('utf-8'))
+        assert "data" in data
+        assert "attributes" in data["data"]
+        assert "id" in data["data"]
+        assert data["data"]["attributes"]["quoteId"] == 1
+        assert data["data"]["attributes"][
+            "quote"] == self.creation_data[name]["quote"]
 
-        assert "data" in update_data
-        assert "attributes" in update_data["data"]
-        assert "id" in update_data["data"]
-        assert update_data["data"]["attributes"]["quoteId"] == 1
-        assert update_data["data"]["attributes"][
-            "quote"] == self.creation_data[0]["quote"]
+    def test_edit(self, client, api_auth):
+        # TODO
+        pass
 
     def test_single(self, client, api_auth):
         """Create a single quote object and see if it matches"""
+        name = "cactusbot"
         quote = client.post(
-            self.url, data=self.creation_data[1], headers=api_auth)
-
-        if hasattr(quote, "json"):
-            data = quote.json
-        else:
-            data = json.loads(quote.data.decode('utf-8'))
+            self.url, data=self.creation_data[name], headers=api_auth)
+        data = json.loads(quote.data.decode('utf-8'))
 
         quote = client.get(
             self.url + "/" + str(data["data"]["attributes"]["quoteId"]))
@@ -43,50 +43,39 @@ class TestQuotes:
 
         assert quote_single_data["data"]["attributes"]["quoteId"] == 2
         assert quote_single_data["data"]["attributes"][
-            "quote"] == self.creation_data[1]["quote"]
+            "quote"] == self.creation_data[name]["quote"]
         assert quote_single_data["data"]["id"] == data["data"]["id"]
 
     def test_all(self, client, api_auth):
         """Retrieve all quotes"""
-        for to_create in self.creation_data:
-            index = self.creation_data.index(to_create)
-            quote = client.post(
-                self.url, data=to_create, headers=api_auth)
-            if hasattr(quote, "json"):
-                quote_create_data = quote.json
-            else:
-                quote_create_data = json.loads(quote.data.decode('utf-8'))
-
-            assert quote_create_data["data"][
-                "attributes"]["quoteId"] == index + 1
-            assert quote_create_data["data"]["attributes"][
-                "quote"] == self.creation_data[index]["quote"]
-
         quote = client.get(self.url)
-        if hasattr(quote, "json"):
-            quote_all_data = quote.json
-        else:
-            quote_all_data = json.loads(quote.data.decode('utf-8'))
-        assert len(quote_all_data["data"]) == 2
+        quote_all_data = json.loads(quote.data.decode())["data"]
+        assert len(quote_all_data) == 2
+        quotes = [
+            {"quote": quote["attributes"]["quote"],
+             "quoteId": quote["attributes"]["quoteId"]}
+            for quote in quote_all_data
+        ]
+        comparison = [
+            {"quote": "Cacti rock!", "quoteId": 1},
+            {"quote": "CactusBot!", "quoteId": 2}
+        ]
+        assert quotes == comparison
+        for i in (1, 2):
+            deleted = client.delete(self.url + '/' + str(i))
+            assert deleted.status_code == 200
 
     def test_random(self, client):
         # API should return random result within 5 requests normally
         quote = client.get(self.url, data={"random": "true"})
-        if hasattr(quote, "json"):
-            quote = quote.json
-        else:
-            quote = json.loads(quote.data.decode('utf-8'))
+        data = json.loads(quote.data.decode('utf-8'))
 
         i = 0
         while i < 10:
             quote_internal = client.get(
                 self.url, data={"random": "true", "limit": 1})
-            if hasattr(quote, "json"):
-                quote_internal = quote_internal.json
-            else:
-                quote_internal = json.loads(
-                    quote_internal.data.decode('utf-8'))
-            if quote_internal["data"][0]["attributes"] != quote["data"][0]["attributes"]:
+            quote_internal = json.loads(quote_internal.data.decode('utf-8'))
+            if quote_internal["data"][0]["attributes"] != data["data"][0]["attributes"]:
                 # It's a different quote, thus ?random=true is working
                 break
 
@@ -99,7 +88,7 @@ class TestQuotes:
     def test_removal(self, client, api_auth):
         """Remove a quote and see if it matches"""
         quote_create = client.post(
-            self.url, data=self.creation_data[0], headers=api_auth)
+            self.url, data=self.creation_data["rock"], headers=api_auth)
         if hasattr(quote_create, "json"):
             creation_data = quote_create.json
         else:
@@ -114,4 +103,4 @@ class TestQuotes:
             deletion_data = json.loads(quote.data.decode('utf-8'))
 
         assert deletion_data["meta"]["deleted"][
-            0] == creation_data["data"]["id"]
+            "rock"] == creation_data["data"]["id"]

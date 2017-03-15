@@ -95,6 +95,7 @@ def json_api_response(data, resource, model):
 
     if isinstance(data, dict):
         data = recurse_dict(data, model)
+
         return {
             "id": data.pop("id"),
             "attributes": data,

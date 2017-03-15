@@ -45,9 +45,11 @@ class AliasResource(Resource):
         data = {**helpers.get_mixed_args(), **lookup_data}
 
         command_name = data.get("commandName")
-
         if command_name is None:
             raise APIError("Missing required key 'commandName'", code=400)
+
+        if data.get("id") is not None:
+            del data["id"]
 
         cmd_exists = helpers.get_one("command", **lookup_data)
 

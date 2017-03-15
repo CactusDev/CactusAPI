@@ -8,7 +8,7 @@ from ..util import helpers
 
 
 class RepeatSchema(Schema):
-    id = fields.String(dump_only=True)
+    id = fields.String()
     period = fields.Integer(required=True, default=60000)
     token = fields.String(required=True)
     repeatName = fields.String(required=True)

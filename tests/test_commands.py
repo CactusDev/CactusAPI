@@ -17,6 +17,7 @@ class TestQuotes:
         data = loads(cmd.data.decode())["data"]
         assert data["attributes"]["count"] == 0
         del data["attributes"]["count"]
+        del data["attributes"]["createdAt"]
 
         assert "attributes" in data
         assert "id" in data
@@ -41,9 +42,12 @@ class TestQuotes:
         assert cmd_data["attributes"]["count"] == 0
         assert cmd_data["attributes"].get("enabled", False)
         assert cmd_data["attributes"]["token"] == "paradigmshift3d"
+        # TODO: Check createdAt
+
         del cmd_data["attributes"]["count"]
         del cmd_data["attributes"]["token"]
         del cmd_data["attributes"]["enabled"]
+        del cmd_data["attributes"]["createdAt"]
 
         assert cmd_data["attributes"] == command_data[name]
 
@@ -64,11 +68,13 @@ class TestQuotes:
         assert cmd_create_data["attributes"]["enabled"] is True
         assert cmd_create_data["attributes"]["name"] == name
         assert cmd_create_data["type"] == "command"
+        # TODO: Check createdAt
 
         # These have already been asserted, so go ahead and remove them
         del cmd_create_data["attributes"]["count"]
         del cmd_create_data["attributes"]["enabled"]
         del cmd_create_data["attributes"]["token"]
+        del cmd_create_data["attributes"]["createdAt"]
 
         assert cmd_create_data["attributes"] == command_data[name]
 

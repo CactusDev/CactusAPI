@@ -31,6 +31,9 @@ class CommandCounter(Resource):
             if not isinstance(new_count, str):
                 raise APIError({"count": "Must be a string"}, code=400)
 
+            if data.get("id") is not None:
+                del data["id"]
+
             count = attributes["attributes"]["count"]
 
             if new_count[0] == '+' and new_count[1:].isdigit():
@@ -162,6 +165,9 @@ class CommandResource(Resource):
     def patch(self, **kwargs):
         data = {**helpers.get_mixed_args(),
                 "name": kwargs["name"], "token": kwargs["token"].lower()}
+
+        if data.get("id") is not None:
+            del data["id"]
 
         attributes, errors, code = helpers.create_or_update(
             "command", Command, data,

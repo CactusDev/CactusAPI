@@ -5,7 +5,7 @@ from ..util import helpers
 
 
 class QuoteSchema(Schema):
-    id = fields.String(dump_only=True)
+    id = fields.String()
     quote = fields.String(required=True)
     quoteId = fields.Integer(required=True)
     token = fields.String(required=True)

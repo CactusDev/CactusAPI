@@ -50,6 +50,9 @@ class QuoteList(Resource):
                     **path_data)
                 }
 
+        if data.get("id") is not None:
+            del data["id"]
+
         # TODO: Make this helpers.create
         attributes, errors, code = helpers.create_or_update(
             "quote", Quote, data,

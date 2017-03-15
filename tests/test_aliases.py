@@ -1,6 +1,6 @@
 """Tests the alias endpoint of the API"""
 import json
-import pytest
+from datetime import datetime
 
 
 class TestAliases:
@@ -43,18 +43,20 @@ class TestAliases:
         data = json.loads(alias.data.decode())
         assert alias.status_code == 201
         # FIXME: This needs to be able to test for alias instead of aliases
-        assert data["data"]["type"] == "aliases"
+        assert data["data"]["type"] == "aliase"
         data = data["data"]
 
         assert data["attributes"]["command"]["count"] == 0
         assert data["attributes"]["command"]["token"] == "paradigmshift3d"
         assert data["attributes"]["command"].get("enabled", False)
         assert data["attributes"]["command"]["id"] == created_id
+        # TODO: Check createdAt to make sure it's the same day/hour
 
         del data["attributes"]["command"]["count"]
         del data["attributes"]["command"]["token"]
         del data["attributes"]["command"]["enabled"]
         del data["attributes"]["command"]["id"]
+        del data["attributes"]["command"]["createdAt"]
 
         assert data["attributes"][
             "arguments"] == self.creation_data[name]["arguments"]
@@ -91,6 +93,7 @@ class TestAliases:
         del data["attributes"]["command"]["token"]
         del data["attributes"]["command"]["enabled"]
         del data["attributes"]["command"]["id"]
+        del data["attributes"]["command"]["createdAt"]
 
         assert data["attributes"][
             "command"] == command_data[cmd_name]

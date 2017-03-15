@@ -8,7 +8,7 @@ from .helpers import MessagePacketSchema
 
 
 class CmdAliasSchema(Schema):
-    id = fields.String(dump_only=True)
+    id = fields.String()
     name = fields.String(required=True)
     createdAt = fields.DateTime(
         "%c", default=datetime.utcnow().strftime("%c"), dump_only=True)

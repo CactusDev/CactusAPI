@@ -5,7 +5,7 @@ from ..util import helpers
 
 
 class TrustSchema(Schema):
-    id = fields.String(dump_only=True)
+    id = fields.String()
     userName = fields.String(required=True)
     userId = fields.String(required=True)
     active = fields.Boolean()

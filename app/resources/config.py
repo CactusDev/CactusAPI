@@ -72,6 +72,9 @@ class ConfigResource(Resource):
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
 
+        if data.get("id") is not None:
+            del data["id"]
+
         attributes, errors, code = helpers.create_or_update(
             "config", Config, data, **path_data
         )

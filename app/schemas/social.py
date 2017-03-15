@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class SocialSchema(Schema):
-    id = fields.String(dump_only=True)
+    id = fields.String()
     token = fields.String(required=True)
     service = fields.String(required=True)
     url = fields.Url(required=True)

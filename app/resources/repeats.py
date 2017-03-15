@@ -69,6 +69,8 @@ class RepeatResource(Resource):
 
         if data.get("commandName") is None:
             raise APIError("Missing required key 'commandName'", code=400)
+        if data.get("id") is not None:
+            del data["id"]
 
         cmd = helpers.get_one("command",
                               token=data["token"],
