@@ -65,3 +65,46 @@ def api_auth(app):
         "X-Auth-Token": app.config["API_TOKEN"],
         "X-Auth-Key": app.config["API_KEY"]
     }
+
+
+@pytest.fixture
+def command_data():
+    return {
+        "foo": {
+            "name": "foo",
+            "response": {
+                "role": 0,
+                "action": False,
+                "target": None,
+                "user": "",
+                "message": [
+                    {
+                        "type": "text",
+                        "data": "lol!",
+                        "text": "lol!"
+                    }
+                ]
+            }
+        },
+        "bar": {
+            "name": "bar",
+            "response": {
+                "role": 0,
+                "action": False,
+                "target": None,
+                "user": "",
+                "message": [
+                    {
+                        "type": "emoji",
+                        "data": "smile",
+                        "text": ":)"
+                    },
+                    {
+                        "type": "link",
+                        "data": "https://google.com",
+                        "text": "google.com"
+                    }
+                ]
+            }
+        }
+    }

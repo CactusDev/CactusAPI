@@ -2,54 +2,15 @@ from json import dumps, loads
 
 
 class TestQuotes:
-    creation_data = {
-        "foo": {
-            "name": "foo",
-            "response": {
-                "role": 0,
-                "action": False,
-                "target": None,
-                "user": "",
-                "message": [
-                    {
-                        "type": "text",
-                        "data": "lol!",
-                        "text": "lol!"
-                    }
-                ]
-            }
-        },
-        "bar": {
-            "name": "bar",
-            "response": {
-                "role": 0,
-                "action": False,
-                "target": None,
-                "user": "",
-                "message": [
-                    {
-                        "type": "emoji",
-                        "data": "smile",
-                        "text": ":)"
-                    },
-                    {
-                        "type": "link",
-                        "data": "https://google.com",
-                        "text": "google.com"
-                    }
-                ]
-            }
-        }
-    }
     url = "/api/v1/user/paradigmshift3d/command"
     data = {}
 
-    def test_create(self, client, api_auth):
+    def test_create(self, client, api_auth, command_data):
         """Valid command creation"""
         # Get data from the creation_data dict
         name = "foo"
         cmd = client.patch(self.url + "/" + name,
-                           data=dumps(self.creation_data[name]),
+                           data=dumps(command_data[name]),
                            content_type="application/json",
                            headers=api_auth)
 
@@ -66,28 +27,32 @@ class TestQuotes:
 
         # The submitted data does not have these keys and we already asserted
         # them, so add them so the final test can complete
-        self.creation_data[name]["token"] = data["attributes"]["token"]
-        self.creation_data[name]["enabled"] = data["attributes"]["enabled"]
+        command_data[name]["token"] = data["attributes"]["token"]
+        command_data[name]["enabled"] = data["attributes"]["enabled"]
 
-        assert self.creation_data[name] == data["attributes"]
+        assert command_data[name] == data["attributes"]
 
-    def test_single(self, client):
+    def test_single(self, client, command_data):
         """Get a single user object and see if it matches (it should)"""
         name = "foo"
-        cmd = client.get(self.url + "/" + self.creation_data[name]["name"])
+        cmd = client.get(self.url + "/" + command_data[name]["name"])
 
         cmd_data = loads(cmd.data.decode())["data"]
         assert cmd_data["attributes"]["count"] == 0
+        assert cmd_data["attributes"].get("enabled", False)
+        assert cmd_data["attributes"]["token"] == "paradigmshift3d"
         del cmd_data["attributes"]["count"]
+        del cmd_data["attributes"]["token"]
+        del cmd_data["attributes"]["enabled"]
 
-        assert cmd_data["attributes"] == self.creation_data[name]
+        assert cmd_data["attributes"] == command_data[name]
 
-    def test_all(self, client, api_auth):
+    def test_all(self, client, api_auth, command_data):
         # Create the second command
         name = "bar"
         cmd = client.patch(
             self.url + "/" + name,
-            data=dumps(self.creation_data[name]),
+            data=dumps(command_data[name]),
             content_type="application/json",
             headers=api_auth
         )
@@ -105,7 +70,7 @@ class TestQuotes:
         del cmd_create_data["attributes"]["enabled"]
         del cmd_create_data["attributes"]["token"]
 
-        assert cmd_create_data["attributes"] == self.creation_data[name]
+        assert cmd_create_data["attributes"] == command_data[name]
 
         cmd = client.get(self.url)
         cmd_all_data = cmd.json["data"]
@@ -113,7 +78,7 @@ class TestQuotes:
 
         returned_cmds = [cmd["attributes"]["name"] for cmd in cmd_all_data]
 
-        for name in self.creation_data.keys():
+        for name in command_data.keys():
             if name not in returned_cmds:
                 raise AssertionError(
                     "Command {name} was not returned by API!".format(name=name)
@@ -148,16 +113,16 @@ class TestQuotes:
         assert data["data"]["attributes"][
             "response"]["message"] == edit_data["response"]["message"]
 
-    def test_removal(self, client, api_auth):
+    def test_removal(self, client, api_auth, command_data):
         """Remove a command and see if it matches"""
         # Using the quote ID from the first created quote
-        for name in self.creation_data.keys():
+        for name in command_data.keys():
             _ = client.delete(self.url + "/" + name, headers=api_auth)
 
         # Create command to delete
         name = "foo"
         cmd = client.patch(self.url + "/" + name,
-                           data=dumps(self.creation_data[name]),
+                           data=dumps(command_data[name]),
                            content_type="application/json",
                            headers=api_auth)
 

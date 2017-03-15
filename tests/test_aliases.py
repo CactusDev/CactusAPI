@@ -21,53 +21,14 @@ class TestAliases:
             "arguments": []
         }
     }
-    cmd_creation_data = {
-        "foo": {
-            "name": "foo",
-            "response": {
-                "role": 0,
-                "action": False,
-                "target": None,
-                "user": "",
-                "message": [
-                    {
-                        "type": "text",
-                        "data": "lol!",
-                        "text": "lol!"
-                    }
-                ]
-            }
-        },
-        "bar": {
-            "name": "bar",
-            "response": {
-                "role": 0,
-                "action": False,
-                "target": None,
-                "user": "",
-                "message": [
-                    {
-                        "type": "emoji",
-                        "data": "smile",
-                        "text": ":)"
-                    },
-                    {
-                        "type": "link",
-                        "data": "https://google.com",
-                        "text": "google.com"
-                    }
-                ]
-            }
-        }
-    }
     url = "/api/v1/user/paradigmshift3d/alias"
 
-    def test_create(self, client, api_auth):
+    def test_create(self, client, api_auth, command_data):
         """Valid social service creation"""
         name = "test"
         cmd_name = "foo"
         cmd = client.patch("/api/v1/user/paradigmshift3d/command/" + cmd_name,
-                           data=json.dumps(self.cmd_creation_data[cmd_name]),
+                           data=json.dumps(command_data[cmd_name]),
                            content_type="application/json",
                            headers=api_auth)
 
@@ -98,14 +59,14 @@ class TestAliases:
         assert data["attributes"][
             "arguments"] == self.creation_data[name]["arguments"]
         assert data["attributes"][
-            "command"] == self.cmd_creation_data[cmd_name]
+            "command"] == command_data[cmd_name]
 
-    def test_single(self, client, api_auth):
+    def test_single(self, client, api_auth, command_data):
         """A test that does stuff, namely checking if stuff == other stuff"""
         name = "taco"
         cmd_name = "bar"
         cmd = client.patch("/api/v1/user/paradigmshift3d/command/" + cmd_name,
-                           data=json.dumps(self.cmd_creation_data[cmd_name]),
+                           data=json.dumps(command_data[cmd_name]),
                            content_type="application/json",
                            headers=api_auth)
         # The command was created successfully, so we can continue
@@ -132,7 +93,7 @@ class TestAliases:
         del data["attributes"]["command"]["id"]
 
         assert data["attributes"][
-            "command"] == self.cmd_creation_data[cmd_name]
+            "command"] == command_data[cmd_name]
         assert data["attributes"]["token"] == "paradigmshift3d"
         assert data["attributes"]["commandName"] == cmd_name
         assert data["attributes"][
