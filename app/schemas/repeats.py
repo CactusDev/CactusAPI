@@ -22,17 +22,3 @@ class RepeatSchema(Schema):
         if data < 60000:
             raise ValidationError("Minimum time for a repeat is 1 minute "
                                   "(60000 milliseconds)")
-
-    @pre_dump
-    def rethink_to_dt_obj(self, obj):
-        if hasattr(obj, "createdAt"):
-            obj.createdAt = parser.parse(obj.createdAt)
-
-        return obj
-
-    @post_dump
-    def humanize_datetime(self, data):
-        if "createdAt" in data:
-            data["createdAt"] = helpers.humanize_datetime(data["createdAt"])
-
-        return data

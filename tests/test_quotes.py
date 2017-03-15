@@ -46,26 +46,28 @@ class TestQuotes:
             "quote"] == self.creation_data[name]["quote"]
         assert quote_single_data["data"]["id"] == data["data"]["id"]
 
-    def test_all(self, client, api_auth):
+    def test_all(self, client):
         """Retrieve all quotes"""
         quote = client.get(self.url)
         quote_all_data = json.loads(quote.data.decode())["data"]
         assert len(quote_all_data) == 2
-        quotes = [
-            {"quote": quote["attributes"]["quote"],
-             "quoteId": quote["attributes"]["quoteId"]}
-            for quote in quote_all_data
-        ]
+        quotes = sorted(
+            [
+                {
+                    "quote": quote["attributes"]["quote"],
+                    "quoteId": quote["attributes"]["quoteId"]
+                }
+                for quote in quote_all_data
+            ],
+            key=lambda quote: int(quote["quoteId"])
+        )
         comparison = [
             {"quote": "Cacti rock!", "quoteId": 1},
             {"quote": "CactusBot!", "quoteId": 2}
         ]
         assert quotes == comparison
-        for i in (1, 2):
-            deleted = client.delete(self.url + '/' + str(i))
-            assert deleted.status_code == 200
 
-    def test_random(self, client):
+    def test_random(self, client, api_auth):
         # API should return random result within 5 requests normally
         quote = client.get(self.url, data={"random": "true"})
         data = json.loads(quote.data.decode('utf-8'))
@@ -75,6 +77,7 @@ class TestQuotes:
             quote_internal = client.get(
                 self.url, data={"random": "true", "limit": 1})
             quote_internal = json.loads(quote_internal.data.decode('utf-8'))
+
             if quote_internal["data"][0]["attributes"] != data["data"][0]["attributes"]:
                 # It's a different quote, thus ?random=true is working
                 break
@@ -85,22 +88,21 @@ class TestQuotes:
             raise AssertionError(
                 "No random results returned within attempt limit")
 
+        for i in (1, 2):
+            deleted = client.delete(self.url + '/' + str(i), headers=api_auth)
+            assert deleted.status_code == 200
+
     def test_removal(self, client, api_auth):
         """Remove a quote and see if it matches"""
         quote_create = client.post(
             self.url, data=self.creation_data["rock"], headers=api_auth)
-        if hasattr(quote_create, "json"):
-            creation_data = quote_create.json
-        else:
-            creation_data = json.loads(quote_create.data.decode('utf-8'))
+        creation_data = json.loads(quote_create.data.decode('utf-8'))
 
         quote_id = creation_data["data"]["attributes"]["quoteId"]
 
         quote = client.delete(self.url + '/' + str(quote_id), headers=api_auth)
-        if hasattr(quote, "json"):
-            deletion_data = quote.json
-        else:
-            deletion_data = json.loads(quote.data.decode('utf-8'))
+        deletion_data = json.loads(quote.data.decode('utf-8'))
 
+        assert len(deletion_data["meta"]["deleted"]) == 1
         assert deletion_data["meta"]["deleted"][
-            "rock"] == creation_data["data"]["id"]
+            0] == creation_data["data"]["id"]

@@ -58,25 +58,44 @@ class TestRepeats:
 
         repeat = client.get(self.url + '/' + name)
         data = json.loads(repeat.data.decode())["data"]
+        assert data["id"] == created_id
         assert data["attributes"]["repeatName"] == name
         assert data["attributes"]["token"] == "paradigmshift3d"
-        assert data["attributes"]["command"]["id"] == created_id
         assert data["attributes"][
             "commandName"] == self.creation_data[name]["commandName"]
         assert data["attributes"][
             "period"] == self.creation_data[name]["period"]
 
     def test_all(self, client, api_auth):
-        # Retrieve all repeat objects
-        # Make sure that the proper repeat objects have been returned
-        # Delete all repeat objects
-        pass
+        repeats = client.get(self.url)
+        assert repeats.status_code == 200
+        data = json.loads(repeats.data.decode())["data"]
+
+        assert len(data) == 2
+        comparison = {
+            repeat["attributes"]["repeatName"]: {
+                "commandName": repeat["attributes"]["commandName"],
+                "period": repeat["attributes"]["period"]
+            } for repeat in data}
+        assert self.creation_data.items() == comparison.items()
+        for repeat in data:
+            assert repeat["type"] == "repeat"
+        for repeat in self.creation_data.keys():
+            assert (client.delete(self.url + '/' + repeat,
+                                  headers=api_auth)).status_code == 200
 
     def test_delete(self, client, api_auth):
         """Test to see if the services are being removed properly"""
-        # Create repeat
-        # Get created repeat's ID
-        # Delete repeat by same name
-        # Make sure deleted 's ID is same as created's
-        # assert created_id == deleted_data["id"]
-        pass
+        name = "potato"
+
+        repeat = client.patch(self.url + '/' + name,
+                              data=json.dumps(self.creation_data[name]),
+                              content_type="application/json",
+                              headers=api_auth)
+        created_id = json.loads(repeat.data.decode())["data"]["id"]
+        assert repeat.status_code == 201
+
+        deleted = client.delete(self.url + '/' + name, headers=api_auth)
+        data = json.loads(deleted.data.decode())
+        assert len(data["meta"]["deleted"]) == 1
+        assert data["meta"]["deleted"][0] == created_id

@@ -47,6 +47,12 @@ class RepeatResource(Resource):
 
         response = {}
 
+        if attributes != {} and isinstance(attributes, dict):
+            # Take attributes, convert "command" to obj
+            cmd_id = attributes["attributes"]["command"]
+            attributes["attributes"]["command"] = helpers.get_one("command",
+                                                                  uid=cmd_id)
+
         if errors == {}:
             response["data"] = attributes
         else:
