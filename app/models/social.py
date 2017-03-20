@@ -6,9 +6,10 @@ class Social:
 
     schema = SocialSchema()
 
-    def __init__(self, *, token, service, url, **kwargs):
+    def __init__(self, *, token, service, url, createdAt, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
         self.token = token.lower()
         self.service = service
         self.url = url
+        self.createdAt = createdAt

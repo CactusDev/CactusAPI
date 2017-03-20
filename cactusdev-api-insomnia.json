@@ -1,8 +1,8 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-01-02T20:20:04.983Z",
-	"__export_source": "insomnia.desktop.app:v4.0.12",
+	"__export_date": "2017-02-12T16:32:24.178Z",
+	"__export_source": "insomnia.desktop.app:v4.2.11",
 	"resources": [
 		{
 			"_id": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
@@ -26,10 +26,22 @@
 		{
 			"_id": "jar_53f740311b6246b88fb941809612a7c1",
 			"parentId": "wrk_0c350e37809f4a788cd10c95bf35f8a1",
-			"modified": 1483387421985,
+			"modified": 1484237858063,
 			"created": 1481243601336,
 			"name": "Default Jar",
-			"cookies": [],
+			"cookies": [
+				{
+					"creation": "2017-01-02T20:29:31.937Z",
+					"key": "__cfduid",
+					"value": "db9cc2fdd69093056148b961600c183221483388971",
+					"expires": "2018-01-02T20:29:31.000Z",
+					"domain": "exoz.one",
+					"path": "/",
+					"httpOnly": true,
+					"hostOnly": false,
+					"lastAccessed": "2017-01-02T20:29:52.458Z"
+				}
+			],
 			"_type": "cookie_jar"
 		},
 		{
@@ -115,9 +127,9 @@
 		{
 			"_id": "env_38ba12575c354d628b0147b50cc5e578",
 			"parentId": "env_81c50d3b20304af99eaf147f165ad581",
-			"modified": 1482169416100,
+			"modified": 1486917118630,
 			"created": 1481243384876,
-			"name": "v1 test - token paradigmshift3d",
+			"name": "V1 - paradigmshift3d",
 			"data": {
 				"base_url": "http://localhost:8000/api/v1",
 				"token": "paradigmshift3d"
@@ -127,7 +139,7 @@
 		{
 			"_id": "req_7dc41adb4dc2441688a6c776eb08df70",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1482169416100,
+			"modified": 1486915738978,
 			"created": 1481243549005,
 			"url": "{{base_url}}/user/{{token}}/trust/24228",
 			"name": "Create",
@@ -141,6 +153,14 @@
 				{
 					"name": "Content-Type",
 					"value": "application/json"
+				},
+				{
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
 				}
 			],
 			"authentication": {},
@@ -150,16 +170,25 @@
 		{
 			"_id": "req_b0731dbcc5ed4bb593fc9b98ecdbaee1",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1482169416099,
+			"modified": 1486915726461,
 			"created": 1481243570808,
-			"url": "{{base_url}}/user/{{token}}/trust/24228",
+			"url": "{{base_url}}/user/{{token}}/trust/24223",
 			"name": "Delete",
 			"method": "DELETE",
 			"body": {
 				"text": ""
 			},
 			"parameters": [],
-			"headers": [],
+			"headers": [
+				{
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
+				}
+			],
 			"authentication": {},
 			"metaSortKey": -1481243570808,
 			"_type": "request"
@@ -184,9 +213,9 @@
 		{
 			"_id": "req_eaca0648aa1e4f82912d8a32b47c89fe",
 			"parentId": "fld_2903bf5c01ff4ae8b978e50942280518",
-			"modified": 1482169416099,
+			"modified": 1486915703559,
 			"created": 1481243594831,
-			"url": "{{base_url}}/user/{{token}}/trust/25472",
+			"url": "{{base_url}}/user/{{token}}/trust/24228",
 			"name": "Get single",
 			"method": "GET",
 			"body": {
@@ -270,14 +299,14 @@
 		{
 			"_id": "req_c814620e110744969c0042b1e2707395",
 			"parentId": "fld_2a4f25d775214e7f98a99a782f7623cb",
-			"modified": 1483227062348,
+			"modified": 1486915656709,
 			"created": 1482248592887,
 			"url": "{{base_url}}/login",
 			"name": "Login - JSON",
 			"method": "POST",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"token\": \"paradigmshift3d\",\n\t\"password\": \"foo\",\n\t\"scopes\": [\n\t\t\"command:create\",\n\t\t\"command:manage\",\n\t\t\"repeat:manage\"\n\t]\n}"
+				"text": "{\n\t\"token\": \"paradigmshift3d\",\n\t\"password\": \"foo\",\n\t\"scopes\": [\n\t\t\"command:create\",\n\t\t\"command:manage\",\n\t\t\"repeat:manage\",\n\t\t\"alias:manage\",\n\t\t\"alias:create\",\n\t\t\"repeat:manage\",\n\t\t\"repeat:create\",\n\t\t\"quote:create\",\n\t\t\"quote:manage\",\n\t\t\"social:create\",\n\t\t\"social:manage\",\n\t\t\"trust:create\",\n\t\t\"trust:manage\"\n\t]\n}"
 			},
 			"parameters": [
 				{
@@ -298,20 +327,28 @@
 		{
 			"_id": "req_13c6c9dacf0b4c499d356d019b86c634",
 			"parentId": "fld_3d3060ed09344701975cf4d677fda041",
-			"modified": 1482169416098,
+			"modified": 1486915572799,
 			"created": 1481243820675,
-			"url": "{{base_url}}/user/{{token}}/social/github",
+			"url": "{{base_url}}/user/{{token}}/social/GIthub",
 			"name": "Create",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"url\": \"https://githhub.com/RPiAwesomeness\"\n}"
+				"text": "{\n\t\"url\": \"https://github.com/RPiAwesomeness\"\n}"
 			},
 			"parameters": [],
 			"headers": [
 				{
 					"name": "Content-Type",
 					"value": "application/json"
+				},
+				{
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOiIwMDExMTExMTAwMTExMSIsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.ck3XcvDNrtc89ol31yrn3NTOZ0-5iOvMyVz7SziSi5OfOpVVzTBtW8wWKtIyEp5fi19nvE2cgMRhrRSA4p_2fg"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
 				}
 			],
 			"authentication": {},
@@ -398,9 +435,9 @@
 		{
 			"_id": "req_2d47e2e89bc442fb82641ca28b773e0f",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1483048841798,
+			"modified": 1486169769419,
 			"created": 1481243371570,
-			"url": "{{base_url}}/user/{{token}}/command/shoutout",
+			"url": "{{base_url}}/user/{{token}}/command/SPam",
 			"name": "Get single",
 			"method": "GET",
 			"body": {
@@ -424,14 +461,14 @@
 		{
 			"_id": "req_4b1efab79b0642cba8ba631648b8e01c",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1483227069238,
+			"modified": 1486916363241,
 			"created": 1481951470288,
-			"url": "{{base_url}}/user/{{token}}/command/foo",
+			"url": "{{base_url}}/user/{{token}}/command/SPam",
 			"name": "Create command",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"role\": 0,\n\t\"response\": {\n\t\t\"action\": false,\n\t\t\"target\": null,\n\t\t\"user\": \"\",\n\t\t\"message\": [\n\t\t\t{\n\t\t\t\t\"type\": \"text\",\n\t\t\t\t\"data\": \"lol!\",\n\t\t\t\t\"text\": \"lol!\"\n\t\t\t}\n\t\t]\n\t}\n}"
+				"text": "{\n\t\"response\": {\n\t\t\"role\": 0,\n\t\t\"action\": true,\n\t\t\"target\": null,\n\t\t\"user\": \"\",\n\t\t\"message\": [\n\t\t\t{\n\t\t\t\t\"type\": \"text\",\n\t\t\t\t\"data\": \"lol!\",\n\t\t\t\t\"text\": \"lol!\"\n\t\t\t}\n\t\t]\n\t}\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -441,7 +478,7 @@
 				},
 				{
 					"name": "X-Auth-Key",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOiIwMDAwMTAwMDAwMTEwMCIsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.6IDm9RDM7p68hME_PXm2ndqgovfhol99AxiFUkKG2XS3eyQwASBB_rhdUqRCSQiFSqzStiS4Aq6eqzv6iD6lTA"
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
 				},
 				{
 					"name": "X-Auth-Token",
@@ -455,9 +492,9 @@
 		{
 			"_id": "req_b0c1357cd4414a10a4f7422168048432",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1483048874453,
+			"modified": 1486916373551,
 			"created": 1481243356848,
-			"url": "{{base_url}}/user/{{token}}/command/foo",
+			"url": "{{base_url}}/user/{{token}}/command/SPam",
 			"name": "Delete",
 			"method": "DELETE",
 			"body": {
@@ -466,8 +503,8 @@
 			"parameters": [],
 			"headers": [
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJjb21tYW5kOmNyZWF0ZSIsImNvbW1hbmQ6ZGV0YWlscyIsImNvbW1hbmQ6bWFuYWdlIl0sImV4cGlyZXMiOjE0ODMxNTMxNzh9.FLM70FQ3qGJjDIGRerqkH_I_Bly5KQRUrOK0eJruzElfHTxAbC_db7rLDz85OpcVsNfQu5Bt_RXMZ1IX8uNz6A"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
 				},
 				{
 					"name": "X-Auth-Token",
@@ -481,14 +518,14 @@
 		{
 			"_id": "req_e5ecbb8799434fd48dd270bb15aa1a81",
 			"parentId": "fld_5e64e71bea664f749e00e8b9d1d05199",
-			"modified": 1483048822608,
+			"modified": 1486916355603,
 			"created": 1482638754893,
-			"url": "{{base_url}}/user/{{token}}/command/foo/count",
+			"url": "{{base_url}}/user/{{token}}/command/spam/count",
 			"name": "Update count",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"count\": \"+1\"\n}"
+				"text": "{\n\t\"count\": \"=21\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -497,8 +534,8 @@
 					"value": "application/json"
 				},
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJjb21tYW5kOmNyZWF0ZSIsImNvbW1hbmQ6ZGV0YWlscyIsImNvbW1hbmQ6bWFuYWdlIl0sImV4cGlyZXMiOjE0ODMxNTMxNzh9.FLM70FQ3qGJjDIGRerqkH_I_Bly5KQRUrOK0eJruzElfHTxAbC_db7rLDz85OpcVsNfQu5Bt_RXMZ1IX8uNz6A"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
 				},
 				{
 					"name": "X-Auth-Token",
@@ -512,7 +549,7 @@
 		{
 			"_id": "req_0650bec1a5234e98b77df96782d26132",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1483049185354,
+			"modified": 1486915413568,
 			"created": 1481243491298,
 			"url": "{{base_url}}/user/{{token}}/quote/1",
 			"name": "Delete",
@@ -523,8 +560,8 @@
 			"parameters": [],
 			"headers": [
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJxdW90ZTpjcmVhdGUiLCJxdW90ZTpkZXRhaWxzIiwicXVvdGU6bWFuYWdlIiwicXVvdGU6bGlzdCJdLCJleHBpcmVzIjoxNDgzMTUzNTEwfQ.30h-WdXn7A5qgb5NCbKIUILwd8v4kLbLM-t8561VJ8ntpo4hfZehzB8faq6euMmp22CWpmRlFFzOQB20mFGFMA"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOiIwMDAwMTExMTAwMTExMSIsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.Tg7xK9w6X_Bkio2znEzNklsDcnrH1NJ-HDsK9sUvpAUqyYDvUo9XYLeSgEr0yuTMWSD5DRe8-rtV5-M60jEl0A"
 				},
 				{
 					"name": "X-Auth-Token",
@@ -538,7 +575,7 @@
 		{
 			"_id": "req_22cba47bdd1146cfa28ec9ef27696fdb",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1483049179302,
+			"modified": 1486915373818,
 			"created": 1481243469086,
 			"url": "{{base_url}}/user/{{token}}/quote",
 			"name": "Create",
@@ -554,8 +591,8 @@
 					"value": "application/json"
 				},
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJxdW90ZTpjcmVhdGUiLCJxdW90ZTpkZXRhaWxzIiwicXVvdGU6bWFuYWdlIiwicXVvdGU6bGlzdCJdLCJleHBpcmVzIjoxNDgzMTUzNTEwfQ.30h-WdXn7A5qgb5NCbKIUILwd8v4kLbLM-t8561VJ8ntpo4hfZehzB8faq6euMmp22CWpmRlFFzOQB20mFGFMA"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOiIwMDAwMTExMTAwMTExMSIsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.Tg7xK9w6X_Bkio2znEzNklsDcnrH1NJ-HDsK9sUvpAUqyYDvUo9XYLeSgEr0yuTMWSD5DRe8-rtV5-M60jEl0A"
 				},
 				{
 					"name": "X-Auth-Token",
@@ -569,9 +606,9 @@
 		{
 			"_id": "req_36852c6d32e345cca3ecf6a4f67f7309",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1483049215310,
+			"modified": 1486694092483,
 			"created": 1481243500258,
-			"url": "{{base_url}}/user/{{token}}/quote?limit=2",
+			"url": "{{base_url}}/user/{{token}}/quote",
 			"name": "Get all",
 			"method": "GET",
 			"body": {
@@ -621,14 +658,14 @@
 		{
 			"_id": "req_6314d8c100f147f9a53fcd7bc4bac6f8",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1483049795595,
+			"modified": 1486915394045,
 			"created": 1483049594840,
 			"url": "{{base_url}}/user/{{token}}/quote/1",
 			"name": "Edit",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"token\": \"boom\"\n}"
+				"text": "{\n\t\"quote\": \"foo bar\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -641,8 +678,8 @@
 					"value": "paradigmshift3d"
 				},
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6WyJxdW90ZTpjcmVhdGUiLCJxdW90ZTpkZXRhaWxzIiwicXVvdGU6bWFuYWdlIiwicXVvdGU6bGlzdCJdLCJleHBpcmVzIjoxNDgzMTUzNTEwfQ.30h-WdXn7A5qgb5NCbKIUILwd8v4kLbLM-t8561VJ8ntpo4hfZehzB8faq6euMmp22CWpmRlFFzOQB20mFGFMA"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOiIwMDAwMTExMTAwMTExMSIsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.Tg7xK9w6X_Bkio2znEzNklsDcnrH1NJ-HDsK9sUvpAUqyYDvUo9XYLeSgEr0yuTMWSD5DRe8-rtV5-M60jEl0A"
 				}
 			],
 			"authentication": {},
@@ -652,9 +689,9 @@
 		{
 			"_id": "req_d35cc998a4bf4f8ca889014090d91c25",
 			"parentId": "fld_6bad52bfa7764481b87dfabe4a3d0519",
-			"modified": 1483049581491,
+			"modified": 1486694466566,
 			"created": 1481243510228,
-			"url": "{{base_url}}/user/{{token}}/quote/2",
+			"url": "{{base_url}}/user/{{token}}/quote/1",
 			"name": "Get single",
 			"method": "GET",
 			"body": {
@@ -678,7 +715,7 @@
 		{
 			"_id": "req_a43a83691a71477f975081c2f3c04ed8",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1482602422007,
+			"modified": 1486693548670,
 			"created": 1481243753024,
 			"url": "{{base_url}}/user/{{token}}/alias/spam",
 			"name": "Delete",
@@ -687,7 +724,16 @@
 				"text": ""
 			},
 			"parameters": [],
-			"headers": [],
+			"headers": [
+				{
+					"name": "X-Auth-Key",
+					"value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzY29wZXMiOiIwMDAwMTEwMDAwMTExMSIsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.Oa2oMZ8lMcC9xjzyEOFmv1pOxNgdV8cTPRsqc9XPN5nEYm98sP7S0AlLXy5B5EwBhn9GhVKXnMTrkmdrs4yRIA"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
+				}
+			],
 			"authentication": {},
 			"metaSortKey": -1481243682864,
 			"_type": "request"
@@ -695,20 +741,28 @@
 		{
 			"_id": "req_ae96439f7ed64a25be8d7ac08745680d",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1482871000210,
+			"modified": 1486916762262,
 			"created": 1481243753056,
-			"url": "{{base_url}}/user/{{token}}/alias/spam",
+			"url": "{{base_url}}/user/{{token}}/alias/foo",
 			"name": "Create",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"commandName\": \"foo\",\n\t\"arguments\": [\n\t\t{\n\t\t\t\"type\": \"text\",\n\t\t\t\"data\": \"foo\",\n\t\t\t\"text\": \"foo\"\n\t\t}\n\t]\n} "
+				"text": "{\n\t\"commandName\": \"SPam\",\n\t\"arguments\": [\n\t\t{\n\t\t\t\"type\": \"text\",\n\t\t\t\"data\": \"foo\",\n\t\t\t\"text\": \"foo\"\n\t\t}\n\t]\n} "
 			},
 			"parameters": [],
 			"headers": [
 				{
 					"name": "Content-Type",
 					"value": "application/json"
+				},
+				{
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
 				}
 			],
 			"authentication": {},
@@ -718,9 +772,9 @@
 		{
 			"_id": "req_e785141612c24ad794075a7330f0154e",
 			"parentId": "fld_a8d98658e4d247979d8614957310ff17",
-			"modified": 1483030105462,
+			"modified": 1485638151697,
 			"created": 1481243753013,
-			"url": "{{base_url}}/user/{{token}}/alias/spam",
+			"url": "{{base_url}}/user/{{token}}/alias/SPam",
 			"name": "Get single",
 			"method": "GET",
 			"body": {
@@ -771,9 +825,9 @@
 		{
 			"_id": "req_3023051e4f3c46e895ba8cc33c38771f",
 			"parentId": "fld_b0f9507fcb754dcd8cd2c6a7d9296461",
-			"modified": 1483387399541,
+			"modified": 1483388992074,
 			"created": 1481243923268,
-			"url": "{{base_url}}/user/ParadigmShift3d",
+			"url": "https://cactus.exoz.one/api/v1/user/ParadigmShift3d",
 			"name": "Create",
 			"method": "POST",
 			"body": {
@@ -792,7 +846,7 @@
 				},
 				{
 					"name": "X-Auth-Key",
-					"value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6InJvb3QiLCJzY29wZXMiOiJyb290In0.Gm_Zmg-nluPBDZoQDMJIRURHre_HHVFV3aZAYs7-muFOBHoC52c0b6dDFD5_fCo8bmNhtuG57GcbtxeZK1U5IQ"
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InJvb3QiLCJzY29wZXMiOiJyb290In0.0JqAhf4BRSkHDPLxFb99kJWoj12Zmhv29NPP7WDAoTUUhtVdHSH5J2JDG_q9eGjbebll4fBjTha4mie1XN0Rug"
 				}
 			],
 			"authentication": {},
@@ -850,7 +904,7 @@
 		{
 			"_id": "req_0e3395c83e0c4f4d960828f81b43d40e",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1483052993729,
+			"modified": 1486916315137,
 			"created": 1481243682864,
 			"url": "{{base_url}}/user/{{token}}/repeat/test",
 			"name": "Delete",
@@ -865,8 +919,12 @@
 					"value": "paradigmshift3d"
 				},
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOlsicmVwZWF0OmNyZWF0ZSIsInJlcGVhdDpkZXRhaWxzIiwicmVwZWF0Om1hbmFnZSIsInJlcGVhdDpsaXN0Il0sImV4cGlyZXMiOjE0ODMxNTY0ODAsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.T8D54pDpKZbTNi5nDNWt4W2jlNlceyqrWladVWLAntm2sUpfVigkvs3u2kFn5Rgf7SO96bNd6STooNtbOAMuBg"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
+				},
+				{
+					"name": "X-Auth-Token",
+					"value": "paradigmshift3d"
 				}
 			],
 			"authentication": {},
@@ -902,14 +960,14 @@
 		{
 			"_id": "req_fcddba77aa664eb69f82185a7233b225",
 			"parentId": "fld_b87f3ec245e24628bd5465ee38f3c1d0",
-			"modified": 1483130700307,
+			"modified": 1486916101693,
 			"created": 1481243668111,
 			"url": "{{base_url}}/user/{{token}}/repeat/test",
 			"name": "Create",
 			"method": "PATCH",
 			"body": {
 				"mimeType": "application/json",
-				"text": "{\n\t\"period\": 1800,\n\t\"commandName\": \"foo\"\n}"
+				"text": "{\n\t\"period\": 900,\n\t\"commandName\": \"SPam\"\n}"
 			},
 			"parameters": [],
 			"headers": [
@@ -922,8 +980,8 @@
 					"value": "paradigmshift3d"
 				},
 				{
-					"name": "X-Auth-JWT",
-					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzY29wZXMiOlsicmVwZWF0OmNyZWF0ZSIsInJlcGVhdDpkZXRhaWxzIiwicmVwZWF0Om1hbmFnZSIsInJlcGVhdDpsaXN0Il0sImV4cGlyZXMiOjE0ODMxNTY0ODAsInRva2VuIjoicGFyYWRpZ21zaGlmdDNkIn0.T8D54pDpKZbTNi5nDNWt4W2jlNlceyqrWladVWLAntm2sUpfVigkvs3u2kFn5Rgf7SO96bNd6STooNtbOAMuBg"
+					"name": "X-Auth-Key",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJ0b2tlbiI6InBhcmFkaWdtc2hpZnQzZCIsInNjb3BlcyI6IjExMTExMTExMDAxMTExIn0.jYADjuXXprihf9cMBWZN2yhRJPy7gvcW6v38UJee1kSG84Rlj_Bn1i9jHdBzc2huDc448EH_2C3SGJfZnUOkOg"
 				}
 			],
 			"authentication": {},

@@ -21,19 +21,25 @@
 * ~~TODO Make sure the token exists as a user in the API, otherwise give a 403 because user doesn't exist~~
 * ~~TODO Repeats done by repeat alias instead of numeric ID~~
 * ~~TODO Make repeats "editable" to change time~~
-* TODO Figure out what happened to createdAt key
-* ~~Add command name to repeats~~
+* ~~TODO Figure out what happened to createdAt key~~
+* ~~TODO Add command name to repeats~~
 * TODO Make `PATCH` for quotes only edit, not create
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
 * ~~TODO Convert list in auth key to bits/hex strings~~
+* ~~TODO Make aliases endpoint have proper type "alias" not "aliase"~~
+* TODO DB migration tool
 
 # Grouped TODOs
 
 * Unit tests
-  * Commands
-  * Quotes
-  * Tickets
-  * Trusts
+  * ~~Commands~~
+  * ~~Quotes~~
+  * ~~Trusts~~
+  * ~~Users~~
+  * ~~Aliases~~
+  * ~~Repeats~~
+  * All tables/users created before tests start then test authentication & run tests as regular user
+* DocTests/documentation for all backend functions
   * Models/Schemas:
     * Validation
     * Import/Export
@@ -46,6 +52,8 @@
       * rethink
 
   * Rate limiting
+  * Tables and users have to be created before tests can occur
+  * Resources aren't 100% removed from DB until end of test (specifically commands, because they're needed in later tests)
 
 # Later TODOs
 

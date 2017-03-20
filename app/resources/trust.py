@@ -40,8 +40,11 @@ class TrustResource(Resource):
     @helpers.lower_kwargs("token", "userId")
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
+        if data.get("id") is not None:
+            del data["id"]
+
         attributes, errors, code = helpers.create_or_update(
-            "trust", Trust, data, "token", "userId")
+            "trust", Trust, data, **path_data)
 
         response = {}
 
@@ -51,7 +54,7 @@ class TrustResource(Resource):
             response["meta"] = {"edited": True}
 
         if errors == {}:
-            response["attributes"] = attributes
+            response["data"] = attributes
         else:
             response["errors"] = errors
 

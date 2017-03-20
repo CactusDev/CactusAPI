@@ -6,11 +6,12 @@ from ..schemas import QuoteSchema
 class Quote:
     schema = QuoteSchema()
 
-    def __init__(self, *, quote, quoteId, token, enabled=True, **kwargs):
+    def __init__(self, *, quote, quoteId, token, createdAt,
+                 enabled=True, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
         self.quote = quote
         self.quoteId = quoteId
         self.token = token.lower()
         self.enabled = enabled
-        self.createdAt = datetime.utcnow()
+        self.createdAt = createdAt

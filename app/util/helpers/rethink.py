@@ -130,6 +130,11 @@ def get_one(table, uid=None, **kwargs):
     """
     is_uid = False
 
+    cased = kwargs.get("cased")
+    if cased is not None:
+        del kwargs["cased"]
+    to_filter = kwargs.get("to_filter", kwargs)
+
     # uid, if included, must be type string or uuid.UUID
     if uid is not None:
         if not isinstance(uid, str):
@@ -145,19 +150,27 @@ def get_one(table, uid=None, **kwargs):
     elif kwargs == {} and uid is None:
         # uid was not included and neither were any kwargs
         # Select the first row in the table
-        query = rethink.table(table).limit(1)
+        query = rethink.table(table)
 
     elif kwargs != {} and uid is None:
         # uid was not included, but there are kwargs
-        query = rethink.table(table).filter(kwargs).limit(1)
+        query = rethink.table(table).filter(to_filter)
 
     response = query.run(g.rdb_conn)
 
     if response is not None:
         if not is_uid:
             response = list(response)
+            # Only check if cased was provided
+            if cased is not None:
+                for res in response:
+                    if res.get(cased["key"]) == cased["value"]:
+                        return res
+
             if len(response) > 0:
                 return response[0]
+            else:
+                return {}
         else:
             return dict(response)
 
@@ -201,13 +214,18 @@ def get_multiple(table, limit=None, **kwargs):
         Other keyword arguments may be included filter the request by
     """
 
+    cased = kwargs.get("cased")
+    if cased is not None:
+        del kwargs["cased"]
+    to_filter = kwargs.get("to_filter", kwargs)
+
     # Check if limit is not None, then the user wants a limit
     if limit is not None and kwargs != {}:
-        query = rethink.table(table).filter(kwargs).limit(limit)
+        query = rethink.table(table).filter(to_filter).limit(limit)
     elif limit is not None and kwargs == {}:
         query = rethink.table(table).limit(limit)
     elif limit is None and kwargs != {}:
-        query = rethink.table(table).filter(kwargs)
+        query = rethink.table(table).filter(to_filter)
     elif limit is None and kwargs == {}:
         query = rethink.table(table)
 

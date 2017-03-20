@@ -68,11 +68,14 @@ class UserResource(Resource):
         # TODO: Does this need to be changed/improved at all?
         if "password" in data:
             data["password"] = argon_hash(data["password"])
+        if data.get("id") is not None:
+            del data["id"]
 
         # TODO: Have to check if that token exists already, can't allow
         # duplicates
         attributes, errors, code = helpers.create_or_update(
-            "user", User, data, "service", "userId", post=True)
+            "user", User, data,
+            service=data["service"], userId=data["userId"], post=True)
 
         # Failed creating the user record
         if errors != {}:
@@ -88,7 +91,7 @@ class UserResource(Resource):
 
         _, errors, config_code = helpers.create_or_update(
             "config", Config, Config.default_data(data["token"]),
-            "token")
+            token=data["token"])
 
         if errors != {}:
             raise APIError(errors, code=config_code)
