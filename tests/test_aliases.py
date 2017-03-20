@@ -42,7 +42,6 @@ class TestAliases:
                              headers=api_auth)
         data = json.loads(alias.data.decode())
         assert alias.status_code == 201
-        # FIXME: This needs to be able to test for alias instead of aliases
         assert data["data"]["type"] == "alias"
         data = data["data"]
 
