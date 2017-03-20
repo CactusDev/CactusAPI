@@ -26,17 +26,20 @@
 * TODO Make `PATCH` for quotes only edit, not create
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
 * ~~TODO Convert list in auth key to bits/hex strings~~
-* TODO Make aliases endpoint have proper type "alias" not "aliase"
+* ~~TODO Make aliases endpoint have proper type "alias" not "aliase"~~
+* TODO DB migration tool
 
 # Grouped TODOs
 
 * Unit tests
-  ~~* Commands~~
-  ~~* Quotes~~
-  * Trusts
-  ~~* Users~~
-  * Aliases
-  * Repeats
+  * ~~Commands~~
+  * ~~Quotes~~
+  * ~~Trusts~~
+  * ~~Users~~
+  * ~~Aliases~~
+  * ~~Repeats~~
+  * All tables/users created before tests start then test authentication & run tests as regular user
+* DocTests/documentation for all backend functions
   * Models/Schemas:
     * Validation
     * Import/Export

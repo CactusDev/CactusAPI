@@ -90,7 +90,9 @@ def json_api_response(data, resource, model):
     if data == {}:
         return data
 
-    if resource.endswith('s'):
+    if resource.endswith('es'):
+        resource = resource[:-2]
+    elif resource.endswith('s'):
         resource = resource[:-1]
 
     if isinstance(data, dict):
