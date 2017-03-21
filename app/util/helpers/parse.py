@@ -44,18 +44,14 @@ def validate_data(model, data, partial=False):
     return None
 
 
-def resource_exists(table_name, model, **kwargs):
-    errors = validate_data(model, kwargs, True)
-    if errors is not None:
-        return errors, 400
-
+def resource_exists(table_name, **kwargs):
     # Check if anything exists that exactly copies that
     exists = get_one(table_name, **kwargs)
 
     if exists == {}:
         return {}, 404
 
-    return exists, None
+    return exists, 200
 
 
 def parse(model, data, partial=False):

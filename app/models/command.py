@@ -9,7 +9,7 @@ class Command:
     force_on_create = {"response": "message"}
 
     def __init__(self, *, name, response, token, role=0,
-                 createdAt=datetime.utcnow(), enabled=True,
+                 createdAt, enabled=True,
                  arguments, count, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]

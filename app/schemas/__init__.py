@@ -9,3 +9,14 @@ from .config import ConfigSchema
 
 __all__ = ["CommandSchema", "TrustSchema", "SocialSchema", "ConfigSchema",
            "UserSchema", "QuoteSchema", "RepeatSchema", "CmdAliasSchema"]
+
+table_map = {
+    "CommandSchema": "commands",
+    "TrustSchema": "trusts",
+    "ConfigSchema": "configs",
+    "SocialSchema": "socials",
+    "UserSchema": "users",
+    "QuoteSchema": "quotes",
+    "RepeatSchema": "repeats",
+    "CmdAliasSchema": "aliases"
+}

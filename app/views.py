@@ -3,7 +3,7 @@
 import rethinkdb as rethink
 import redis
 from . import app
-from flask import g, jsonify
+from flask import g, jsonify, request
 
 REDIS_CONN = redis.Redis()
 
@@ -67,6 +67,16 @@ api.add_resource(resources.ConfigResource,
 api.add_resource(authentication.Login, "{}/login".format(prefix))
 
 from .util.auth import OAuthSignIn
+from . import util
+from . import models
+
+
+@app.route("/test/<token>/<name>")
+def test(**kwargs):
+    resp, err, code = util.helpers.create_or_update(
+        "commands", models.Command, {**request.get_json(), **kwargs}, "name", **kwargs)
+
+    return jsonify({"resp": resp, "err": err}), code
 
 
 @app.route("/authorize/<provider>")

@@ -35,6 +35,13 @@ def multi_response(table_name, model, random=False, **kwargs):
 
 def single_response(table_name, model, **kwargs):
 
+    cased = kwargs.get("cased")
+    if cased is not None and isinstance(cased, str):
+        kwargs["to_filter"] = lambda row: row[cased].match(
+            "(?i)^{val}$".format(val=kwargs[cased]))
+
+        kwargs["cased"] = {"key": cased, "value": kwargs[cased]}
+
     data = get_one(table_name, **kwargs)
 
     if data == {}:
@@ -83,8 +90,14 @@ def json_api_response(data, resource, model):
     if data == {}:
         return data
 
+    if resource.endswith('es'):
+        resource = resource[:-2]
+    elif resource.endswith('s'):
+        resource = resource[:-1]
+
     if isinstance(data, dict):
         data = recurse_dict(data, model)
+
         return {
             "id": data.pop("id"),
             "attributes": data,
