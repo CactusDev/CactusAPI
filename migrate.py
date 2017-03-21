@@ -2,16 +2,38 @@ import rethinkdb as rethink
 from app import app
 from app import schemas
 from pprint import pprint
-from marshmallow import fields
+from termcolor import colored
+import marshmallow
+import os
+
+# Backup DB
+
+
+class Colorized:
+
+    @staticmethod
+    def failure(message):
+        return colored(message, "white", "on_red", attrs=["bold"])
+
+    @staticmethod
+    def success(message, bg=True):
+        if bg:
+            return colored(message, "white", "on_green", attrs=["bold"])
+
+        return colored(message, "green")
+
+    @staticmethod
+    def info(message):
+        return colored(message, "white", "on_cyan")
 
 
 class RethinkConnnection:
     defaults = {
-        fields.String: "",
-        fields.Integer: 0,
-        fields.Boolean: True,
-        # fields.Nested: {}, # Going to be a paaaaain
-        fields.List: []
+        str(marshmallow.fields.String): "",
+        str(marshmallow.fields.Integer): 0,
+        str(marshmallow.fields.Boolean): True,
+        str(marshmallow.fields.Nested): {},  # Going to be a paaaaain
+        str(marshmallow.fields.List): []
     }
 
     def __init__(self, database=app.config["RDB_DB"],
@@ -22,11 +44,16 @@ class RethinkConnnection:
         self.host = host
         self.port = port
         self.blacklist = blacklist
-        self.connection = rethink.connect(
-            host=self.host,
-            db=self.db,
-            port=self.port
-        )
+        try:
+            self.connection = rethink.connect(
+                host=self.host,
+                db=self.db,
+                port=self.port
+            )
+        except rethink.errors.ReqlDriverError as e:
+            error_msg = Colorized.failure("Database connection failed!")
+            print("{} {}".format(error_msg, e))
+            raise SystemExit
 
     def __exit__(self, exc_type, exc_value, traceback):
         try:
@@ -55,43 +82,50 @@ class RethinkConnnection:
         Take a table and a dictionary of new values to update with
         and update the table
         """
-        pass
+        resp = rethink.table(table).update(update_vals).run(self.connection)
+        return resp
 
-    def remove_fields(self, table, fields):
-        """
-        Take a table and a list of fields and remove those fields, then
-        update the database
-        """
-        pass
 
 if __name__ == "__main__":
     conn = RethinkConnnection()
+    # A list of the tables in the database if they're not blacklisted
     tables = [
         table for table in conn.get_tables()
         if table not in conn.blacklist
     ]
+    # A dictionary of the fields for each table returned
     table_fields = {
         table: conn.get_fields(table)
         for table in tables
     }
 
+    # Iterating over the different schemas defined
     for schema, table in schemas.table_map.items():
-        print("table:\t", table)
+        # Get a list of strings for the field names for this schema
         fields = set(getattr(schemas, schema)().fields.keys())
-        missing_fields = [
+        # A list of all the keys that the database is missing
+        db_missing = [
             val for val in fields if val not in table_fields[table]
         ]
-        print(missing_fields)
-        for field in missing_fields:
-            pprint(
-                (getattr(schemas, schema)().fields)[field])
-        print("------------------")
+        # A dictionary that will be used to update the database
+        update_values = {}
 
-    # Backup DB
-    # For each table:
-    # Get record list
-    # Compare all records' keys to current schemas
-    # Remove fields removed in new schema
-    # For each record in each table:
-    # Insert new field. New value = annotation on field/else default for type
-    # (0, "", true, etc.)
+        # Iterate over the missing fields (if there are any)
+        for field in db_missing:
+            # Get the object for the current field
+            field_obj = (getattr(schemas, schema)().fields)[field]
+            # Does the current field have a custom default set?
+            if field_obj.default != marshmallow.missing:
+                # Use that
+                update_values[field] = field_obj.default
+            else:
+                # Go with the default as defined in RethinkConnnection
+                update_values[field] = conn.defaults[str(type(field_obj))]
+
+        print(Colorized.info("DB response:\t"),
+              conn.update_values(table, update_values))
+        print(Colorized.success("{} complete!".format(table.capitalize())))
+        print('=' * 64)
+
+    print(Colorized.success("Migrations complete!",
+                            bg=False).center(os.get_terminal_size().columns))
