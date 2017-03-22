@@ -19,6 +19,6 @@ class RepeatSchema(Schema):
 
     @validates("period")
     def foo(self, data):
-        if data < 60000:
+        if data < 60:
             raise ValidationError("Minimum time for a repeat is 1 minute "
-                                  "(60000 milliseconds)")
+                                  "(60 seconds)")
