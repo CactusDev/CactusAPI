@@ -30,9 +30,15 @@ class SpamSchema(Schema):
     maxCapsScore = fields.Integer(default=16)
     allowUrls = fields.Boolean(default=False)
 
+
 class WhitelistSchema(Schema):
     whitelistedUrls = fields.List(fields.String())
     whitelistedWords = fields.List(fields.String())
+
+
+class BlacklistSchema(Schema):
+    blacklisted_urls = fields.List(fields.String())
+    blacklisted_words = fields.List(fields.String())
 
 
 class ConfigSchema(Schema):

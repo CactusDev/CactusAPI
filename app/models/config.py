@@ -94,3 +94,14 @@ class Whitelist:
     def __init__(self, whitelisted_urls=[], whitelisted_words=[]):
         self.whitelisted_urls = whitelisted_urls
         self.whitelisted_words = whitelisted_words
+
+
+class Blacklist:
+    """
+    Dummy class to keep track of sub-configs. Perhaps will implement proper
+    loading later
+    """
+
+    def __init__(self, blacklisted_urls=[], blacklisted_words=[]):
+        self.blacklisted_urls = blacklisted_urls
+        self.blacklisted_words = blacklisted_words
