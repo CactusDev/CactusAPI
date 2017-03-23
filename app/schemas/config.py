@@ -32,8 +32,8 @@ class SpamSchema(Schema):
 
 
 class WhitelistSchema(Schema):
-    whitelistedUrls = fields.List(fields.String())
-    whitelistedWords = fields.List(fields.String())
+    whitelisted_urls = fields.List(fields.String())
+    whitelisted_words = fields.List(fields.String())
 
 
 class BlacklistSchema(Schema):
