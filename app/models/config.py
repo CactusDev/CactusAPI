@@ -23,7 +23,7 @@ class Config:
             "services": [Service().__dict__],
             "announce": Announcements().__dict__,
             "spam": Spam().__dict__,
-            "whitelisted_urls": []
+            "whitelist": Whitelist().__dict__
         }
 
 
@@ -83,3 +83,14 @@ class Spam:
         self.maxEmoji = maxEmoji
         self.allowUrls = allowUrls
         self.maxCapsScore = maxCapsScore
+
+
+class Whitelist:
+    """
+    Dummy class to keep track of sub-configs. Perhaps will implement proper
+    loading later
+    """
+
+    def __init__(self, whitelisted_urls=[], whitelisted_words=[]):
+        self.whitelisted_urls = whitelisted_urls
+        self.whitelisted_words = whitelisted_words

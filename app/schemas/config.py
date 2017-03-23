@@ -30,6 +30,10 @@ class SpamSchema(Schema):
     maxCapsScore = fields.Integer(default=16)
     allowUrls = fields.Boolean(default=False)
 
+class WhitelistSchema(Schema):
+    whitelistedUrls = fields.List(fields.String())
+    whitelistedWords = fields.List(fields.String())
+
 
 class ConfigSchema(Schema):
     id = fields.String()
@@ -37,4 +41,4 @@ class ConfigSchema(Schema):
     services = fields.Nested(ServiceSchema, many=True)
     announce = fields.Nested(AnnouncementsSchema)
     spam = fields.Nested(SpamSchema)
-    whitelistedUrls = fields.List(fields.String)
+    whitelist = fields.Nested(WhitelistSchema)
