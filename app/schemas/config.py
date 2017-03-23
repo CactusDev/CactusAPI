@@ -48,3 +48,4 @@ class ConfigSchema(Schema):
     announce = fields.Nested(AnnouncementsSchema)
     spam = fields.Nested(SpamSchema)
     whitelist = fields.Nested(WhitelistSchema)
+    blacklist = fields.Nested(BlacklistSchema)
