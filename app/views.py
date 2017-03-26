@@ -13,7 +13,9 @@ def before_request():
     """Make certain things accessible in every new request"""
     g.rdb_conn = rethink.connect(host=app.config["RDB_HOST"],
                                  port=app.config["RDB_PORT"],
-                                 db=app.config["RDB_DB"])
+                                 db=app.config["RDB_DB"],
+                                 username=app.config["RDB_USERNAME"],
+                                 password=app.config["RDB_PASSWORD"])
 
     g.redis = redis.Redis()
 
