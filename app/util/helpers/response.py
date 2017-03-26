@@ -34,11 +34,10 @@ def multi_response(table_name, model, random=False, **kwargs):
 
 
 def single_response(table_name, model, **kwargs):
-
     cased = kwargs.get("cased")
     if cased is not None and isinstance(cased, str):
         kwargs["to_filter"] = lambda row: row[cased].match(
-            "(?i)^{val}$".format(val=kwargs[cased]))
+            "(?i)^{}$".format(kwargs[cased])) & row["token"].match(kwargs["token"])
 
         kwargs["cased"] = {"key": cased, "value": kwargs[cased]}
 

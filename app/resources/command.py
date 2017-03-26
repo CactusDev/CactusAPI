@@ -128,7 +128,7 @@ class CommandResource(Resource):
             if table != "builtins":
                 sort_data = data
             else:
-                sort_data = {"name": kwargs["name"]}
+                sort_data = {"name": kwargs["name"], "token": "CactusBot"}
 
             attributes, errors, code = helpers.single_response(
                 table, model, cased="name", **sort_data
