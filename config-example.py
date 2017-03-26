@@ -3,6 +3,8 @@
 RDB_DB = "api"
 RDB_HOST = "localhost"
 RDB_PORT = 28015
+RDB_USERNAME = "cactus"
+RDB_PASSWORD = "superawesomepassword01!"
 
 SECRET_KEY = "RANDOM SECRET KEY HERE"
 
