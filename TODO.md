@@ -27,7 +27,7 @@
 * ~~TODO Change X-Auth-JWT to X-Auth-Key~~
 * ~~TODO Convert list in auth key to bits/hex strings~~
 * ~~TODO Make aliases endpoint have proper type "alias" not "aliase"~~
-* TODO DB migration tool
+* ~~TODO DB migration tool~~
 
 # Grouped TODOs
 
@@ -39,7 +39,11 @@
   * ~~Aliases~~
   * ~~Repeats~~
   * All tables/users created before tests start then test authentication & run tests as regular user
-* DocTests/documentation for all backend functions
+  * DocTests/documentation for all backend functions
+  * Mock RethinkDB responses
+  * Tests for 404/400 responses
+  * Test commands return nothing for command that exists for different user
+  * Create records and store IDs outside of tests
   * Models/Schemas:
     * Validation
     * Import/Export
