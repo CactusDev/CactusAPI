@@ -60,7 +60,7 @@ class TestQuotes:
             content_type="application/json",
             headers=api_auth
         )
-        cmd_create_data = cmd.json["data"]
+        cmd_create_data = loads(cmd.data.decode())["data"]
 
         assert "attributes" in cmd_create_data
         assert "id" in cmd_create_data
@@ -79,7 +79,7 @@ class TestQuotes:
         assert cmd_create_data["attributes"] == command_data[name]
 
         cmd = client.get(self.url)
-        cmd_all_data = cmd.json["data"]
+        cmd_all_data = loads(cmd.data.decode())["data"]
         assert len(cmd_all_data) == 2
 
         returned_cmds = [cmd["attributes"]["name"] for cmd in cmd_all_data]
@@ -146,4 +146,8 @@ class TestQuotes:
         # Create alias that uses command
         # Delete command
         # Command, repeat, alias IDs all match?
+        pass
+
+    def test_get_nonexistant(self, client, api_auth):
+        # TODO Requests command that exists for another user but not token one
         pass

@@ -20,8 +20,10 @@ class RepeatList(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    def get(self, **kwargs):
-        data = {**kwargs, "token": kwargs["token"].lower()}
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
+        data = {**kwargs, **path_data}
+
         attributes, errors, code = helpers.multi_response(
             "repeats", Repeat, **data)
 
@@ -40,7 +42,7 @@ class RepeatResource(Resource):
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.lower_kwargs("token")
     def get(self, path_data, **kwargs):
-        data = {**path_data, **kwargs}
+        data = {**kwargs, **path_data}
         attributes, errors, code = helpers.single_response(
             "repeats", Repeat, **data)
 
@@ -108,7 +110,7 @@ class RepeatResource(Resource):
     @auth.scopes_required({"repeat:manage"})
     @helpers.lower_kwargs("token")
     def delete(self, path_data, **kwargs):
-        data = {**path_data, "repeatName": kwargs["repeatName"]}
+        data = {"repeatName": kwargs["repeatName"], **path_data}
         deleted = helpers.delete_record("repeat", **data)
 
         if deleted is not None:
