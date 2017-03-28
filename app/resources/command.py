@@ -117,9 +117,10 @@ class CommandList(Resource):
 class CommandResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
         """/api/v1/:token/command/:command -> [str Command name]"""
-        data = {"name": kwargs["name"], "token": kwargs["token"].lower()}
+        data = {"name": kwargs["name"], **path_data}
 
         resources = OrderedDict(
             [("command", Command), ("aliases", Alias), ("builtins", Command)])
@@ -162,9 +163,10 @@ class CommandResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"command:create", "command:manage"})
-    def patch(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(),
-                "name": kwargs["name"], "token": kwargs["token"].lower()}
+                "name": kwargs["name"], **path_data}
 
         if data.get("id") is not None:
             del data["id"]
