@@ -27,7 +27,8 @@ class Config:
             "services": [Service().__dict__],
             "announce": Announcements().__dict__,
             "spam": Spam().__dict__,
-            "whitelist": [Whitelist().__dict__]
+            "whitelist": Whitelist().__dict__,
+            "blacklist": Blacklist().__dict__
         }
 
 
