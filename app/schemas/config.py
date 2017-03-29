@@ -32,13 +32,13 @@ class SpamSchema(Schema):
 
 
 class WhitelistSchema(Schema):
-    whitelisted_urls = fields.List(fields.String())
-    whitelisted_words = fields.List(fields.String())
+    whitelisted_urls = fields.List(fields.String(), default=[])
+    whitelisted_words = fields.List(fields.String(), default=[])
 
 
 class BlacklistSchema(Schema):
-    blacklisted_urls = fields.List(fields.String())
-    blacklisted_words = fields.List(fields.String())
+    blacklisted_urls = fields.List(fields.String(), default=[])
+    blacklisted_words = fields.List(fields.String(), default=[])
 
 
 class ConfigSchema(Schema):
