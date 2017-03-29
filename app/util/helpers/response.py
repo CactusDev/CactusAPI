@@ -1,6 +1,7 @@
 from datetime import datetime
 from dateutil import parser
 from uuid import UUID
+import re
 
 from .rethink import get_one, get_all, get_random, get_multiple
 from .parse import parse
@@ -36,8 +37,10 @@ def multi_response(table_name, model, random=False, **kwargs):
 def single_response(table_name, model, **kwargs):
     cased = kwargs.get("cased")
     if cased is not None and isinstance(cased, str):
-        kwargs["to_filter"] = lambda row: row[cased].match(
-            "(?i)^{}$".format(kwargs[cased])) & row["token"].match(kwargs["token"])
+        kwargs["to_filter"] = lambda row: (
+            row[cased].match("(?i)^{}$".format(re.escape(kwargs[cased]))) &
+            row["token"].match(kwargs["token"])
+        )
 
         kwargs["cased"] = {"key": cased, "value": kwargs[cased]}
 
