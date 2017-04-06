@@ -6,6 +6,7 @@ from .repeats import RepeatResource, RepeatList
 from .alias import AliasResource
 from .social import SocialList, SocialResource
 from .config import ConfigResource
+from .points import PointResource
 
 
 __all__ = ["CommandResource", "CommandList", "CommandCounter",
@@ -15,4 +16,5 @@ __all__ = ["CommandResource", "CommandList", "CommandCounter",
            "RepeatResource", "RepeatList",
            "AliasResource",
            "SocialList", "SocialResource",
-           "ConfigResource"]
+           "ConfigResource",
+           "PointResource"]
