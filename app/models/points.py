@@ -1,4 +1,3 @@
-from datetime import datetime
 from ..schemas import PointsSchema
 
 
@@ -9,6 +8,6 @@ class Points:
         if "id" in kwargs:
             self.id = kwargs["id"]
         self.username = username
-        self.count = count
         self.createdAt = createdAt
         self.token = token
+        self.count = count
