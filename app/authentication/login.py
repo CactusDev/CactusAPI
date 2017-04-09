@@ -53,7 +53,7 @@ class Login(Resource):
         if isinstance(scopes, str):
             scopes = scopes.split()
 
-        bits = list("00000000000000")
+        bits = list('0' * len(API_SCOPES))
 
         scopes = [scope for scope in scopes if scope in API_SCOPES.keys()]
 
