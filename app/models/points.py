@@ -1,8 +1,8 @@
-from ..schemas import PointsSchema
+from ..schemas import PointSchema
 
 
 class Points:
-    schema = PointsSchema()
+    schema = PointSchema()
 
     def __init__(self, *, count, createdAt, token, username, **kwargs):
         if "id" in kwargs:

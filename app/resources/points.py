@@ -3,7 +3,7 @@
 from flask_restplus import Resource
 
 from .. import api
-from ..models import Point
+from ..models import Points
 from ..schemas import PointSchema
 from ..util import helpers, auth
 from ..util.helpers import APIError
@@ -21,14 +21,14 @@ class PointResource(Resource):
         """
         Handles retrieval of points in a channel by channel token and username
         """
-        data = {**kwargs, **path_data}
+        data = {"username": kwargs["name"], **path_data}
         attributes, errors, code = helpers.single_response(
-            "points", Point, **data
+            "points", Points, **data
         )
 
         response = {}
 
-        if errors != []:
+        if errors != {}:
             response["errors"] = errors
         else:
             response["data"] = attributes
@@ -36,7 +36,7 @@ class PointResource(Resource):
         return response, code
 
     @limiter.limit("1000/day;90/hour;20/minute")
-    @auth.scopes_required({"point:manage"})
+    @auth.scopes_required({"points:manage"})
     @helpers.lower_kwargs("token")
     def patch(self, path_data, **kwargs):
         """
@@ -45,31 +45,49 @@ class PointResource(Resource):
         data = {**helpers.get_mixed_args(), **kwargs, **path_data}
 
         attributes, errors, code = helpers.single_response(
-            "points", Point,
+            "points", Points,
             **{"token": kwargs["token"].lower(), "username": kwargs["name"]}
         )
 
+        if errors != {}:
+            raise APIError(errors, code=code)
+
+        if not isinstance(data["count"], str):
+            raise APIError({"count": "Must be a string"}, code=400)
+
+        try:
+            if data["count"][0] == '+' and data["count"][1:].isdigit():
+                new_count = int(data["count"][1:])
+            elif data["count"][0] == '-' and data["count"][1:].isdigit():
+                new_count = int(data["count"][1:]) * -1
+        except ValueError as err:
+            errors = {
+                "count": err.args()
+            }
+
         if code == 200:
-            new_count = data["count"]
+            count = attributes["attributes"]["count"] + new_count
+        elif code == 404:
+            # User doesn't have any points yet
+            count = new_count
 
-            if not isinstance(new_count, str):
-                raise APIError({"count": "Must be a string"}, code=400)
+        if count < 0:
+            # Not enough points to remove requested amount
+            errors = [
+                "{} missing {} points".format(
+                    kwargs["name"], str(count)[1:]),
+            ]
 
-            count = attributes["attributes"]["count"]
-            if new_count[0] == '+' and new_count[1:].isdigit():
-                count = count + int(new_count[1:])
-            elif new_count[0] == '-' and new_count[1:].isdigit():
-                count = count - int(new_count[1:])
+        attributes, errors, code = helpers.create_or_update(
+            "points", Points,
+            {**path_data, "username": kwargs["name"], "count": count}
+        )
 
-            response = helpers.update_record(
-                "points", {"id": attributes["id"], "count": count})
-
-            if response is not None:
-                attributes = response
+        print(errors)
 
         response = {}
 
-        if errors != []:
+        if errors != {}:
             response["errors"] = errors
         else:
             response["data"] = attributes
