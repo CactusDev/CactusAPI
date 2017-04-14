@@ -19,9 +19,11 @@ class TrustList(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
-    def get(self, **kwargs):
+    @helpers.lower_kwargs("token")
+    def get(self, path_data, **kwargs):
+        data = {**kwargs, **path_data}
         attributes, errors, code = helpers.multi_response(
-            "trust", Trust, **kwargs)
+            "trust", Trust, **data)
 
         response = {}
 
