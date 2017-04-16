@@ -56,9 +56,13 @@ class PointResource(Resource):
             raise APIError({"count": "Must be a string"}, code=400)
 
         try:
-            if data["count"][0] == '+' and data["count"][1:].isdigit():
+            if not data["count"][1:].isdigit():
+                raise APIError(
+                    {"count": "Non-integer value after first character"},
+                    code=400)
+            if data["count"][0] == '+':
                 new_count = int(data["count"][1:])
-            elif data["count"][0] == '-' and data["count"][1:].isdigit():
+            elif data["count"][0] == '-':
                 new_count = int(data["count"][1:]) * -1
         except ValueError as err:
             errors = {
@@ -82,8 +86,6 @@ class PointResource(Resource):
             "points", Points,
             {**path_data, "username": kwargs["name"], "count": count}
         )
-
-        print(errors)
 
         response = {}
 
