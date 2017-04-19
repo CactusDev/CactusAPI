@@ -119,12 +119,12 @@ def update_resource(table_name, model, data, **kwargs):
     if errors is not None:
         return {}, errors, 400
 
-    exists_or_error, code = resource_exists(table_name, model, **kwargs)
-    data["id"] = exists_or_error["id"]
-
+    exists_or_error, code = resource_exists(table_name, **kwargs)
     # There was an error during pre-parsing, return that
     if code is not None:
         return {}, exists_or_error, code
+
+    data["id"] = exists_or_error["id"]
 
     if exists_or_error is not None:
         # Don't change the createdAt
