@@ -6,7 +6,7 @@ from .repeat import Repeat
 from .alias import Alias
 from .social import Social
 from .config import Config
-from .points import Points
+from .points import Points, PointCreationModel
 
 # Define the tables to create with the proper table name
 tables = ["commands", "trusts", "users", "quotes", "repeats", "aliases",
@@ -14,4 +14,4 @@ tables = ["commands", "trusts", "users", "quotes", "repeats", "aliases",
 
 
 __all__ = ["Command", "Trust", "User", "Quote", "Repeat", "Alias", "Social",
-           "Config", "Points"]
+           "Config", "Points", "PointCreationModel"]

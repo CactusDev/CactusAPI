@@ -1,4 +1,4 @@
-from ..schemas import PointSchema
+from ..schemas import PointSchema, PointCreationSchema
 
 
 class Points:
@@ -11,3 +11,7 @@ class Points:
         self.createdAt = createdAt
         self.token = token
         self.count = count
+
+
+class PointCreationModel:
+    schema = PointCreationSchema()
