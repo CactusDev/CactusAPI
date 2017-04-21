@@ -121,7 +121,7 @@ def update_resource(table_name, model, data, **kwargs):
 
     exists_or_error, code = resource_exists(table_name, **kwargs)
     # There was an error during pre-parsing, return that
-    if code is not None:
+    if code != 200:
         return {}, exists_or_error, code
 
     data["id"] = exists_or_error["id"]

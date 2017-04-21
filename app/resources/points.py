@@ -6,7 +6,7 @@ from .. import api
 from ..models import Points, PointCreationModel
 from ..schemas import PointSchema
 from ..util import helpers, auth
-from ..util.helpers import APIError
+from ..util.helpers import APIError, InternalServerError
 from .. import limiter
 
 
@@ -42,10 +42,12 @@ class PointResource(Resource):
         """
         Handles managing of points (addition/subtraction/transfer)
         """
+        # TODO: Clean up this endpoint
         data = {**helpers.get_mixed_args(), **kwargs, **path_data}
 
         sender = data.get("sender")
-        points = data.get("count")
+        sendee = kwargs["name"]
+        count = data.get("count")
         errors = {}
 
         validated = helpers.validate_data(
@@ -53,70 +55,74 @@ class PointResource(Resource):
         if validated is not None:
             raise APIError(validated, code=500)
 
-        # # Check if sendee has points yet
-        # exists_or_error, code = helpers.resource_exists(
-        #     "points", **path_data, username=kwargs["name"])
-        # if code == 404:
-        #     # Sendee does not exist
-        #     pass
-        #
-        # print(exists_or_error, code)
-
         # Retrieve sender's points
         attributes, errors, code = helpers.single_response(
             "points", Points, username=sender, **path_data)
 
-        print(attributes, code)
-        print(errors)
+        if code == 200:
+            sender_points = attributes["attributes"]["count"]
+        else:
+            raise APIError({"sender": ["Missing required number of points"]},
+                           code=400)
+
+        try:
+            if not data["count"][1:].isdigit():
+                raise APIError(
+                    {"count": "Non-integer value after first character"},
+                    code=400)
+        except ValueError as err:
+            raise APIError({
+                "count": err.args()
+            })
+
+        if sendee == "CactusBot":
+            # This is an in-bot usage, don't give it to anyone
+            pass
 
         # Sender has enough points?
-        # Remove # from sender
-        # Check if error
-        # Add # to sendee
-        # Check if error
-        # If either errored then roll back changes
-        # Respond with changes or errors
+        diff = sender_points - int(data["count"][1:])
+        if diff < 0:
+            raise APIError("{name} missing {val} points".format(
+                name=sender, val=count[1:]), code=400)
+        else:
+            # Retrieve sendee's points
+            attributes, errors, code = helpers.single_response(
+                "points", Points, username=sendee, **path_data)
 
-        # try:
-        #     if not data["count"][1:].isdigit():
-        #         raise APIError(
-        #             {"count": "Non-integer value after first character"},
-        #             code=400)
-        #     if data["count"][0] == '+':
-        #         new_count = int(data["count"][1:])
-        #     elif data["count"][0] == '-':
-        #         new_count = int(data["count"][1:]) * -1
-        # except ValueError as err:
-        #     errors = {
-        #         "count": err.args()
-        #     }
-        #
-        # sender_count = attributes["attributes"]["count"]
-        # if code == 200:
-        #     count = sender_count + new_count
-        # elif code == 404:
-        #     # User doesn't have any points yet
-        #     count = new_count
-        #
-        # if count < 0:
-        #     # Not enough points to remove requested amount
-        #     raise APIError("{name} missing {val} points".format(
-        #         name=kwargs["name"], val=str(count)[1:]))
-        #
-        # # Update both records (sendee/sender)
-        # # Add points to sendee
-        # attributes, errors, code = helpers.create_or_update(
-        #     "points", Points,
-        #     {**path_data, "username": kwargs["name"], "count": count},
-        #     **{**path_data, "username": kwargs["name"]}
-        # )
-        # # Remove points from sender
-        # attributes, errors, code = helpers.update_resource(
-        #     "points", Points,
-        #     {"count": attributes["attributes"]["count"]}
-        # )
-        # Check that neither failed
-        # If one failed we should roll back the changes
+            sendee_points = 0
+            if code == 200:
+                # Sendee is in DB, use the points there
+                sendee_points = attributes["attributes"]["count"]
+
+            # TODO: Move this block into a helper function, atomic_changes()
+            # Remove # from sender
+            attributes, errors, code = helpers.update_resource(
+                "points", Points, {"count": diff},
+                **path_data, username=sender
+            )
+            # Check if error
+            if code != 200:
+                raise InternalServerError()
+
+            # Add # to sendee
+            attributes, errors, code = helpers.create_or_update(
+                "points", Points,
+                {
+                    "count": sendee_points + int(data["count"][1:]),
+                    "username": sendee,
+                    **path_data
+                },
+                **path_data, username=sendee
+            )
+            # Check if error
+            if code not in (200, 201):
+                # Roll back sender's points
+                attributes, errors, code = helpers.update_resource(
+                    "points", Points, {"count": sender_points},
+                    **path_data, username=sender
+                )
+                raise InternalServerError()
+
         response = {}
 
         if errors != {}:
