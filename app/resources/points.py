@@ -68,7 +68,7 @@ class PointResource(Resource):
         try:
             if not data["count"][1:].isdigit():
                 raise APIError(
-                    {"count": "Non-integer value after first character"},
+                    {"count": ["Non-integer value after first character"]},
                     code=400)
         except ValueError as err:
             raise APIError({
@@ -82,8 +82,8 @@ class PointResource(Resource):
         # Sender has enough points?
         diff = sender_points - int(data["count"][1:])
         if diff < 0:
-            raise APIError("{name} missing {val} points".format(
-                name=sender, val=count[1:]), code=400)
+            raise APIError({"sender": ["Missing required number of points"]},
+                           code=400)
         else:
             # Retrieve sendee's points
             attributes, errors, code = helpers.single_response(
