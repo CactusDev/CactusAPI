@@ -10,12 +10,20 @@ class APIError(Exception):
         self.code = code
 
 
+class InternalServerError(Exception):
+
+    def __init__(self):
+        super().__init__()
+        self.message = "Internal Server Error"
+        self.code = 500
+
+
 def catch_api_error(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except APIError as e:
+        except (APIError, InternalServerError) as e:
             return {"errors": e.message}, e.code
     return wrapper
 
