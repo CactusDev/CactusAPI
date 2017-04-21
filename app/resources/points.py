@@ -62,8 +62,14 @@ class PointResource(Resource):
         if code == 200:
             sender_points = attributes["attributes"]["count"]
         else:
-            raise APIError({"sender": ["Missing required number of points"]},
-                           code=400)
+            raise APIError(
+                {"sender": [
+                    "Missing required number of points",
+                    "Requested {}, but only have {} available".format(
+                        count[1:], 0
+                    )
+                ]},
+                code=400)
 
         try:
             if not data["count"][1:].isdigit():
@@ -82,8 +88,14 @@ class PointResource(Resource):
         # Sender has enough points?
         diff = sender_points - int(data["count"][1:])
         if diff < 0:
-            raise APIError({"sender": ["Missing required number of points"]},
-                           code=400)
+            raise APIError(
+                {"sender": [
+                    "Missing required number of points",
+                    "Requested {}, but only have {} available".format(
+                        count[1:], sender_points
+                    )
+                ]},
+                code=400)
         else:
             # Retrieve sendee's points
             attributes, errors, code = helpers.single_response(
