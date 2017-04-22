@@ -1,7 +1,7 @@
 from json import dumps, loads
 
 
-class TestQuotes:
+class TestCommands:
     url = "/api/v1/user/paradigmshift3d/command"
     data = {}
 
@@ -139,14 +139,34 @@ class TestQuotes:
 
         assert deletion_data["meta"]["deleted"]["command"][0] == created_id
 
-    def test_alias_and_repeat_removal(self, client, api_auth):
-        # TODO
-        # Create command
-        # Create repeat that uses command
-        # Create alias that uses command
-        # Delete command
-        # Command, repeat, alias IDs all match?
-        pass
+    def test_alias_and_repeat_removal(self, client, api_auth,
+                                      command_data, repeat_data, alias_data):
+        name = "foo"
+        cmd = client.patch(self.url + "/" + name,
+                           data=dumps(command_data[name]),
+                           content_type="application/json",
+                           headers=api_auth)
+        cmd_id = loads(cmd.data.decode())["data"]["id"]
+        repeat = client.patch("/api/v1/user/paradigmshift3d/repeat/potato",
+                              data=dumps(repeat_data["potato"]),
+                              content_type="application/json",
+                              headers=api_auth)
+        repeat_id = loads(repeat.data.decode())["data"]["id"]
+        alias = client.patch("/api/v1/user/paradigmshift3d/alias/test",
+                             data=dumps(alias_data["test"]),
+                             content_type="application/json",
+                             headers=api_auth)
+        alias_id = loads(alias.data.decode())["data"]["id"]
+        deleted = client.delete(self.url + "/" + name, headers=api_auth)
+        data = loads(deleted.data.decode())
+        assert "meta" in data
+        assert len(data["meta"]["deleted"]) == 3
+        assert len(data["meta"]["deleted"]["command"]) == 1
+        assert len(data["meta"]["deleted"]["repeats"]) == 1
+        assert len(data["meta"]["deleted"]["aliases"]) == 1
+        assert data["meta"]["deleted"]["command"][0] == cmd_id
+        assert data["meta"]["deleted"]["repeats"][0] == repeat_id
+        assert data["meta"]["deleted"]["aliases"][0] == alias_id
 
     def test_get_nonexistant(self, client, api_auth):
         # TODO Requests command that exists for another user but not token one

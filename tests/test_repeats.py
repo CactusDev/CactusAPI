@@ -4,19 +4,9 @@ import json
 
 class TestRepeats:
     """Tests the repeat endpoint of the API"""
-    creation_data = {
-        "test": {
-            "period": 60000,
-            "commandName": "foo"
-        },
-        "potato": {
-            "period": 960000,
-            "commandName": "foo"
-        }
-    }
     url = "/api/v1/user/paradigmshift3d/repeat"
 
-    def test_create(self, client, api_auth, command_data):
+    def test_create(self, client, api_auth, command_data, repeat_data):
         """Valid repeat creation"""
         name = "test"
         cmd_name = "foo"
@@ -30,7 +20,7 @@ class TestRepeats:
         created_id = json.loads(cmd.data.decode())["data"]["id"]
 
         repeat = client.patch(self.url + '/' + name,
-                              data=json.dumps(self.creation_data[name]),
+                              data=json.dumps(repeat_data[name]),
                               content_type="application/json",
                               headers=api_auth)
         data = json.loads(repeat.data.decode())["data"]
@@ -41,16 +31,16 @@ class TestRepeats:
         assert data["attributes"]["token"] == "paradigmshift3d"
         assert data["attributes"]["command"]["id"] == created_id
         assert data["attributes"][
-            "commandName"] == self.creation_data[name]["commandName"]
+            "commandName"] == repeat_data[name]["commandName"]
         assert data["attributes"][
-            "period"] == self.creation_data[name]["period"]
+            "period"] == repeat_data[name]["period"]
 
-    def test_single(self, client, api_auth):
+    def test_single(self, client, api_auth, repeat_data):
         """A test that does stuff, namely checking if stuff == other stuff"""
         name = "potato"
 
         repeat = client.patch(self.url + '/' + name,
-                              data=json.dumps(self.creation_data[name]),
+                              data=json.dumps(repeat_data[name]),
                               content_type="application/json",
                               headers=api_auth)
         created_id = json.loads(repeat.data.decode())["data"]["id"]
@@ -62,11 +52,11 @@ class TestRepeats:
         assert data["attributes"]["repeatName"] == name
         assert data["attributes"]["token"] == "paradigmshift3d"
         assert data["attributes"][
-            "commandName"] == self.creation_data[name]["commandName"]
+            "commandName"] == repeat_data[name]["commandName"]
         assert data["attributes"][
-            "period"] == self.creation_data[name]["period"]
+            "period"] == repeat_data[name]["period"]
 
-    def test_all(self, client, api_auth):
+    def test_all(self, client, api_auth, repeat_data):
         repeats = client.get(self.url)
         assert repeats.status_code == 200
         data = json.loads(repeats.data.decode())["data"]
@@ -77,19 +67,19 @@ class TestRepeats:
                 "commandName": repeat["attributes"]["commandName"],
                 "period": repeat["attributes"]["period"]
             } for repeat in data}
-        assert self.creation_data.items() == comparison.items()
+        assert repeat_data.items() == comparison.items()
         for repeat in data:
             assert repeat["type"] == "repeat"
-        for repeat in self.creation_data.keys():
+        for repeat in repeat_data.keys():
             assert (client.delete(self.url + '/' + repeat,
                                   headers=api_auth)).status_code == 200
 
-    def test_delete(self, client, api_auth):
+    def test_delete(self, client, api_auth, repeat_data):
         """Test to see if the services are being removed properly"""
         name = "potato"
 
         repeat = client.patch(self.url + '/' + name,
-                              data=json.dumps(self.creation_data[name]),
+                              data=json.dumps(repeat_data[name]),
                               content_type="application/json",
                               headers=api_auth)
         created_id = json.loads(repeat.data.decode())["data"]["id"]
