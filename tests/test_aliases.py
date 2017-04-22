@@ -5,25 +5,9 @@ from datetime import datetime
 
 class TestAliases:
     """Tests the social endpoint of the API"""
-    creation_data = {
-        "test": {
-            "commandName": "foo",
-            "arguments": [
-                {
-                    "type": "text",
-                    "data": "Spam spam! Beautiful spam!",
-                    "text": "Spam spam! Beautiful spam!",
-                }
-            ]
-        },
-        "taco": {
-            "commandName": "bar",
-            "arguments": []
-        }
-    }
     url = "/api/v1/user/paradigmshift3d/alias"
 
-    def test_create(self, client, api_auth, command_data):
+    def test_create(self, client, api_auth, command_data, alias_data):
         """Valid social service creation"""
         name = "test"
         cmd_name = "foo"
@@ -37,7 +21,7 @@ class TestAliases:
         created_id = json.loads(cmd.data.decode())["data"]["id"]
 
         alias = client.patch(self.url + '/' + name,
-                             data=json.dumps(self.creation_data[name]),
+                             data=json.dumps(alias_data[name]),
                              content_type="application/json",
                              headers=api_auth)
         data = json.loads(alias.data.decode())
@@ -58,11 +42,11 @@ class TestAliases:
         del data["attributes"]["command"]["createdAt"]
 
         assert data["attributes"][
-            "arguments"] == self.creation_data[name]["arguments"]
+            "arguments"] == alias_data[name]["arguments"]
         assert data["attributes"][
             "command"] == command_data[cmd_name]
 
-    def test_single(self, client, api_auth, command_data):
+    def test_single(self, client, api_auth, command_data, alias_data):
         """A test that does stuff, namely checking if stuff == other stuff"""
         name = "taco"
         cmd_name = "bar"
@@ -74,7 +58,7 @@ class TestAliases:
         assert cmd.status_code == 201
 
         alias = client.patch(self.url + '/' + name,
-                             data=json.dumps(self.creation_data[name]),
+                             data=json.dumps(alias_data[name]),
                              content_type="application/json",
                              headers=api_auth)
         created_id = json.loads(alias.data.decode())["data"]["id"]
@@ -99,16 +83,16 @@ class TestAliases:
         assert data["attributes"]["token"] == "paradigmshift3d"
         assert data["attributes"]["commandName"] == cmd_name
         assert data["attributes"][
-            "arguments"] == self.creation_data[name]["arguments"]
+            "arguments"] == alias_data[name]["arguments"]
 
         assert (client.delete(self.url + '/' + name,
                               headers=api_auth)).status_code == 200
 
-    def test_delete(self, client, api_auth):
+    def test_delete(self, client, api_auth, alias_data):
         """Test to see if the services are being removed properly"""
         name = "taco"
         alias = client.patch(self.url + '/' + name,
-                             data=json.dumps(self.creation_data[name]),
+                             data=json.dumps(alias_data[name]),
                              content_type="application/json",
                              headers=api_auth)
         created_id = json.loads(alias.data.decode())["data"]["id"]
