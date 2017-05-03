@@ -33,7 +33,8 @@ class RethinkConnnection:
         str(marshmallow.fields.Integer): 0,
         str(marshmallow.fields.Boolean): True,
         str(marshmallow.fields.Nested): {},  # Going to be a paaaaain
-        str(marshmallow.fields.List): []
+        str(marshmallow.fields.List): [],
+        str(schemas.helpers.CommandUUID): ""
     }
 
     def __init__(self, database=app.config["RDB_DB"],
@@ -71,11 +72,14 @@ class RethinkConnnection:
 
     def get_fields(self, table):
         """Returns a list of all the fields in the given table"""
-        return set(rethink.table(table)
-                   .map(lambda val: val.keys())
-                   .reduce(lambda left, right: left + right)
-                   .distinct()
-                   .run(self.connection))
+        if len(list(rethink.table(table).run(self.connection))) > 0:
+            return set(rethink.table(table)
+                       .map(lambda val: val.keys())
+                       .reduce(lambda left, right: left + right)
+                       .distinct()
+                       .run(self.connection))
+        else:
+            return set()
 
     def update_values(self, table, update_vals):
         """
@@ -118,6 +122,10 @@ if __name__ == "__main__":
             if field_obj.default != marshmallow.missing:
                 # Use that
                 update_values[field] = field_obj.default
+            elif hasattr(field_obj, "many"):
+                # Manually set it to be a list, many attribute is list
+                # of objects
+                update_values[field] = []
             else:
                 # Go with the default as defined in RethinkConnnection
                 update_values[field] = conn.defaults[str(type(field_obj))]
