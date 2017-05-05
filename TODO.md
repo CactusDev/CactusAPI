@@ -28,6 +28,9 @@
 * ~~TODO Convert list in auth key to bits/hex strings~~
 * ~~TODO Make aliases endpoint have proper type "alias" not "aliase"~~
 * ~~TODO DB migration tool~~
+* TODO Implement soft deletion (if deletedAt key == epoch 0 then not "deleted", otherwise "deleted")
+* TODO Fix 500 KeyError "id" when editing non-existant command
+* TODO Implement append
 
 # Grouped TODOs
 

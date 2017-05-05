@@ -80,7 +80,9 @@ class Spam:
     def __init__(self,
                  maxEmoji=6,
                  allowUrls=False,
-                 maxCapsScore=16):
+                 maxCapsScore=16,
+                 blacklist=[]):
         self.maxEmoji = maxEmoji
         self.allowUrls = allowUrls
         self.maxCapsScore = maxCapsScore
+        self.blacklist = blacklist
