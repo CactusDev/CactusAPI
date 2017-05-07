@@ -3,7 +3,7 @@ from marshmallow import (Schema, fields, post_dump,
 from datetime import datetime
 
 from ..util import helpers
-from .helpers import MessagePacketSchema
+from .helpers import MessagePacketSchema, EPOCH_ZERO
 
 
 class ResponseSchema(Schema):
@@ -30,3 +30,4 @@ class CommandSchema(Schema):
     enabled = fields.Boolean(default=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
     count = fields.Integer(default=0)
+    deletedAt = fields.Float(default=None, allow_none=True)

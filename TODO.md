@@ -28,8 +28,8 @@
 * ~~TODO Convert list in auth key to bits/hex strings~~
 * ~~TODO Make aliases endpoint have proper type "alias" not "aliase"~~
 * ~~TODO DB migration tool~~
-* TODO Implement soft deletion (if deletedAt key == epoch 0 then not "deleted", otherwise "deleted")
-* ~~TODO Fix 500 KeyError "id" when editing non-existant command~~ - Have not been able to reproduce this yet, will work on it if I can reproduce the cause
+* TODO Implement soft deletion (if deletedAt key == None then not "deleted", otherwise "deleted" at epoch timestamp)
+* TODO Fix 500 KeyError "id" when creating command - Source is app/util/helpers/response.py:104, need to find solution. Caused by missing keys in creation JSON on creation.
 * TODO Implement append
 
 # Grouped TODOs

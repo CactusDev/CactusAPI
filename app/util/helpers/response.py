@@ -98,6 +98,12 @@ def json_api_response(data, resource, model):
         resource = resource[:-1]
 
     if isinstance(data, dict):
+
+        # Usually means there was a non-JSON-API-formattable data provided,
+        # possibly an error, return that directly
+        if not data.get("id"):
+            return data
+
         data = recurse_dict(data, model)
 
         return {

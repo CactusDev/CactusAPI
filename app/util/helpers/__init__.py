@@ -1,6 +1,6 @@
 from .response import (multi_response, single_response,
                        humanize_datetime, validate_uuid4)
-from .resource import create_or_update, update_resource
+from .resource import create_or_update, update_resource, delete_soft
 from .decorators import (check_limit, lower_kwargs, pluralize_arg, check_random,
                          APIError, catch_api_error, InternalServerError)
 from .rethink import (get_random, get_one, get_all, get_multiple,
@@ -10,7 +10,7 @@ from .parse import get_mixed_args, resource_exists, validate_data
 
 __all__ = [
     "multi_response", "single_response", "humanize_datetime", "validate_uuid4",
-    "create_or_update", "update_resource",
+    "create_or_update", "update_resource", "delete_soft",
     "check_limit", "lower_kwargs", "pluralize_arg", "check_random",
     "APIError", "catch_api_error", "InternalServerError",
     "get_one", "get_all", "get_multiple", "get_random", "next_numeric_id",

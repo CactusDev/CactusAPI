@@ -3,6 +3,8 @@ import re
 
 from ..util import helpers
 
+EPOCH_ZERO = 18000.0
+
 
 class MessagePacketSchema(Schema):
     type = fields.String(required=True)

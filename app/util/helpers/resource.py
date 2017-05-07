@@ -54,6 +54,28 @@ def _check_exist(table_name, data):
     return exists_or_error, code
 
 
+def delete_soft(table_name, **kwargs):
+    """
+    Instead of fully deleting the record set the deletedAt key to the
+    current UTC epoch timestamp, interpretable as being soft-deleted.
+    """
+    from datetime import datetime as dt
+
+    exists_or_error, code = resource_exists(table_name, **kwargs)
+    if code == 404:
+        return None, code
+    elif code == 200:
+        data = {**kwargs, "deletedAt": dt.utcnow().timestamp(),
+                "id": exists_or_error["id"]}
+        result = update_record(table_name, data)
+
+        return result, 200
+    else:
+        return exists_or_error, code
+
+    return True
+
+
 def check_existance(table_name, **kwargs):
     exist_filter = {k: v for k, v in kwargs.items() if k != "post"}
 

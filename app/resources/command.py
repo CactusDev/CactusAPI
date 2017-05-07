@@ -7,6 +7,7 @@ from collections import OrderedDict
 from .. import api
 from ..models import Command, User, Alias
 from ..schemas import CommandSchema
+from ..schemas.helpers import EPOCH_ZERO
 from ..util import helpers, auth
 from ..util.helpers import APIError
 from .. import limiter
@@ -196,6 +197,9 @@ class CommandResource(Resource):
     @helpers.lower_kwargs("token")
     def delete(self, path_data, **kwargs):
         data = {**path_data, "name": kwargs["name"]}
+
+        return helpers.delete_soft("commands", **data)
+
         deleted = helpers.delete_record("command", **data)
 
         if deleted is not None:
