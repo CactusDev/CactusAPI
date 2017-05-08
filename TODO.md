@@ -31,6 +31,8 @@
 * TODO Implement soft deletion (if deletedAt key == None then not "deleted", otherwise "deleted" at epoch timestamp)
 * TODO Fix 500 KeyError "id" when creating command - Source is app/util/helpers/response.py:104, need to find solution. Caused by missing keys in creation JSON on creation.
 * TODO Implement append
+* TODO Make endpoints ignore resources with deletedAt key not None
+* TODO Figure out what to do with editing/creation of a resource that has been soft-deleted. Most likely will just overwrite the soft-deleted version.
 
 # Grouped TODOs
 

@@ -198,27 +198,24 @@ class CommandResource(Resource):
     def delete(self, path_data, **kwargs):
         data = {**path_data, "name": kwargs["name"]}
 
-        return helpers.delete_soft("commands", **data)
+        deleted, code = helpers.delete_soft("commands", **data)
 
-        deleted = helpers.delete_record("command", **data)
-
-        if deleted is not None:
-            aliases = helpers.delete_record("aliases",
-                                            limit=None,
-                                            token=path_data["token"],
-                                            command=deleted[0]
-                                            )
-
-            repeats = helpers.delete_record("repeats",
-                                            limit=None,
-                                            token=path_data["token"],
-                                            command=deleted[0])
-
-            deleted = {"command": deleted,
-                       "aliases": aliases,
-                       "repeats": repeats}
-
-        if deleted is not None:
-            return {"meta": {"deleted": deleted}}, 200
+        if code == 200:
+            # TODO: Maybe make these actually check for errors by accepting
+            # second return object?
+            aliases, _ = helpers.delete_soft("aliases",
+                                             limit=None,
+                                             token=path_data["token"],
+                                             command=deleted[0])
+            repeats, _ = helpers.delete_soft("repeats",
+                                             limit=None,
+                                             token=path_data["token"],
+                                             command=deleted[0])
+            deleted = {
+                "command": deleted,
+                "aliases": aliases,
+                "repeats": repeats
+            }
+            return {"meta": {"deleted": deleted}}, code
         else:
-            return None, 404
+            return deleted, 404

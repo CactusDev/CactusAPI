@@ -85,6 +85,55 @@ def create_record(table, data):
 
 
 @pluralize_arg
+def delete_soft(table, limit=1, **kwargs):
+    """
+    Instead of fully deleting the record set the deletedAt key to the
+    current UTC epoch timestamp, interpretable as being soft-deleted.
+    """
+    from datetime import datetime as dt
+    if limit is not None and not isinstance(limit, int):
+        raise TypeError("limit must be type int")
+
+    exists_or_err = exists(table, **kwargs)
+    if exists_or_err is False:
+        return None, 404
+    elif isinstance(exists, Exception):
+        return exists_or_err.args, 500
+    else:
+        try:
+            response = []
+            if limit is None:
+                request = rethink.table(table).filter(kwargs)
+                limit = 0
+            elif isinstance(limit, int):
+                request = rethink.table(table).filter(kwargs).limit(limit)
+
+            results = list(request.run(g.rdb_conn))
+
+            if len(results) > 0:
+                i = 1
+                for record in results:
+                    # We're only "deleting" as many as the limit specifies
+                    if limit != 0 and i > limit:
+                        break
+
+                    utc_current = dt.utcnow()
+                    data = {**kwargs, "deletedAt": utc_current.timestamp(),
+                            "id": record["id"]}
+                    result = update_record(table, data)
+                    response.append({
+                        "id": result["id"],
+                        "deletedAt": utc_current.strftime("%c")})
+
+                return response, 200
+
+        except rethink.ReqlOpFailedError as e:
+            return e.args, 500
+
+    return None, 404
+
+
+@pluralize_arg
 def delete_record(table, limit=1, **kwargs):
     """
     Delete a record in the DB
@@ -94,13 +143,18 @@ def delete_record(table, limit=1, **kwargs):
         response = []
         if limit is None:
             request = rethink.table(table).filter(kwargs)
+            limit = 0
         elif isinstance(limit, int):
             request = rethink.table(table).filter(kwargs).limit(limit)
 
         results = list(request.run(g.rdb_conn))
 
         if len(results) > 0:
+            i = 1
             for record in results:
+                # We're only "deleting" as many as the limit specifies
+                if limit != 0 and i > 0:
+                    break
                 deleted = rethink.table(table).get(
                     record["id"]
                 ).delete().run(g.rdb_conn)
