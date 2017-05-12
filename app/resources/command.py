@@ -206,11 +206,11 @@ class CommandResource(Resource):
             aliases, _ = helpers.delete_soft("aliases",
                                              limit=None,
                                              token=path_data["token"],
-                                             command=deleted[0])
+                                             command=deleted[0]["id"])
             repeats, _ = helpers.delete_soft("repeats",
                                              limit=None,
                                              token=path_data["token"],
-                                             command=deleted[0])
+                                             command=deleted[0]["id"])
             deleted = {
                 "command": deleted,
                 "aliases": aliases,
