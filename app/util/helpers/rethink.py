@@ -153,7 +153,7 @@ def delete_record(table, limit=1, **kwargs):
             i = 1
             for record in results:
                 # We're only "deleting" as many as the limit specifies
-                if limit != 0 and i > 0:
+                if limit != 0 and i > limit:
                     break
                 deleted = rethink.table(table).get(
                     record["id"]

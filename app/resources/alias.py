@@ -16,6 +16,7 @@ class AliasResource(Resource):
 
     @limiter.limit("1000/day;90/hour;20/minute")
     @helpers.check_limit
+    @helpers.catch_api_error
     def get(self, **kwargs):
         attributes, errors, code = helpers.single_response(
             "aliases", Alias, cased="name",
@@ -31,8 +32,13 @@ class AliasResource(Resource):
         if attributes != {} and isinstance(attributes, dict):
             # Take attributes, convert "command" to obj
             cmd_id = attributes["attributes"]["command"]
-            attributes["attributes"]["command"] = helpers.get_one("command",
-                                                                  uid=cmd_id)
+            cmd = helpers.get_one("command", uid=cmd_id)
+            if cmd == {}:
+                cmd = helpers.get_one("builtins", uid=cmd_id)
+            if cmd == {}:
+                # There was no builtin or custom command that matched
+                raise APIError("Alias exists but aliased command does not")
+            attributes["attributes"]["command"] = cmd
 
         return response, code
 
@@ -59,14 +65,17 @@ class AliasResource(Resource):
                 code=400)
 
         cmd = helpers.get_one("command",
-                              token=data["token"],
-                              name=command_name
-                              )
+                              token=data["token"], name=command_name)
 
         # The command to be aliased doesn't actually exist
         # caused by _deserialize method in schema
         if cmd == {}:
-            raise APIError("Command to be aliased does not exist!", code=404)
+            # Check if a builtin exists for it
+            cmd = helpers.get_one("builtins", name=command_name)
+
+            if cmd == {}:
+                raise APIError("Command to be aliased does not exist!",
+                               code=404)
 
         data["command"] = cmd["id"]
 
@@ -98,7 +107,7 @@ class AliasResource(Resource):
     def delete(self, **kwargs):
         deleted = helpers.delete_record("aliases", name=kwargs["name"])
 
-        if deleted is not None:
+        if deleted is not None and deleted != []:
             return {"meta": {"deleted": deleted}}, 200
         else:
             return None, 404
