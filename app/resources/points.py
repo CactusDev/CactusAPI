@@ -53,7 +53,7 @@ class PointResource(Resource):
         validated = helpers.validate_data(
             PointCreationModel, helpers.get_mixed_args())
         if validated is not None:
-            raise APIError(validated, code=500)
+            raise APIError(validated)
 
         # Retrieve sender's points
         attributes, errors, code = helpers.single_response(
