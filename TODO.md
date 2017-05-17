@@ -33,6 +33,7 @@
 * TODO Implement append
 * TODO Make endpoints ignore resources with deletedAt key not None
 * TODO Figure out what to do with editing/creation of a resource that has been soft-deleted. Most likely will just overwrite the soft-deleted version.
+* TODO Make migration tool handle manual migrations with --manual=file.py syntax
 
 # Grouped TODOs
 

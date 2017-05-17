@@ -183,6 +183,7 @@ def get_one(table, uid=None, **kwargs):
         Other keyword arguments may be included filter the request by
     """
     is_uid = False
+    result = {}
 
     cased = kwargs.get("cased")
     if cased is not None:
@@ -218,18 +219,17 @@ def get_one(table, uid=None, **kwargs):
             # Only check if cased was provided
             if cased is not None:
                 for res in response:
-                    if res.get(cased["key"]) == cased["value"]:
-                        return res
+                    if (res.get(cased["key"]) == cased["value"] and
+                            res["deletedAt"] is None):
+                        result = res
 
-            if len(response) > 0:
-                return response[0]
-            else:
-                return {}
-        else:
-            return dict(response)
+            if len(response) > 0 and response[0]["deletedAt"] is None:
+                result = response[0]
 
-    # No results!
-    return {}
+        elif response["deletedAt"] is None:
+            result = dict(response)
+
+    return result
 
 
 @pluralize_arg
@@ -283,4 +283,9 @@ def get_multiple(table, limit=None, **kwargs):
     elif limit is None and kwargs == {}:
         query = rethink.table(table)
 
-    return list(query.run(g.rdb_conn))
+    result = []
+    for response in query.run(g.rdb_conn):
+        if response["deletedAt"] is None:
+            result.append(response)
+
+    return result

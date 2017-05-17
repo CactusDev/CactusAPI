@@ -98,7 +98,8 @@ class CommandList(Resource):
                 "commands",
                 uid=alias["attributes"]["command"]
             )
-            del command["name"]
+            if "name" in command:
+                del command["name"]
 
             alias["attributes"].update(command)
             del alias["attributes"]["command"]
@@ -147,7 +148,7 @@ class CommandResource(Resource):
                 "commands",
                 uid=attributes["attributes"]["command"]
             )
-            if command != {} and "name" in command:
+            if "name" in command:
                 del command["name"]
 
             attributes["attributes"].update(command)

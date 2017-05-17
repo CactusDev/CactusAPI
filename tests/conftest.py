@@ -118,7 +118,8 @@ def command_data():
                         "text": "lol!"
                     }
                 ]
-            }
+            },
+            "deletedAt": None
         },
         "bar": {
             "name": "bar",
@@ -139,6 +140,7 @@ def command_data():
                         "text": "google.com"
                     }
                 ]
-            }
+            },
+            "deletedAt": None
         }
     }
