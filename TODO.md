@@ -34,6 +34,7 @@
 * TODO Make endpoints ignore resources with deletedAt key not None
 * TODO Figure out what to do with editing/creation of a resource that has been soft-deleted. Most likely will just overwrite the soft-deleted version.
 * TODO Make migration tool handle manual migrations with --manual=file.py syntax
+* ~~TODO Remove next_numeric_id calls once soft deletion is fully implemented as it's no longer needed, we can simply use the # of records in the table~~
 
 # Grouped TODOs
 

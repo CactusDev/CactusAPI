@@ -44,10 +44,7 @@ class QuoteList(Resource):
     def post(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(),
                 **path_data,
-                "quoteId": helpers.next_numeric_id(
-                    "quote",
-                    id_field="quoteId",
-                    **path_data)
+                "quoteId": helpers.next_numeric_id("quotes", **path_data)
                 }
 
         if data.get("id") is not None:
@@ -123,9 +120,9 @@ class QuoteResource(Resource):
     @auth.scopes_required({"quote:manage"})
     def delete(self, path_data, **kwargs):
         """Delete a quote resource"""
-        deleted = helpers.delete_record("quote", **path_data)
+        deleted, code = helpers.delete_soft("quote", **path_data)
 
         if deleted is not None:
-            return {"meta": {"deleted": deleted}}, 200
+            return {"meta": {"deleted": deleted}}, code
         else:
             return None, 404

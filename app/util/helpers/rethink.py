@@ -35,13 +35,10 @@ def increment_counter(table, field, **kwargs):
 
 
 @pluralize_arg
-def next_numeric_id(table, *, id_field, **kwargs):
+def next_numeric_id(table, **kwargs):
     try:
         count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
-        new_id = 1
-        for record in count:
-            if id_field in record and record[id_field] >= new_id:
-                new_id = record[id_field] + 1
+        new_id = len(count) + 1
 
         return new_id
     except rethink.ReqlOpFailedError as e:
@@ -234,11 +231,29 @@ def get_one(table, uid=None, **kwargs):
 
 @pluralize_arg
 def get_random(table, *, limit, **kwargs):
+    result = []
     try:
-        return rethink.table(
+        response = rethink.table(
             table).filter(kwargs).sample(limit).run(g.rdb_conn)
+
+        if limit > 1:
+            for res in list(response):
+                if res["deletedAt"] is None:
+                    result.append(res)
+        elif limit == 1:
+            res = dict(response[0])
+            if res["deletedAt"] is None:
+                result = res
+
     except rethink.ReqlOpFailedError as e:
-        return e
+        result = e
+
+    if result == [] or result == {}:
+        code = 404
+    elif isinstance(result, Exception):
+        code = 500
+
+    return result, code
 
 
 @pluralize_arg
