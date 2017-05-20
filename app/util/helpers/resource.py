@@ -6,15 +6,6 @@ from .parse import parse, validate_data, resource_exists, convert
 from .response import humanize_datetime, json_api_response
 
 
-def _update(table_name, data, update_id):
-
-    changed = update_record(
-        table_name, {**data, "id": update_id})
-    code = 200
-
-    return changed, code
-
-
 def _create(table_name, model, data):
     if hasattr(model, "force_on_create"):
         if isinstance(model.force_on_create, dict):
@@ -85,8 +76,12 @@ def create_or_update(table_name, model, data, **kwargs):
         parsed, errors, code = parse(model, data, partial=True)
         if errors != {}:
             return {}, errors, code
+        print(parsed)
+        # Check if we're appending...somehow
 
-        changed, code = _update(table_name, parsed, exists_or_error["id"])
+        changed = update_record(
+            table_name, {**parsed, "id": exists_or_error["id"]})
+        code = 200
         try:
             response = json_api_response(changed, table_name, model)
         except TypeError as e:

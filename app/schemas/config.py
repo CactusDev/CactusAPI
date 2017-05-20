@@ -43,17 +43,11 @@ class SpamAllowURLs(Schema):
     warnings = fields.Integer(default=3)
 
 
-class SpamBlacklist(Schema):
-    value = fields.List(fields.String, default=[])
-    action = fields.String(default="purge")
-    warnings = fields.Integer(default=3)
-
-
 class SpamSchema(Schema):
     maxEmoji = fields.Nested(SpamMaxEmoji)
     maxCapsScore = fields.Nested(SpamMaxCaps)
     allowUrls = fields.Nested(SpamAllowURLs)
-    blacklist = fields.Nested(SpamBlacklist)
+    blacklist = fields.List(fields.String, default=[])
 
 
 class ConfigSchema(Schema):
