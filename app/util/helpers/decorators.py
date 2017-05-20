@@ -43,14 +43,28 @@ def check_random(func):
     return wrapper
 
 
+def check_append(func):
+    """
+    Checks if ?append=true is passed in the request URL and if so, sets
+    the 'append' kwarg to True
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        append = request.values.get("append")
+        if append is not None and append.lower() == "true":
+            kwargs["append"] = True
+        return func(*args, **kwargs)
+    return wrapper
+
+
 def check_limit(func):
     """
-    Checks if limit is an argument past in the request and if so, set's
+    Checks if limit is an argument passed in the request and if so, sets
     the 'limit' kwarg to equal it
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        limit = request.values.get("limit", None)
+        limit = request.values.get("limit")
         if limit is not None and limit.isdigit():
             kwargs["limit"] = int(limit)
         return func(*args, **kwargs)

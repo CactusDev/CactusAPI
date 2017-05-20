@@ -67,7 +67,7 @@ def check_existance(table_name, **kwargs):
     return exists_or_error, code
 
 
-def create_or_update(table_name, model, data, **kwargs):
+def create_or_update(table_name, model, data, append=False, **kwargs):
 
     exists_or_error, code = check_existance(table_name, **kwargs)
 
@@ -76,8 +76,38 @@ def create_or_update(table_name, model, data, **kwargs):
         parsed, errors, code = parse(model, data, partial=True)
         if errors != {}:
             return {}, errors, code
-        print(parsed)
-        # Check if we're appending...somehow
+        if append is True:
+            # Keeps track of where in the nested schemas we are
+            nested = []
+            current = get_one(table_name, exists_or_error["id"])
+
+            def go_deeper(values, current):
+                for key, value in values.items():
+                    if isinstance(value, dict):
+                        nested.append(key)
+                        go_deeper(value, current)
+                    elif isinstance(value, list):
+                        nested.append(key)
+                        # Loop through the data returned by the DB
+                        for k in nested:
+                            try:
+                                current = current[k]
+                            except KeyError:
+                                # The DB has fewer subkeys than requested
+                                # Skip this one then, move on to the next
+                                continue
+
+                        # Don't check this key again
+                        del nested[nested.index(key)]
+                        # Append the new additions to the DB one
+                        current.extend(
+                            [val for val in values[key] if val not in current])
+
+                        values[key] = current
+
+                return values
+            # Iterate through the parsed contents, looking for lists
+            parsed = go_deeper(parsed, current)
 
         changed = update_record(
             table_name, {**parsed, "id": exists_or_error["id"]})
