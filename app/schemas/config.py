@@ -25,10 +25,35 @@ class AnnouncementsSchema(Schema):
     host = fields.Nested(Announcement)
 
 
+class SpamMaxEmoji(Schema):
+    value = fields.Integer(default=6)
+    action = fields.String(default="purge")
+    warnings = fields.Integer(default=3)
+
+
+class SpamMaxCaps(Schema):
+    value = fields.Integer(default=16)
+    action = fields.String(default="purge")
+    warnings = fields.Integer(default=3)
+
+
+class SpamAllowURLs(Schema):
+    value = fields.Boolean(default=False)
+    action = fields.String(default="purge")
+    warnings = fields.Integer(default=3)
+
+
+class SpamBlacklist(Schema):
+    value = fields.List(fields.String, default=[])
+    action = fields.String(default="purge")
+    warnings = fields.Integer(default=3)
+
+
 class SpamSchema(Schema):
-    maxEmoji = fields.Integer(default=6)
-    maxCapsScore = fields.Integer(default=16)
-    allowUrls = fields.Boolean(default=False)
+    maxEmoji = fields.Nested(SpamMaxEmoji)
+    maxCapsScore = fields.Nested(SpamMaxCaps)
+    allowUrls = fields.Nested(SpamAllowURLs)
+    blacklist = fields.Nested(SpamBlacklist)
 
 
 class ConfigSchema(Schema):
