@@ -1,0 +1,28 @@
+{
+  "db": {
+    "name": "DB_NAME",
+    "additions": {
+      "TABLE_NAME": [
+        {
+          "KEY": "VALUE",
+          "KEY_TWO": {
+            "SUB_KEY": "VALUE"  // Can be nested within, same for removals/edits
+          },
+          "KEY_THREE": [
+            "VALUE"
+          ]
+        }
+      ]
+    },
+    "removals": {
+      "TABLE_NAME": [
+        "KEY",
+        {
+          "KEY": "SUB_KEY"
+        }
+      ],
+      "TABLE_NAME": null    // Whole thing gets removed
+    },
+    "edits": {}
+  },
+}
