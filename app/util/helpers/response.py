@@ -16,7 +16,7 @@ def multi_response(table_name, model, random=False, **kwargs):
         results = get_all(table_name, **kwargs)
     else:
         if random:
-            results = get_random(table_name, **kwargs)
+            results, code = get_random(table_name, **kwargs)
         else:
             results = get_multiple(table_name, **kwargs)
 
@@ -98,6 +98,12 @@ def json_api_response(data, resource, model):
         resource = resource[:-1]
 
     if isinstance(data, dict):
+
+        # Usually means there was a non-JSON-API-formattable data provided,
+        # possibly an error, return that directly
+        if not data.get("id"):
+            return data
+
         data = recurse_dict(data, model)
 
         return {

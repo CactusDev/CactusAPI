@@ -6,7 +6,7 @@ class Alias:
 
     schema = CmdAliasSchema()
 
-    def __init__(self, *, name, token, arguments, commandName="",
+    def __init__(self, *, name, token, arguments, commandName="", deletedAt,
                  createdAt, enabled=True, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
@@ -16,3 +16,4 @@ class Alias:
         self.commandName = commandName
         self.enabled = enabled
         self.arguments = arguments
+        self.deletedAt = deletedAt

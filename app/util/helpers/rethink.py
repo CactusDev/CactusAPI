@@ -35,13 +35,10 @@ def increment_counter(table, field, **kwargs):
 
 
 @pluralize_arg
-def next_numeric_id(table, *, id_field, **kwargs):
+def next_numeric_id(table, **kwargs):
     try:
         count = list(rethink.table(table).filter(kwargs).run(g.rdb_conn))
-        new_id = 1
-        for record in count:
-            if id_field in record and record[id_field] >= new_id:
-                new_id = record[id_field] + 1
+        new_id = len(count) + 1
 
         return new_id
     except rethink.ReqlOpFailedError as e:
@@ -85,6 +82,55 @@ def create_record(table, data):
 
 
 @pluralize_arg
+def delete_soft(table, limit=1, **kwargs):
+    """
+    Instead of fully deleting the record set the deletedAt key to the
+    current UTC epoch timestamp, interpretable as being soft-deleted.
+    """
+    from datetime import datetime as dt
+    if limit is not None and not isinstance(limit, int):
+        raise TypeError("limit must be type int")
+
+    exists_or_err = exists(table, **kwargs)
+    if exists_or_err is False:
+        return None, 404
+    elif isinstance(exists, Exception):
+        return exists_or_err.args, 500
+    else:
+        try:
+            response = []
+            if limit is None:
+                request = rethink.table(table).filter(kwargs)
+                limit = 0
+            elif isinstance(limit, int):
+                request = rethink.table(table).filter(kwargs).limit(limit)
+
+            results = list(request.run(g.rdb_conn))
+
+            if len(results) > 0:
+                i = 1
+                for record in results:
+                    # We're only "deleting" as many as the limit specifies
+                    if limit != 0 and i > limit:
+                        break
+
+                    utc_current = dt.utcnow()
+                    data = {**kwargs, "deletedAt": utc_current.timestamp(),
+                            "id": record["id"]}
+                    result = update_record(table, data)
+                    response.append({
+                        "id": result["id"],
+                        "deletedAt": utc_current.strftime("%c")})
+
+                return response, 200
+
+        except rethink.ReqlOpFailedError as e:
+            return e.args, 500
+
+    return None, 404
+
+
+@pluralize_arg
 def delete_record(table, limit=1, **kwargs):
     """
     Delete a record in the DB
@@ -94,13 +140,18 @@ def delete_record(table, limit=1, **kwargs):
         response = []
         if limit is None:
             request = rethink.table(table).filter(kwargs)
+            limit = 0
         elif isinstance(limit, int):
             request = rethink.table(table).filter(kwargs).limit(limit)
 
         results = list(request.run(g.rdb_conn))
 
         if len(results) > 0:
+            i = 1
             for record in results:
+                # We're only "deleting" as many as the limit specifies
+                if limit != 0 and i > 0:
+                    break
                 deleted = rethink.table(table).get(
                     record["id"]
                 ).delete().run(g.rdb_conn)
@@ -129,6 +180,7 @@ def get_one(table, uid=None, **kwargs):
         Other keyword arguments may be included filter the request by
     """
     is_uid = False
+    result = {}
 
     cased = kwargs.get("cased")
     if cased is not None:
@@ -164,27 +216,44 @@ def get_one(table, uid=None, **kwargs):
             # Only check if cased was provided
             if cased is not None:
                 for res in response:
-                    if res.get(cased["key"]) == cased["value"]:
-                        return res
+                    if (res.get(cased["key"]) == cased["value"] and
+                            res["deletedAt"] is None):
+                        result = res
 
-            if len(response) > 0:
-                return response[0]
-            else:
-                return {}
-        else:
-            return dict(response)
+            if len(response) > 0 and response[0]["deletedAt"] is None:
+                result = response[0]
 
-    # No results!
-    return {}
+        elif response["deletedAt"] is None:
+            result = dict(response)
+
+    return result
 
 
 @pluralize_arg
 def get_random(table, *, limit, **kwargs):
+    result = []
     try:
-        return rethink.table(
+        response = rethink.table(
             table).filter(kwargs).sample(limit).run(g.rdb_conn)
+
+        if limit > 1:
+            for res in list(response):
+                if res["deletedAt"] is None:
+                    result.append(res)
+        elif limit == 1:
+            res = dict(response[0])
+            if res["deletedAt"] is None:
+                result = res
+
     except rethink.ReqlOpFailedError as e:
-        return e
+        result = e
+
+    if result == [] or result == {}:
+        code = 404
+    elif isinstance(result, Exception):
+        code = 500
+
+    return result, code
 
 
 @pluralize_arg
@@ -229,4 +298,9 @@ def get_multiple(table, limit=None, **kwargs):
     elif limit is None and kwargs == {}:
         query = rethink.table(table)
 
-    return list(query.run(g.rdb_conn))
+    result = []
+    for response in query.run(g.rdb_conn):
+        if response["deletedAt"] is None:
+            result.append(response)
+
+    return result

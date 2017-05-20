@@ -9,7 +9,7 @@ class Command:
     force_on_create = {"response": "message"}
 
     def __init__(self, *, name, response, token, role=0,
-                 createdAt, enabled=True,
+                 createdAt, deletedAt, enabled=True,
                  arguments, count, **kwargs):
         if "id" in kwargs:
             self.id = kwargs["id"]
@@ -21,3 +21,4 @@ class Command:
         self.role = role
         self.arguments = arguments
         self.count = count
+        self.deletedAt = deletedAt

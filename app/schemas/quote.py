@@ -12,3 +12,4 @@ class QuoteSchema(Schema):
     enabled = fields.Boolean()
     createdAt = fields.DateTime(
         "%c", default=datetime.utcnow().strftime("%c"), dump_only=True)
+    deletedAt = fields.Float(default=None, allow_none=True)
