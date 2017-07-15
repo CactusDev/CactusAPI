@@ -94,14 +94,15 @@ class CommandList(Resource):
 
         for alias in aliases:
             # HACK: Need to redo this to handle aliases better
-            command = helpers.get_one(
-                "commands",
-                uid=alias["attributes"]["command"]
-            )
-            if "name" in command:
-                del command["name"]
+            cmd = helpers.get_one("commands",
+                                  uid=alias["attributes"]["command"])
+            if cmd == {}:
+                # Must be a builtin alias
+                cmd = helpers.get_one("builtins",
+                                      uid=alias["attributes"]["command"])
+            del cmd["name"]
 
-            alias["attributes"].update(command)
+            alias["attributes"].update(cmd)
             del alias["attributes"]["command"]
 
         attributes = attributes + aliases
@@ -143,15 +144,17 @@ class CommandResource(Resource):
 
             break
 
-        if attributes.get("type") == "aliases":
-            command = helpers.get_one(
-                "commands",
-                uid=attributes["attributes"]["command"]
-            )
-            if "name" in command:
-                del command["name"]
+        if attributes.get("type") == "alias":
+            cmd = helpers.get_one("commands",
+                                  uid=attributes["attributes"]["command"])
+            if cmd != {} and "name" in command:
+                del cmd["name"]
 
-            attributes["attributes"].update(command)
+            elif cmd == {}:
+                cmd = helpers.get_one("builtins",
+                                      uid=attributes["attributes"]["command"])
+
+            attributes["attributes"].update(cmd)
             del attributes["attributes"]["command"]
 
         response = {}
