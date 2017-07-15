@@ -89,6 +89,8 @@ class RethinkConnnection:
         else:
             return set()
 
+        return response
+
     def update_values(self, table, update_vals):
         """
         Take a table and a dictionary of new values to update with
