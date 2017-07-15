@@ -5,6 +5,8 @@ from pprint import pprint
 from termcolor import colored
 import marshmallow
 import os
+import json
+import re
 
 # Backup DB
 
@@ -12,8 +14,11 @@ import os
 class Colorized:
 
     @staticmethod
-    def failure(message):
-        return colored(message, "white", "on_red", attrs=["bold"])
+    def failure(message, bg=True):
+        if bg:
+            return colored(message, "white", "on_red", attrs=["bold"])
+
+        return colored(message, "red")
 
     @staticmethod
     def success(message, bg=True):
@@ -23,8 +28,11 @@ class Colorized:
         return colored(message, "green")
 
     @staticmethod
-    def info(message):
-        return colored(message, "white", "on_cyan")
+    def info(message, bg=True):
+        if bg:
+            return colored(message, "white", "on_cyan")
+
+        return colored(message, "cyan")
 
 
 class RethinkConnnection:
@@ -85,20 +93,14 @@ class RethinkConnnection:
         resp = rethink.table(table).update(update_vals).run(self.connection)
         return resp
 
+    def remove_keys(self, table, keys):
+        """Remove certain keys from the table given"""
+        resp = rethink.table(table).replace(
+            rethink.row.without(*keys)).run(self.connection)
+        return resp
 
-if __name__ == "__main__":
-    conn = RethinkConnnection()
-    # A list of the tables in the database if they're not blacklisted
-    tables = [
-        table for table in conn.get_tables()
-        if table not in conn.blacklist
-    ]
-    # A dictionary of the fields for each table returned
-    table_fields = {
-        table: conn.get_fields(table)
-        for table in tables
-    }
 
+def automatic_migrations(table_fields, conn):
     # Iterating over the different schemas defined
     for schema, table in schemas.table_map.items():
         # Get a list of strings for the field names for this schema
@@ -126,6 +128,55 @@ if __name__ == "__main__":
               conn.update_values(table, update_values))
         print(Colorized.success("{} complete!".format(table.capitalize())))
         print('=' * 64)
+
+
+def manual_migrations(conn):
+    mig_path = "./migrations/"
+    migration_expr = re.compile(r"^migration-(?P<version>\d+)\.json$")
+    migrations = sorted(
+        [
+            f for f in os.listdir(mig_path)
+            if os.path.isfile(os.path.join(mig_path, f))
+            and re.match(migration_expr, f)
+        ],
+        key=lambda f: re.search(migration_expr, f).groups()[0])
+    newest_migration = json.load(open(os.path.join(mig_path, migrations[0])))
+
+    for db in newest_migration.values():
+        name = db["name"]
+        removals = db.get("removals")
+        edits = db.get("edits")
+        additions = db.get("additions")
+        edited = added = removed = {}
+        for table, value in removals.items():
+            removed = conn.remove_keys(table, value)
+        for table, value in edits.items():
+            # Add parsing for non-JSON types (datetime, etc.)
+            edited = conn.update_values(table, value)
+        for table, value in additions.items():
+            added = conn.update_values(table, value)
+
+        print(Colorized.success("DB:", bg=False), name)
+        print(Colorized.info("Additions:", bg=False), added)
+        print(Colorized.info("Removals:", bg=False), removed)
+        print(Colorized.info("Edits:", bg=False), edited)
+
+if __name__ == "__main__":
+    conn = RethinkConnnection()
+    # Back up current DB
+    # A list of the tables in the database if they're not blacklisted
+    tables = [
+        table for table in conn.get_tables()
+        if table not in conn.blacklist
+    ]
+    # A dictionary of the fields for each table returned
+    table_fields = {
+        table: conn.get_fields(table)
+        for table in tables
+    }
+
+    automatic_migrations(table_fields, conn)
+    manual_migrations(conn)
 
     print(Colorized.success("Migrations complete!",
                             bg=False).center(os.get_terminal_size().columns))
