@@ -69,6 +69,7 @@ class ConfigResource(Resource):
     @limiter.limit("1000/day;90/hour;20/minute")
     @auth.scopes_required({"config:manage"})
     @helpers.lower_kwargs("token")
+    @helpers.check_append
     def patch(self, path_data, **kwargs):
         data = {**helpers.get_mixed_args(), **path_data}
 
@@ -76,7 +77,8 @@ class ConfigResource(Resource):
             del data["id"]
 
         attributes, errors, code = helpers.create_or_update(
-            "config", Config, data, **path_data
+            "config", Config, data,
+            **path_data, append=kwargs.get("append", False)
         )
 
         response = {}
