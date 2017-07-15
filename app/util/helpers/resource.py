@@ -44,27 +44,19 @@ def _create(table_name, model, data):
     return changed, code
 
 
-def _check_exist(table_name, data):
-    exist_check = {key: val for key,
-                   val in data.items()
-                   if isinstance(val, (str, int)) or key == "cased"}
-
-    exists_or_error, code = resource_exists(table_name, **exist_check)
-
-    return exists_or_error, code
-
-
 def check_existance(table_name, **kwargs):
-    exist_filter = {k: v for k, v in kwargs.items() if k != "post"}
+    exist_filter = {key: value for
+                    key, value in kwargs.items()
+                    if key != "post" and
+                    (isinstance(value, (str, int)) or key == "cased")}
 
-    if kwargs.get("cased", False):
+    if kwargs.get("cased"):
         exist_filter = {**kwargs, "cased": kwargs["cased"]}
+        if "post" in exist_filter:
+            del exist_filter["post"]
 
     # kwargs is the data we're using to check if the resource exists off of
-    exists_or_error, code = _check_exist(
-        table_name,
-        exist_filter
-    )
+    exists_or_error, code = resource_exists(table_name, **exist_filter)
 
     if kwargs.get("post", False) and code == 200:
         return "Resource already exists", 409
@@ -119,12 +111,12 @@ def update_resource(table_name, model, data, **kwargs):
     if errors is not None:
         return {}, errors, 400
 
-    exists_or_error, code = resource_exists(table_name, model, **kwargs)
-    data["id"] = exists_or_error["id"]
-
+    exists_or_error, code = resource_exists(table_name, **kwargs)
     # There was an error during pre-parsing, return that
-    if code is not None:
+    if code != 200:
         return {}, exists_or_error, code
+
+    data["id"] = exists_or_error["id"]
 
     if exists_or_error is not None:
         # Don't change the createdAt

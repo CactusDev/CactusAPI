@@ -7,6 +7,7 @@ from collections import OrderedDict
 from .. import api
 from ..models import Command, User, Alias
 from ..schemas import CommandSchema
+from ..schemas.helpers import EPOCH_ZERO
 from ..util import helpers, auth
 from ..util.helpers import APIError
 from .. import limiter
@@ -97,7 +98,8 @@ class CommandList(Resource):
                 "commands",
                 uid=alias["attributes"]["command"]
             )
-            del command["name"]
+            if "name" in command:
+                del command["name"]
 
             alias["attributes"].update(command)
             del alias["attributes"]["command"]
@@ -146,7 +148,7 @@ class CommandResource(Resource):
                 "commands",
                 uid=attributes["attributes"]["command"]
             )
-            if command != {} and "name" in command:
+            if "name" in command:
                 del command["name"]
 
             attributes["attributes"].update(command)
@@ -196,25 +198,25 @@ class CommandResource(Resource):
     @helpers.lower_kwargs("token")
     def delete(self, path_data, **kwargs):
         data = {**path_data, "name": kwargs["name"]}
-        deleted = helpers.delete_record("command", **data)
 
-        if deleted is not None:
-            aliases = helpers.delete_record("aliases",
-                                            limit=None,
-                                            token=path_data["token"],
-                                            command=deleted[0]
-                                            )
+        deleted, code = helpers.delete_soft("commands", **data)
 
-            repeats = helpers.delete_record("repeats",
-                                            limit=None,
-                                            token=path_data["token"],
-                                            command=deleted[0])
-
-            deleted = {"command": deleted,
-                       "aliases": aliases,
-                       "repeats": repeats}
-
-        if deleted is not None:
-            return {"meta": {"deleted": deleted}}, 200
+        if code == 200:
+            # TODO: Maybe make these actually check for errors by accepting
+            # second return object?
+            aliases, _ = helpers.delete_soft("aliases",
+                                             limit=None,
+                                             token=path_data["token"],
+                                             command=deleted[0]["id"])
+            repeats, _ = helpers.delete_soft("repeats",
+                                             limit=None,
+                                             token=path_data["token"],
+                                             command=deleted[0]["id"])
+            deleted = {
+                "command": deleted,
+                "aliases": aliases,
+                "repeats": repeats
+            }
+            return {"meta": {"deleted": deleted}}, code
         else:
-            return None, 404
+            return deleted, 404

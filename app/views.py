@@ -65,6 +65,9 @@ api.add_resource(resources.UserResource,
 api.add_resource(resources.ConfigResource,
                  "{}/user/<string:token>/config".format(prefix))
 
+api.add_resource(resources.PointResource,
+                 "{}/user/<string:token>/points/<string:name>".format(prefix))
+
 # API Login endpoint
 api.add_resource(authentication.Login, "{}/login".format(prefix))
 

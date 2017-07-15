@@ -16,3 +16,4 @@ class CmdAliasSchema(Schema):
     command = CommandUUID()
     commandName = fields.String(required=True)
     arguments = fields.Nested(MessagePacketSchema, many=True)
+    deletedAt = fields.Float(default=None, allow_none=True)

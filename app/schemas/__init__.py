@@ -6,9 +6,11 @@ from .repeats import RepeatSchema
 from .alias import CmdAliasSchema
 from .social import SocialSchema
 from .config import ConfigSchema
+from .points import PointSchema, PointCreationSchema
 
 __all__ = ["CommandSchema", "TrustSchema", "SocialSchema", "ConfigSchema",
-           "UserSchema", "QuoteSchema", "RepeatSchema", "CmdAliasSchema"]
+           "UserSchema", "QuoteSchema", "RepeatSchema", "CmdAliasSchema",
+           "PointSchema", "PointCreationSchema"]
 
 table_map = {
     "CommandSchema": "commands",
@@ -18,5 +20,6 @@ table_map = {
     "UserSchema": "users",
     "QuoteSchema": "quotes",
     "RepeatSchema": "repeats",
-    "CmdAliasSchema": "aliases"
+    "CmdAliasSchema": "aliases",
+    "PointSchema": "points"
 }

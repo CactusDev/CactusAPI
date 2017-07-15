@@ -29,6 +29,7 @@ class SpamSchema(Schema):
     maxEmoji = fields.Integer(default=6)
     maxCapsScore = fields.Integer(default=16)
     allowUrls = fields.Boolean(default=False)
+    blacklist = fields.List(fields.String, default=[])
 
 
 class ConfigSchema(Schema):

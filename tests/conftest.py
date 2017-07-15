@@ -68,6 +68,40 @@ def api_auth(app):
 
 
 @pytest.fixture
+def alias_data():
+    return {
+        "test": {
+            "commandName": "foo",
+            "arguments": [
+                {
+                    "type": "text",
+                    "data": "Spam spam! Beautiful spam!",
+                    "text": "Spam spam! Beautiful spam!",
+                }
+            ]
+        },
+        "taco": {
+            "commandName": "bar",
+            "arguments": []
+        }
+    }
+
+
+@pytest.fixture
+def repeat_data():
+    return {
+        "test": {
+            "period": 60000,
+            "commandName": "foo"
+        },
+        "potato": {
+            "period": 960000,
+            "commandName": "foo"
+        }
+    }
+
+
+@pytest.fixture
 def command_data():
     return {
         "foo": {
@@ -84,7 +118,8 @@ def command_data():
                         "text": "lol!"
                     }
                 ]
-            }
+            },
+            "deletedAt": None
         },
         "bar": {
             "name": "bar",
@@ -105,6 +140,7 @@ def command_data():
                         "text": "google.com"
                     }
                 ]
-            }
+            },
+            "deletedAt": None
         }
     }
