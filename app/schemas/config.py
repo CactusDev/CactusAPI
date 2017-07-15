@@ -31,6 +31,12 @@ class SpamSchema(Schema):
     allowUrls = fields.Boolean(default=False)
 
 
+class BannedPhrasesSchema(Schema):
+    response = fields.String(default="")
+    action = fields.String(default="none", nullable=True)
+    trigger = fields.String(required=True)
+
+
 class ConfigSchema(Schema):
     id = fields.String()
     token = fields.String(required=True)
@@ -38,3 +44,4 @@ class ConfigSchema(Schema):
     announce = fields.Nested(AnnouncementsSchema)
     spam = fields.Nested(SpamSchema)
     whitelistedUrls = fields.List(fields.String)
+    bannedPhrases = fields.Nested(BannedPhrasesSchema, many=True)
