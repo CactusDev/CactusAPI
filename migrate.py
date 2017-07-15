@@ -79,11 +79,17 @@ class RethinkConnnection:
 
     def get_fields(self, table):
         """Returns a list of all the fields in the given table"""
-        return set(rethink.table(table)
-                   .map(lambda val: val.keys())
-                   .reduce(lambda left, right: left + right)
-                   .distinct()
-                   .run(self.connection))
+        try:
+            response = set(rethink.table(table)
+                           .map(lambda val: val.keys())
+                           .reduce(lambda left, right: left + right)
+                           .distinct()
+                           .run(self.connection))
+        except rethink.errors.ReqlNonExistenceError:
+            # There's nothing in the table for that, so return an empty set
+            response = set()
+
+        return response
 
     def update_values(self, table, update_vals):
         """
